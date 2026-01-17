@@ -1,14 +1,15 @@
 // nextjs-frontend/lib/components/features/estudiantes/ModalEditarEstudiante.tsx
 
 import { useState } from 'react';
-import { Estudiante, UpdateEstudianteDto } from '@/lib/types/estudiante.types';
-import { X, User, Users, UserCheck, Save } from 'lucide-react';
+import { EstadoEstudiante, Estudiante, UpdateEstudianteDto } from '@/lib/types/estudiante.types';
+import { X, User, Users, UserCheck, Save, Circle } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
 import { Card } from '@/lib/components/ui/card';
 import { Input } from '@/lib/components/ui/input';
 import { Label } from '@/lib/components/ui/label';
 import { Checkbox } from '@/lib/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/lib/components/ui/tabs';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/lib/components/ui/select';
 
 interface ModalEditarEstudianteProps {
   estudiante: Estudiante;
@@ -42,6 +43,7 @@ export function ModalEditarEstudiante({
     representante_telefono_auxiliar: estudiante.representante_telefono_auxiliar || '',
     representante_correo: estudiante.representante_correo || '',
     representante_parentesco: estudiante.representante_parentesco || '',
+    estado: estudiante.estado,
   });
 
   const handleChange = (field: keyof UpdateEstudianteDto, value: any) => {
@@ -155,6 +157,44 @@ export function ModalEditarEstudiante({
                         value={formData.fecha_de_nacimiento}
                         onChange={(e) => handleChange('fecha_de_nacimiento', e.target.value)}
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="estado" className="flex items-center gap-2">
+                        <Circle className="w-4 h-4" />
+                        Estado del Estudiante
+                      </Label>
+                      <Select
+                        value={formData.estado || EstadoEstudiante.ACTIVO}
+                        onValueChange={(value) => handleChange('estado', value as EstadoEstudiante)}
+                      >
+                        <SelectTrigger id="estado">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={EstadoEstudiante.ACTIVO}>
+                            <span className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                              Activo
+                            </span>
+                          </SelectItem>
+                          <SelectItem value={EstadoEstudiante.INACTIVO_TEMPORAL}>
+                            <span className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+                              Inactivo Temporal
+                            </span>
+                          </SelectItem>
+                          <SelectItem value={EstadoEstudiante.SIN_MATRICULA}>
+                            <span className="flex items-center gap-2">
+                              <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                              Sin Matrícula
+                            </span>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        • <strong>Activo:</strong> Estudiante puede ser calificado normalmente<br />
+                        • <strong>Inactivo Temporal:</strong> Aparece en listas pero no se puede calificar (excluido de validaciones de cierre)
+                      </p>
                     </div>
                     <div>
                       <Label htmlFor="email">Email</Label>

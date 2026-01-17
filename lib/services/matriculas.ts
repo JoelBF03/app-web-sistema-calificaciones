@@ -30,6 +30,11 @@ export const matriculasService = {
     return response.data;
   },
 
+  async findByCurso(curso_id: string): Promise<Matricula[]> {
+    const response = await api.get(`/matriculas/curso/${curso_id}`);
+    return response.data;
+  },  
+
   async descargarPlantilla(): Promise<Blob> {
     const response = await api.get('/matriculas/plantilla/descargar', {
       responseType: 'blob'

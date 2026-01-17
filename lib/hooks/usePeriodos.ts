@@ -1,180 +1,148 @@
-import { useState, useCallback } from 'react';
-import { periodosService, trimestresService } from '../services/periodos';
-import { EstadoPeriodo, type PeriodoLectivo, type Trimestre } from '../types/periodo.types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { periodosService } from '../services/periodos';
 import { toast } from 'sonner';
+import type { 
+  PeriodoLectivo, 
+  CreatePeriodoLectivoData, 
+  UpdatePeriodoLectivoData 
+} from '../types/periodo.types';
 
 export function usePeriodos() {
-    const [periodos, setPeriodos] = useState<PeriodoLectivo[]>([]);
-    const [periodoActivo, setPeriodoActivo] = useState<PeriodoLectivo | null>(null);
-    const [trimestres, setTrimestres] = useState<Trimestre[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-    // 📋 PERÍODOS LECTIVOS
-    const fetchPeriodos = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await periodosService.getAll();
-            setPeriodos(data);
-        } catch (err: any) {
-            const errorMsg = err.response?.data?.message || err.message || 'Error al cargar períodos';
-            setError(errorMsg);
-            toast.error(errorMsg);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  // Query: Obtener todos los períodos
+  const {
+    data: periodos,
+    isLoading: loading,
+    error,
+    refetch: fetchPeriodos
+  } = useQuery({
+    queryKey: ['periodos'],
+    queryFn: periodosService.getAll,
+    staleTime: 2 * 60 * 1000,
+  });
 
-    const obtenerPeriodo = useCallback(async (id: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const periodo = await periodosService.getById(id);
-            return periodo;
-        } catch (err: any) {
-            const errorMsg = err.response?.data?.message || err.message || 'Error al obtener período';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  // Query: Período activo
+  const {
+    data: periodoActivo,
+    refetch: loadPeriodoActivo
+  } = useQuery({
+    queryKey: ['periodo-activo'],
+    queryFn: periodosService.getPeriodoActivo,
+    staleTime: 5 * 60 * 1000,
+  });
 
-    const obtenerPeriodoActivo = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const periodo = await periodosService.getPeriodoActivo();
-            return periodo;
-        } catch (err: any) {
-            const errorMsg = err.response?.data?.message || err.message || 'Error al obtener período activo';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  // Mutation: Crear período
+  const crearPeriodoMutation = useMutation({
+    mutationFn: (data: CreatePeriodoLectivoData) => periodosService.create(data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['periodos'] });
+      queryClient.invalidateQueries({ queryKey: ['periodo-activo'] });
+      toast.success(`${response.message} - Se crearon ${response.trimestres.length} trimestres`);
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al crear período';
+      toast.error(errorMsg);
+    },
+  });
 
-    const loadPeriodoActivo = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const periodo = await periodosService.getPeriodoActivo();
-            setPeriodoActivo(periodo);
-            return periodo;
-        } catch (err: any) {
-            const errorMsg = err.response?.data?.message || err.message || 'Error al obtener período activo';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  // Mutation: Actualizar nombres y fechas del período
+  const actualizarPeriodoMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdatePeriodoLectivoData }) =>
+      periodosService.update(id, data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['periodos'] });
+      queryClient.invalidateQueries({ queryKey: ['periodo-activo'] });
+      toast.success(response.message);
+      
+      if (response.advertencia) {
+        toast.warning(response.advertencia, { duration: 8000 });
+      }
+      
+      if (response.trimestres_afectados && response.trimestres_afectados > 0) {
+        toast.info(`📅 ${response.trimestres_afectados} trimestres actualizados`, { duration: 5000 });
+      }
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al actualizar período';
+      toast.error(errorMsg);
+    },
+  });
 
-    const crearPeriodo = useCallback(async (data: any) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await periodosService.create(data);
-            const nuevoPeriodo = { ...response.periodo, trimestres: response.trimestres };
-            
-            setPeriodos(prev => [...prev, nuevoPeriodo]);
-            toast.success(`${response.message} - Se crearon ${response.trimestres.length} trimestres`);
-            return response;
-        } catch (err: any) {
-            const errorMsg = err.response?.data?.message || err.message || 'Error al crear período';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  // Mutation: Cambiar estado ACTIVO → FINALIZADO
+  const cambiarEstadoMutation = useMutation({
+    mutationFn: (id: string) => periodosService.cambiarEstado(id),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['periodos'] });
+      queryClient.invalidateQueries({ queryKey: ['periodo-activo'] });
+      toast.success(response.message);
+      
+      if (response.advertencia) {
+        toast.warning(response.advertencia, { duration: 10000 });
+      }
 
-    const actualizarPeriodo = useCallback(async (id: string, data: any) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await periodosService.update(id, data);
-            const periodoActualizado = response.periodo;
-            
-            setPeriodos(prev =>
-                prev.map(p => p.id === id ? { ...periodoActualizado, trimestres: p.trimestres } : p)
-            );
-            
-            toast.success(response.message);
-            return periodoActualizado;
-        } catch (err: any) {
-            const errorMsg = err.response?.data?.message || err.message || 'Error al actualizar período';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+      if (response.estadisticas) {
+        const { 
+          estudiantes_graduados, 
+          estudiantes_sin_matricula, 
+          matriculas_finalizadas,
+          cursos_inactivados,
+          materias_curso_inactivadas
+        } = response.estadisticas;
 
-    const cambiarEstadoPeriodo = useCallback(async (id: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await periodosService.cambiarEstado(id);
-            
-            setPeriodos(prev =>
-                prev.map(p =>
-                    p.id === id ? { ...p, estado: response.periodo.estado_nuevo } : p
-                )
-            );
-            
-            toast.success(response.message);
-            return response;
-        } catch (err: any) {
-            const errorMsg = err.response?.data?.message || err.message || 'Error al cambiar estado';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+        toast.info(
+          `Estadísticas: ${estudiantes_graduados} graduados, ${estudiantes_sin_matricula} sin matrícula, ${matriculas_finalizadas} matrículas finalizadas, ${cursos_inactivados} cursos inactivados, ${materias_curso_inactivadas} asignaciones inactivadas`,
+          { duration: 10000 }
+        );
+      }
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al cambiar estado';
+      toast.error(errorMsg);
+    },
+  });
 
-    // 📅 TRIMESTRES
-    const obtenerTrimestres = useCallback(async (periodoId: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await periodosService.getTrimestres(periodoId);
-            setTrimestres(data);
-            return data;
-        } catch (err: any) {
-            const errorMsg = err.response?.data?.message || err.message || 'Error al cargar trimestres';
-            setError(errorMsg);
-            toast.error(errorMsg);
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  // Mutation: Validar cierre
+  const validarCierreMutation = useMutation({
+    mutationFn: (id: string) => periodosService.validarCierre(id),
+  });
 
-    return {
-        periodos,
-        trimestres,
-        loading,
-        error,
-        periodoActivo,
-        // Períodos
-        fetchPeriodos,
-        obtenerPeriodo,
-        obtenerPeriodoActivo,
-        loadPeriodoActivo,
-        crearPeriodo,
-        actualizarPeriodo,
-        cambiarEstadoPeriodo,
-        // Trimestres
-        obtenerTrimestres
-    };
+  return {
+    // Data
+    periodos: periodos || [],
+    periodoActivo: periodoActivo || null,
+    loading,
+    error: error?.message || null,
+
+    // Queries
+    fetchPeriodos,
+    loadPeriodoActivo,
+    obtenerPeriodoActivo: async () => {
+      const data = await queryClient.fetchQuery({
+        queryKey: ['periodo-activo'],
+        queryFn: periodosService.getPeriodoActivo,
+      });
+      return data;
+    },
+    obtenerPeriodo: async (id: string) => {
+      const data = await queryClient.fetchQuery({
+        queryKey: ['periodo', id],
+        queryFn: () => periodosService.getById(id),
+      });
+      return data;
+    },
+
+    // Mutations
+    crearPeriodo: crearPeriodoMutation.mutateAsync,
+    actualizarPeriodo: (id: string, data: UpdatePeriodoLectivoData) =>
+      actualizarPeriodoMutation.mutateAsync({ id, data }),
+    cambiarEstadoPeriodo: cambiarEstadoMutation.mutateAsync,
+    validarCierre: validarCierreMutation.mutateAsync,
+
+    // Loading states
+    isCreating: crearPeriodoMutation.isPending,
+    isUpdating: actualizarPeriodoMutation.isPending,
+    isChangingState: cambiarEstadoMutation.isPending,
+    isValidating: validarCierreMutation.isPending,
+  };
 }

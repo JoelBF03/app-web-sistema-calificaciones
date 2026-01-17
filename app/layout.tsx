@@ -1,7 +1,9 @@
+// nextjs-frontend/app/layout.tsx
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
+import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -10,16 +12,14 @@ export const metadata: Metadata = {
   description: 'Sistema de Gestión Educativa',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
       <body className={inter.className}>
-        {children}
-
+        <Providers>
+          {children}
+        </Providers>
+        
         <footer className="bg-white text-gray-800 py-12 px-6 shadow-inner">
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
 

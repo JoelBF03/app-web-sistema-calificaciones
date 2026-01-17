@@ -71,6 +71,11 @@ export const estudiantesService = {
     return response.data;
   },
 
+  async updateDatosPersonales(id: string, data: any): Promise<Estudiante> {
+    const response = await api.put(`/estudiantes/${id}/datos-personales`, data);
+    return response.data;
+  },
+
   retirar: async (id: string, motivo?: string): Promise<{ message: string; estudiante: Estudiante }> => {
     const response = await api.patch(`/estudiantes/${id}/retirar`, { motivo });
     return response.data;

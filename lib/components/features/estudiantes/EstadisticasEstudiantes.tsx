@@ -1,5 +1,5 @@
 import { EstadisticasEstudiantes as EstadisticasType } from '@/lib/types/estudiante.types';
-import { CheckCircle, AlertTriangle, GraduationCap, UserMinus } from 'lucide-react';
+import { CheckCircle, AlertTriangle, GraduationCap, UserMinus, PauseCircle } from 'lucide-react';
 import { Card } from '@/lib/components/ui/card';
 
 interface EstadisticasEstudiantesProps {
@@ -15,13 +15,20 @@ export function EstadisticasEstudiantes({ estadisticas }: EstadisticasEstudiante
       colorBorde: 'border-purple-500',
       colorIcono: 'text-purple-500'
     },
-      {
+    {
       titulo: 'SIN MATRÍCULA',
       valor: estadisticas?.sinMatricula ?? 0,
       icon: AlertTriangle,
       colorBorde: 'border-orange-500',
       colorIcono: 'text-orange-500'
-    },    
+    },
+    {
+      titulo: 'ESTUDIANTES INACTIVOS',
+      valor: estadisticas?.inactivosTemporales ?? 0,
+      icon: PauseCircle,
+      colorBorde: 'border-gray-500',
+      colorIcono: 'text-gray-500'
+    },
     {
       titulo: 'DATOS COMPLETOS',
       valor: estadisticas?.completos ?? 0,
@@ -53,7 +60,7 @@ export function EstadisticasEstudiantes({ estadisticas }: EstadisticasEstudiante
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
       {cards.map((card, index) => {
         const Icon = card.icon;
         return (

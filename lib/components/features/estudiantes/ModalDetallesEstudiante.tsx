@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Estudiante } from '@/lib/types/estudiante.types';
+import { EstadoEstudiante, Estudiante } from '@/lib/types/estudiante.types';
 import { X, User, Users, UserCheck, History, Edit, UserX } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
 import { Card } from '@/lib/components/ui/card';
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/lib/components/ui/ta
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { EspecialidadCurso } from '@/lib/types';
+import { EstadoBadge } from './badges/EstadoBadge';
 
 interface ModalDetallesEstudianteProps {
   estudiante: Estudiante;
@@ -132,6 +133,30 @@ export function ModalDetallesEstudiante({
                   </div>
                 </Card>
               </TabsContent>
+              <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Estado:</span>
+                  <div className="flex items-center gap-2">
+                    <EstadoBadge estado={estudiante.estado} />
+                    <span className={`text-sm font-semibold ${estudiante.estado === EstadoEstudiante.ACTIVO ? 'text-green-700' :
+                        estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL ? 'text-gray-700' :
+                          estudiante.estado === EstadoEstudiante.RETIRADO ? 'text-red-700' :
+                            'text-gray-700'
+                      }`}>
+                      {estudiante.estado === EstadoEstudiante.ACTIVO && 'Activo'}
+                      {estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL && 'Inactivo Temporal'}
+                      {estudiante.estado === EstadoEstudiante.SIN_MATRICULA && 'Sin Matrícula'}
+                      {estudiante.estado === EstadoEstudiante.GRADUADO && 'Graduado'}
+                      {estudiante.estado === EstadoEstudiante.RETIRADO && 'Retirado'}
+                    </span>
+                  </div>
+                </div>
+                {estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    ℹ️ Este estudiante aparece en listas pero no puede ser calificado. Es excluido de validaciones de cierre de trimestre.
+                  </p>
+                )}
+              </div>
 
               {/* TAB: Padres */}
               <TabsContent value="padres" className="mt-0 space-y-6">
@@ -268,11 +293,10 @@ export function ModalDetallesEstudiante({
                       {estudiante.matriculas.map((matricula) => (
                         <div
                           key={matricula.id}
-                          className={`p-4 border rounded-lg ${
-                            matricula.estado === 'ACTIVO'
+                          className={`p-4 border rounded-lg ${matricula.estado === 'ACTIVO'
                               ? 'bg-green-50 border-green-200'
                               : 'bg-gray-50 border-gray-200'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="space-y-2 flex-1">
@@ -290,11 +314,10 @@ export function ModalDetallesEstudiante({
                               </p>
                             </div>
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                                matricula.estado === 'ACTIVO'
+                              className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${matricula.estado === 'ACTIVO'
                                   ? 'bg-green-100 text-green-800'
                                   : 'bg-gray-100 text-gray-800'
-                              }`}
+                                }`}
                             >
                               {matricula.estado}
                             </span>

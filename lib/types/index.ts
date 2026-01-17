@@ -4,3 +4,4 @@ export * from './periodo.types';
 export * from './auth.types';
 export * from './curso.types';
 export * from './matricula.types';
+export * from './estudiante.types';

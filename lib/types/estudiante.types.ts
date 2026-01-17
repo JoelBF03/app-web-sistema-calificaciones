@@ -3,6 +3,7 @@ import { Matricula } from "./matricula.types";
 export enum EstadoEstudiante {
   ACTIVO = 'ACTIVO',
   SIN_MATRICULA = 'SIN_MATRICULA',
+  INACTIVO_TEMPORAL = 'INACTIVO_TEMPORAL',
   GRADUADO = 'GRADUADO',
   RETIRADO = 'RETIRADO',
 }
@@ -70,6 +71,28 @@ export interface UpdateEstudianteDto extends Partial<CreateEstudianteDto> {
   estado?: EstadoEstudiante;
 }
 
+export interface UpdateDatosPersonalesDto {
+  fecha_de_nacimiento?: string;
+  direccion?: string;
+  estado?: EstadoEstudiante;
+  
+  padre_nombre?: string;
+  padre_apellido?: string;
+  padre_cedula?: string;
+  
+  madre_nombre?: string;
+  madre_apellido?: string;
+  madre_cedula?: string;
+  viven_juntos?: boolean;
+  
+  representante_nombre?: string;
+  representante_apellido?: string;
+  representante_telefono?: string;
+  representante_telefono_auxiliar?: string;
+  representante_correo?: string;
+  representante_parentesco?: string;
+}
+
 export interface EstudiantesResponse {
   data: Estudiante[];
   total: number;
@@ -84,4 +107,5 @@ export interface EstadisticasEstudiantes {
   incompletos: number;
   graduados: number;
   retirados: number;
+  inactivosTemporales: number;
 }

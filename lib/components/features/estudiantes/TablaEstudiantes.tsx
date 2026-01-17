@@ -61,6 +61,11 @@ export function TablaEstudiantes({
       return '';
     }
 
+    // 🆕 Color gris para inactivos temporales
+    if (estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL) {
+      return 'bg-gray-100 opacity-75';
+    }
+
     if (estudiante.estado === EstadoEstudiante.RETIRADO) {
       return 'bg-red-50';
     }
@@ -156,19 +161,19 @@ export function TablaEstudiantes({
                     >
                       <History className="w-4 h-4" />
                     </Button>
-                    {(estudiante.estado === EstadoEstudiante.RETIRADO || 
-                    (estudiante.estado === EstadoEstudiante.SIN_MATRICULA && 
-                    estudiante.matriculas?.some(m => m.estado === 'RETIRADO'))) && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onReactivar(estudiante)}
-                      title="Reactivar"
-                      className="text-orange-600 hover:bg-orange-50"
-                    >
-                      <Undo className="w-4 h-4" />
-                    </Button>
-                  )}
+                    {(estudiante.estado === EstadoEstudiante.RETIRADO ||
+                      (estudiante.estado === EstadoEstudiante.SIN_MATRICULA &&
+                        estudiante.matriculas?.some(m => m.estado === 'RETIRADO'))) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onReactivar(estudiante)}
+                          title="Reactivar"
+                          className="text-orange-600 hover:bg-orange-50"
+                        >
+                          <Undo className="w-4 h-4" />
+                        </Button>
+                      )}
                   </div>
                 </td>
               </tr>
@@ -196,7 +201,7 @@ export function TablaEstudiantes({
           >
             Anterior
           </Button>
-          
+
           {/* Páginas */}
           {Array.from({ length: Math.min(5, pagination.lastPage) }, (_, i) => {
             let pageNum;

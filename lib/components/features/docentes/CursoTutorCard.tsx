@@ -1,5 +1,4 @@
-// nextjs-frontend/lib/components/features/docente/CursoTutorCard.tsx
-
+import { useRouter } from 'next/navigation';
 import { GraduationCap, Users, Star, Calendar } from 'lucide-react';
 import { Card } from '@/lib/components/ui/card';
 import { Badge } from '@/lib/components/ui/badge';
@@ -11,11 +10,17 @@ interface CursoTutorCardProps {
 }
 
 export function CursoTutorCard({ curso }: CursoTutorCardProps) {
+  const router = useRouter();
+
   const formatNivel = (nivel: string) => {
     if (nivel.includes('BACHILLERATO')) {
       return nivel.split(' ').map(p => p.charAt(0) + p.slice(1).toLowerCase()).join(' ');
     }
     return nivel.charAt(0) + nivel.slice(1).toLowerCase();
+  };
+
+  const handleNavegar = () => {
+    router.push(`/docente/tutoria/${curso.id}`);
   };
 
   return (
@@ -63,12 +68,9 @@ export function CursoTutorCard({ curso }: CursoTutorCardProps) {
         <div className="pt-2">
           <Button 
             className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold"
-            onClick={() => {
-              // TODO: Navegar al detalle del curso como tutor
-              console.log('Ir a mi tutoría:', curso.id);
-            }}
+            onClick={handleNavegar}
           >
-            Gestionar mi curso
+            Gestionar mi tutoría
           </Button>
         </div>
       </div>

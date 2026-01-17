@@ -23,6 +23,10 @@ export function EstadoBadge({ estado }: EstadoBadgeProps) {
     [EstadoEstudiante.RETIRADO]: {
       color: 'bg-red-500',
       title: 'Retirado'
+    },
+    [EstadoEstudiante.INACTIVO_TEMPORAL]: {
+      color: 'bg-gray-400',
+      title: 'Inactivo Temporal'
     }
   };
 

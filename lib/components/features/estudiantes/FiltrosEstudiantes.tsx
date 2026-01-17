@@ -118,11 +118,12 @@ export function FiltrosEstudiantes({ filtros, onChange }: FiltrosEstudiantesProp
                 <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ACTIVO">✓ Activos</SelectItem>
-                <SelectItem value="SIN_MATRICULA">⏳ Sin Matrícula</SelectItem>
+                <SelectItem value={EstadoEstudiante.ACTIVO}>Activos</SelectItem>
+                <SelectItem value={EstadoEstudiante.SIN_MATRICULA}>Sin Matrícula</SelectItem>
                 <SelectItem value="ALL">Todos los estados</SelectItem>
-                <SelectItem value="GRADUADO">🎓 Graduados</SelectItem>
-                <SelectItem value="RETIRADO">✗ Retirados</SelectItem>
+                <SelectItem value={EstadoEstudiante.INACTIVO_TEMPORAL}>Inactivos Temporales</SelectItem>
+                <SelectItem value={EstadoEstudiante.GRADUADO}>Graduados</SelectItem>
+                <SelectItem value={EstadoEstudiante.RETIRADO}>Retirados</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -156,7 +157,7 @@ export function FiltrosEstudiantes({ filtros, onChange }: FiltrosEstudiantesProp
             </Label>
             <Select
               value={filtros.periodoId || 'ALL'}
-              onValueChange={(value) => 
+              onValueChange={(value) =>
                 onChange({ ...filtros, periodoId: value === 'ALL' ? undefined : value })
               }
               disabled={loadingPeriodos}

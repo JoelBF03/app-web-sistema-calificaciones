@@ -1,12 +1,17 @@
 // nextjs-frontend/lib/components/features/estudiantes/ModalHistorialEstudiante.tsx
 
+'use client';
+
+import { useState } from 'react';
 import { Estudiante } from '@/lib/types/estudiante.types';
-import { X, History, Calendar, BookOpen } from 'lucide-react';
+import { X, History, Calendar, BookOpen, Download } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
 import { Card } from '@/lib/components/ui/card';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { EspecialidadCurso } from '@/lib/types';
+import { toast } from 'sonner';
+import { reportesService } from '@/lib/services/reportes.services';
 
 interface ModalHistorialEstudianteProps {
   estudiante: Estudiante;
@@ -17,11 +22,26 @@ export function ModalHistorialEstudiante({
   estudiante,
   onClose,
 }: ModalHistorialEstudianteProps) {
+  const [descargando, setDescargando] = useState<string | null>(null);
+
   const formatearFecha = (fecha: string) => {
     try {
       return format(new Date(fecha), "d 'de' MMMM, yyyy", { locale: es });
     } catch {
       return fecha;
+    }
+  };
+
+  const handleDescargarLibreta = async (matriculaId: string, periodoNombre: string) => {
+    try {
+      setDescargando(matriculaId);
+      await reportesService.descargarLibretaHistorica(matriculaId);
+      toast.success(`Libreta de ${periodoNombre} descargada exitosamente`);
+    } catch (error) {
+      console.error('Error al descargar libreta:', error);
+      toast.error('Error al descargar la libreta. Intente nuevamente.');
+    } finally {
+      setDescargando(null);
     }
   };
 
@@ -103,7 +123,7 @@ export function ModalHistorialEstudiante({
                           : 'border-gray-300'
                       }`}
                     >
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between gap-4">
                         <div className="space-y-2 flex-1">
                           {/* Período y curso */}
                           <div>
@@ -111,10 +131,10 @@ export function ModalHistorialEstudiante({
                               {matricula.periodo_lectivo?.nombre || 'Período no disponible'}
                             </h4>
                             <p className="text-gray-700 font-semibold">
-                                {matricula.curso?.nivel || 'N/A'} "{matricula.curso?.paralelo || 'N/A'}"
-                                {matricula.curso?.especialidad && matricula.curso.especialidad !== EspecialidadCurso.BASICA && (
+                              {matricula.curso?.nivel || 'N/A'} "{matricula.curso?.paralelo || 'N/A'}"
+                              {matricula.curso?.especialidad && matricula.curso.especialidad !== EspecialidadCurso.BASICA && (
                                 <span className="text-purple-600"> - {matricula.curso.especialidad}</span>
-                                )}
+                              )}
                             </p>
                           </div>
 
@@ -138,18 +158,45 @@ export function ModalHistorialEstudiante({
                           )}
                         </div>
 
-                        {/* Badge de estado */}
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                            matricula.estado === 'ACTIVO'
-                              ? 'bg-green-100 text-green-800'
-                              : matricula.estado === 'RETIRADO'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {matricula.estado}
-                        </span>
+                        {/* Columna derecha: Badge + Botón */}
+                        <div className="flex flex-col items-end gap-2">
+                          {/* Badge de estado */}
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
+                              matricula.estado === 'ACTIVO'
+                                ? 'bg-green-100 text-green-800'
+                                : matricula.estado === 'RETIRADO'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            {matricula.estado}
+                          </span>
+
+                          {/* 🆕 Botón de descarga */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDescargarLibreta(
+                              matricula.id,
+                              matricula.periodo_lectivo?.nombre || 'Período'
+                            )}
+                            disabled={descargando === matricula.id}
+                            className="gap-2 hover:bg-purple-50 hover:border-purple-300"
+                          >
+                            {descargando === matricula.id ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                                Descargando...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-4 h-4" />
+                                Libreta
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   </div>
