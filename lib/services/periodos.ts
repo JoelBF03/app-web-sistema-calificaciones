@@ -1,12 +1,15 @@
 import { api } from './api';
-import { 
-  PeriodoLectivo, 
-  CreatePeriodoLectivoData, 
+import {
+  PeriodoLectivo,
+  CreatePeriodoLectivoData,
   UpdatePeriodoLectivoData,
   CreatePeriodoResponse,
   UpdatePeriodoResponse,
   CambiarEstadoPeriodoResponse,
   ValidarCierrePeriodoResponse,
+  ActivarSupletoriosResponse,
+  CerrarSupletoriosResponse,
+  ReabrirSupletoriosResponse,
   Trimestre,
   UpdateTrimestreData,
   UpdateTrimestreResponse,
@@ -60,6 +63,31 @@ export const periodosService = {
   // Obtener trimestres de un período
   getTrimestres: async (periodoId: string): Promise<Trimestre[]> => {
     const response = await api.get(`/periodos-lectivos/${periodoId}/trimestres`);
+    return response.data;
+  },
+
+  // 🆕 Activar período de supletorios
+  activarSupletorios: async (id: string): Promise<ActivarSupletoriosResponse> => {
+    const response = await api.patch(`/periodos-lectivos/${id}/activar-supletorios`);
+    return response.data;
+  },
+
+  async regresarSupletoriosPendiente(periodoId: string) {
+    const response = await api.patch(
+      `/periodos-lectivos/${periodoId}/regresar-supletorios-pendiente`
+    );
+    return response.data;
+  },
+
+  // 🆕 Cerrar período de supletorios
+  cerrarSupletorios: async (id: string): Promise<CerrarSupletoriosResponse> => {
+    const response = await api.patch(`/periodos-lectivos/${id}/cerrar-supletorios`);
+    return response.data;
+  },
+
+  // 🆕 Reabrir supletorios
+  reabrirSupletorios: async (id: string): Promise<ReabrirSupletoriosResponse> => {
+    const response = await api.patch(`/periodos-lectivos/${id}/reabrir-supletorios`);
     return response.data;
   },
 };

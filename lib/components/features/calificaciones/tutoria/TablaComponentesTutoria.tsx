@@ -1,80 +1,163 @@
-// nextjs-frontend/lib/components/features/tutoria/TablaComponentesTutoria.tsx
+// nextjs-frontend/lib/components/features/calificaciones/tutoria/TablaComponentesTutoria.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BookOpen, Loader2, Save } from 'lucide-react';
 import { ModalEditarDatosPersonales } from './ModalEditarDatosPersonales';
 import { Button } from '@/lib/components/ui/button';
-import { Input } from '@/lib/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/lib/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/lib/components/ui/table';
 import { toast } from 'sonner';
 import { TrimestreEstado } from '@/lib/types';
+import { useComponentesCualitativos, useCalificacionCualitativa } from '@/lib/hooks/useCalificacionCualitativa';
+import { CalificacionComponente, CalificarMasivoDto } from '@/lib/types/calificaciones.types';
+import { NivelCurso } from '@/lib/types/curso.types';
+import { NivelEducativo } from '@/lib/types/materia.types';
 
 interface TablaComponentesTutoriaProps {
   curso_id: string;
   trimestre_id: string;
-  estudiantes: Array<{ 
-    id: string; 
+  nivel: NivelCurso;
+  estudiantes: Array<{
+    id: string;
     nombres_completos: string;
     estudiante: any;
   }>;
   trimestreEstado?: TrimestreEstado;
 }
 
-// ✅ Hardcodeado: Componentes secundarios típicos
-const COMPONENTES_SECUNDARIOS = [
-  { id: 'comportamiento', nombre: 'Comportamiento', color: 'text-purple-600' },
-  { id: 'ovp', nombre: 'OVP', color: 'text-blue-600' },
-  { id: 'tutoria', nombre: 'Tutoría', color: 'text-green-600' },
-  { id: 'animacion_lectora', nombre: 'Animación Lectora', color: 'text-orange-600' },
-];
+const getNivelEducativo = (nivel: NivelCurso): NivelEducativo => {
+  const nivelesBasicos = [NivelCurso.OCTAVO, NivelCurso.NOVENO, NivelCurso.DECIMO];
+  return nivelesBasicos.includes(nivel) ? NivelEducativo.BASICA : NivelEducativo.BACHILLERATO;
+};
 
-export function TablaComponentesTutoria({ 
-  curso_id, 
-  trimestre_id, 
+const SIN_CALIFICAR = '__SIN_CALIFICAR__';
+
+export function TablaComponentesTutoria({
+  curso_id,
+  trimestre_id,
+  nivel,
   estudiantes,
-  trimestreEstado 
+  trimestreEstado
 }: TablaComponentesTutoriaProps) {
   const estadoFinalizado = trimestreEstado === TrimestreEstado.FINALIZADO;
-  const [notasTemp, setNotasTemp] = useState<Record<string, Record<string, string>>>({});
-  const [loading, setLoading] = useState(false);
-  
-  // ✅ Estado para modal de edición de datos
+  const nivelEducativo = getNivelEducativo(nivel);
+
+  const { componentes, isLoading: loadingComponentes } = useComponentesCualitativos(nivelEducativo);
+  const {
+    calificaciones,
+    isLoading: loadingCalificaciones,
+    guardarCalificaciones,
+    isSaving
+  } = useCalificacionCualitativa(curso_id, trimestre_id);
+
+  const [notasOriginales, setNotasOriginales] = useState<Record<string, Record<string, CalificacionComponente | null>>>({});
+  const [notasTemp, setNotasTemp] = useState<Record<string, Record<string, CalificacionComponente | null>>>({});
+  const [cambiosPendientes, setCambiosPendientes] = useState<Set<string>>(new Set());
   const [modalEdicion, setModalEdicion] = useState<{
     open: boolean;
     estudiante: any;
   } | null>(null);
 
-  const handleNotaChange = (estudianteId: string, componenteId: string, value: string) => {
-    if (value === '') {
-      setNotasTemp(prev => ({
-        ...prev,
-        [estudianteId]: {
-          ...prev[estudianteId],
-          [componenteId]: ''
+  // Cargar calificaciones iniciales
+  useEffect(() => {
+    if (calificaciones.length > 0) {
+      const notasIniciales: Record<string, Record<string, CalificacionComponente | null>> = {};
+
+      calificaciones.forEach((cal) => {
+        if (!notasIniciales[cal.estudiante_id]) {
+          notasIniciales[cal.estudiante_id] = {};
         }
-      }));
-      return;
+        notasIniciales[cal.estudiante_id][cal.materia_id] = cal.calificacion;
+      });
+
+      setNotasOriginales(notasIniciales);
+      setNotasTemp(notasIniciales);
+      setCambiosPendientes(new Set());
     }
+  }, [calificaciones]);
 
-    if (!/^\d*\.?\d{0,2}$/.test(value)) return;
+  const handleNotaChange = (estudianteId: string, materiaId: string, value: string) => {
+    const nuevaCalificacion = value === SIN_CALIFICAR ? null : (value as CalificacionComponente);
+    const calificacionOriginal = notasOriginales[estudianteId]?.[materiaId] ?? null;
 
-    const numero = parseFloat(value);
-    if (!isNaN(numero) && (numero < 0 || numero > 10)) return;
-
-    setNotasTemp(prev => ({
+    // Actualizar notas temporales
+    setNotasTemp((prev) => ({
       ...prev,
       [estudianteId]: {
         ...prev[estudianteId],
-        [componenteId]: value
-      }
+        [materiaId]: nuevaCalificacion,
+      },
     }));
+
+    // Trackear cambios
+    const key = `${estudianteId}:${materiaId}`;
+    setCambiosPendientes((prev) => {
+      const newSet = new Set(prev);
+      
+      // Si la nueva calificación es diferente a la original, marcar como cambio
+      if (nuevaCalificacion !== calificacionOriginal) {
+        newSet.add(key);
+      } else {
+        // Si volvió al valor original, remover del tracking
+        newSet.delete(key);
+      }
+      
+      return newSet;
+    });
   };
 
   const handleGuardar = async () => {
-    // TODO: Implementar guardado cuando se cree el backend
-    toast.info('Funcionalidad de guardado próximamente');
+    if (cambiosPendientes.size === 0) {
+      toast.info('No hay cambios para guardar');
+      return;
+    }
+
+    // Construir array solo con las calificaciones modificadas
+    const calificacionesArray: CalificarMasivoDto['calificaciones'] = [];
+
+    cambiosPendientes.forEach((key) => {
+      const [estudianteId, materiaId] = key.split(':');
+      const calificacion = notasTemp[estudianteId]?.[materiaId] ?? null;
+      
+      calificacionesArray.push({
+        estudiante_id: estudianteId,
+        materia_id: materiaId,
+        calificacion,
+      });
+    });
+
+    const dto: CalificarMasivoDto = {
+      curso_id,
+      trimestre_id,
+      calificaciones: calificacionesArray,
+    };
+
+    console.log(`💾 Guardando ${calificacionesArray.length} calificaciones modificadas`);
+    await guardarCalificaciones(dto);
+    
+    // Actualizar estado después de guardar exitosamente
+    setNotasOriginales(notasTemp);
+    setCambiosPendientes(new Set());
   };
+
+  if (loadingComponentes || loadingCalificaciones) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <span className="ml-3 text-gray-600">Cargando componentes...</span>
+      </div>
+    );
+  }
+
+  if (componentes.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+        <p>No hay componentes cualitativos configurados para este nivel</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -86,19 +169,24 @@ export function TablaComponentesTutoria({
               <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Componentes Secundarios</h3>
+              <h3 className="text-lg font-bold text-gray-900">Componentes Cualitativos</h3>
               <p className="text-sm text-gray-600">
-                Evaluación de actitudes y habilidades complementarias
+                {componentes.length} componente(s) para {nivelEducativo}
+                {cambiosPendientes.size > 0 && (
+                  <span className="ml-2 text-orange-600 font-semibold">
+                    • {cambiosPendientes.size} cambio(s) pendiente(s)
+                  </span>
+                )}
               </p>
             </div>
           </div>
           {!estadoFinalizado && (
             <Button
               onClick={handleGuardar}
-              disabled={loading}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer"
+              disabled={isSaving || cambiosPendientes.size === 0}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
+              {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Guardando...
@@ -106,7 +194,7 @@ export function TablaComponentesTutoria({
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Guardar Cambios
+                  Guardar {cambiosPendientes.size > 0 ? `(${cambiosPendientes.size})` : 'Cambios'}
                 </>
               )}
             </Button>
@@ -125,15 +213,12 @@ export function TablaComponentesTutoria({
               <TableHead className="w-[300px] min-w-[300px] max-w-[300px] font-semibold text-gray-900 px-4 border-r-2 border-gray-400">
                 Estudiante
               </TableHead>
-              {COMPONENTES_SECUNDARIOS.map((componente) => (
-                <TableHead 
+              {componentes.map((componente) => (
+                <TableHead
                   key={componente.id}
-                  className="border-x border-gray-300 text-center w-[150px] min-w-[150px] font-semibold text-gray-900"
+                  className="border-x border-gray-300 text-center w-[180px] min-w-[180px] font-semibold text-gray-900"
                 >
-                  <div className={`${componente.color} font-bold`}>
-                    {componente.nombre}
-                  </div>
-                  <div className="text-xs text-gray-500 font-normal">/10</div>
+                  <div className="font-bold text-purple-700">{componente.nombre}</div>
                 </TableHead>
               ))}
             </TableRow>
@@ -142,16 +227,16 @@ export function TablaComponentesTutoria({
           <TableBody>
             {estudiantes.map((estudiante, index) => (
               <TableRow key={estudiante.id} className="border-b border-gray-300 hover:bg-purple-50">
-                {/* Número */}
                 <TableCell className="text-center text-gray-500 font-medium px-3 border-r-2 border-gray-400">
                   {index + 1}
                 </TableCell>
 
-                {/* Nombre del estudiante con hover para editar */}
                 <TableCell className="font-medium px-4 border-r-2 border-gray-400">
-                  <div 
+                  <div
                     className="flex items-center gap-3 cursor-pointer hover:text-purple-600 transition-colors group"
-                    onClick={() => setModalEdicion({ open: true, estudiante: estudiante.estudiante })}
+                    onClick={() =>
+                      setModalEdicion({ open: true, estudiante: estudiante.estudiante })
+                    }
                     title="Click para editar datos personales"
                   >
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center font-bold text-white text-sm group-hover:scale-110 transition-transform">
@@ -163,29 +248,57 @@ export function TablaComponentesTutoria({
                   </div>
                 </TableCell>
 
-                {/* Componentes */}
-                {COMPONENTES_SECUNDARIOS.map((componente) => (
-                  <TableCell key={componente.id} className="border-x border-gray-300 text-center px-2 py-2">
-                    {estadoFinalizado ? (
-                      <span className="font-bold text-gray-900">-</span>
-                    ) : (
-                      <Input
-                        type="text"
-                        value={notasTemp[estudiante.id]?.[componente.id] ?? ''}
-                        onChange={(e) => handleNotaChange(estudiante.id, componente.id, e.target.value)}
-                        placeholder="0.00"
-                        className="w-full max-w-[100px] mx-auto text-center border-2 border-gray-300 focus:border-purple-500 rounded-lg"
-                      />
-                    )}
-                  </TableCell>
-                ))}
+                {componentes.map((componente) => {
+                  const key = `${estudiante.id}:${componente.id}`;
+                  const tieneCambio = cambiosPendientes.has(key);
+                  
+                  return (
+                    <TableCell
+                      key={componente.id}
+                      className={`border-x border-gray-300 text-center px-2 py-2 transition-colors ${
+                        tieneCambio ? 'bg-yellow-50' : ''
+                      }`}
+                    >
+                      {estadoFinalizado ? (
+                        <span className="font-bold text-gray-900">
+                          {notasTemp[estudiante.id]?.[componente.id] || '-'}
+                        </span>
+                      ) : (
+                        <Select
+                          value={(notasTemp[estudiante.id]?.[componente.id] as string) || SIN_CALIFICAR}
+                          onValueChange={(value) =>
+                            handleNotaChange(estudiante.id, componente.id, value)
+                          }
+                        >
+                          <SelectTrigger className={`w-full max-w-[140px] mx-auto border-2 focus:border-purple-500 ${
+                            tieneCambio ? 'border-orange-400 bg-orange-50' : 'border-gray-300'
+                          }`}>
+                            <SelectValue placeholder="Sin calificar" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={SIN_CALIFICAR}>Sin calificar</SelectItem>
+                            <SelectItem value={CalificacionComponente.MAS_A}>+A (Excelente)</SelectItem>
+                            <SelectItem value={CalificacionComponente.A}>A (Muy Bueno)</SelectItem>
+                            <SelectItem value={CalificacionComponente.A_MENOS}>A- (Bueno)</SelectItem>
+                            <SelectItem value={CalificacionComponente.B_MAS}>B+ (Satisfactorio+)</SelectItem>
+                            <SelectItem value={CalificacionComponente.B}>B (Satisfactorio)</SelectItem>
+                            <SelectItem value={CalificacionComponente.B_MENOS}>B- (Satisfactorio-)</SelectItem>
+                            <SelectItem value={CalificacionComponente.C_MAS}>C+ (Regular+)</SelectItem>
+                            <SelectItem value={CalificacionComponente.C}>C (Regular)</SelectItem>
+                            <SelectItem value={CalificacionComponente.C_MENOS}>C- (Regular-)</SelectItem>
+                            <SelectItem value={CalificacionComponente.D}>D (Insuficiente)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
 
-      {/* Modal Editar Datos Personales */}
       {modalEdicion && (
         <ModalEditarDatosPersonales
           estudiante={modalEdicion.estudiante}

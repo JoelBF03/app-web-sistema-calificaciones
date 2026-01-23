@@ -24,9 +24,9 @@ import {
   Materia,
   CreateMateriaDto,
   NivelEducativo,
-  TrimestreAplicable,
+  TipoCalificacion,
   NivelEducativoLabels,
-  TrimestreAplicableLabels,
+  TipoCalificacionLabels,
 } from '@/lib/types/materia.types';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -48,7 +48,7 @@ export default function CrearEditarMateriaDialog({
   const [formData, setFormData] = useState<CreateMateriaDto>({
     nombre: '',
     nivelEducativo: NivelEducativo.BASICA,
-    trimestreAplicable: TrimestreAplicable.TODOS,
+    tipoCalificacion: TipoCalificacion.CUANTITATIVA,
   });
 
   const esEdicion = !!materia;
@@ -58,13 +58,13 @@ export default function CrearEditarMateriaDialog({
       setFormData({
         nombre: materia.nombre,
         nivelEducativo: materia.nivelEducativo,
-        trimestreAplicable: materia.trimestreAplicable,
+        tipoCalificacion: materia.tipoCalificacion,
       });
     } else {
       setFormData({
         nombre: '',
         nivelEducativo: NivelEducativo.BASICA,
-        trimestreAplicable: TrimestreAplicable.TODOS,
+        tipoCalificacion: TipoCalificacion.CUANTITATIVA,
       });
     }
   }, [materia, open]);
@@ -156,13 +156,13 @@ export default function CrearEditarMateriaDialog({
               </div>
 
               <div className="space-y-2">
-                <Label>Trimestre aplicable</Label>
+                <Label>Tipo de calificación</Label>
                 <Select
-                  value={formData.trimestreAplicable}
-                  onValueChange={(value: TrimestreAplicable) =>
+                  value={formData.tipoCalificacion}
+                  onValueChange={(value: TipoCalificacion) =>
                     setFormData({
                       ...formData,
-                      trimestreAplicable: value,
+                      tipoCalificacion: value,
                     })
                   }
                 >
@@ -170,7 +170,7 @@ export default function CrearEditarMateriaDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(TrimestreAplicableLabels).map(
+                    {Object.entries(TipoCalificacionLabels).map(
                       ([key, label]) => (
                         <SelectItem key={key} value={key}>
                           {label}

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, Save, Edit2, Check, X, Plus, Trash2, Lock, AlertTriangle, Info, BookOpen } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/lib/components/ui/card';
+import { Loader2, Save, Edit2, Check, X, Plus, Trash2, Lock, AlertTriangle, Info, BookOpen, Pencil, FileText } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/lib/components/ui/card';
 import { Button } from '@/lib/components/ui/button';
 import { Input } from '@/lib/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/lib/components/ui/dialog';
@@ -16,6 +16,7 @@ import { ModalDetalleCalificacion } from './ModalDetalleCalificacion';
 import { EstadoInsumo } from '@/lib/types/calificaciones.types';
 import { calcularCualitativo, getColorCualitativo } from '@/lib/utils/calificaciones.utils';
 import { EstadoEstudiante, TrimestreEstado } from '@/lib/types';
+import { useReportes } from '@/lib/hooks/useReportes';
 
 interface TablaInsumosProps {
   materia_curso_id: string;
@@ -23,9 +24,11 @@ interface TablaInsumosProps {
   estudiantes: Array<{ id: string; nombres_completos: string, estado?: string }>;
   porcentaje: number;
   trimestreEstado?: TrimestreEstado;
+  materia_nombre?: string; // 🆕
+  trimestre_nombre?: string; // 🆕
 }
 
-export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porcentaje }: TablaInsumosProps) {
+export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porcentaje, trimestreEstado, materia_nombre = '', trimestre_nombre = '' }: TablaInsumosProps) {
   const {
     insumos,
     isLoading: loadingInsumos,
@@ -45,6 +48,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
   const [insumoAEliminar, setInsumoAEliminar] = useState<any | null>(null);
   const [insumoAPublicar, setInsumoAPublicar] = useState<any | null>(null);
   const [inicializado, setInicializado] = useState(false);
+  const { descargarReporteInsumos, descargando: descargandoReporte } = useReportes();
 
   const [modalDetalle, setModalDetalle] = useState<{
     open: boolean;
@@ -100,6 +104,15 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
     }
 
     createInsumo({ materia_curso_id, trimestre_id, nombre: `Insumo ${nuevoNumero}` });
+  };
+
+  const handleDescargarReporteInsumos = async () => {
+    await descargarReporteInsumos(
+      materia_curso_id,
+      materia_nombre,
+      trimestre_id,
+      trimestre_nombre
+    );
   };
 
   const calcularPonderado = (promedio: number) => {
@@ -312,29 +325,59 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
       <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-300">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-lg p-2">
-              <BookOpen className="w-5 h-5 text-gray-900" />
+            <div className="bg-gradient-to-br from-red-500 to-orange-600 rounded-full p-2.5">
+              <Pencil className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">
-                Calificaciones de Insumos
-              </h3>
-              <p className="text-sm text-gray-600">Ponderación: {porcentaje}%</p>
+              <CardTitle className="text-xl font-bold text-gray-900">
+                Aportes ({porcentaje}%)
+              </CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Gestiona los insumos y calificaciones del trimestre
+              </p>
             </div>
           </div>
-          <Button
-            onClick={handleCrearInsumo}
-            disabled={isCreating || insumos.length >= 9}
-            className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
-            size="sm"
-          >
-            {isCreating ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            ) : (
-              <Plus className="w-4 h-4 mr-2" />
+
+          <div className="flex items-center gap-3">
+            {/* 🆕 Botón de Reporte - Solo visible cuando trimestre FINALIZADO */}
+            {trimestreEstado === TrimestreEstado.FINALIZADO && (
+              <Button
+                onClick={handleDescargarReporteInsumos}
+                disabled={descargandoReporte}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer"
+              >
+                {descargandoReporte ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generando...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Descargar Reporte
+                  </>
+                )}
+              </Button>
             )}
-            Crear Insumo
-          </Button>
+
+            <Button
+              onClick={handleCrearInsumo}
+              disabled={isCreating || insumos.length >= 9}
+              className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-semibold cursor-pointer"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Crear Insumo
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
 

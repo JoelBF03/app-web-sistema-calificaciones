@@ -1,4 +1,3 @@
-// nextjs-frontend/app/(protected)/admin/periodos/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -14,7 +13,16 @@ import PeriodoCard from '@/lib/components/features/periodos/PeriodoCard';
 import CreatePeriodoWizard from '@/lib/components/features/periodos/wizard/CreatePeriodoWizard';
 
 export default function PeriodosPage() {
-  const { periodos, loading, fetchPeriodos, actualizarPeriodo, cambiarEstadoPeriodo } = usePeriodos();
+  const { 
+    periodos, 
+    loading, 
+    fetchPeriodos, 
+    actualizarPeriodo, 
+    cambiarEstadoPeriodo,
+    activarSupletorios,
+    cerrarSupletorios,
+    reabrirSupletorios
+  } = usePeriodos();
   const { actualizarTrimestre } = useTrimestres();
   const [showCreateWizard, setShowCreateWizard] = useState(false);
 
@@ -136,7 +144,7 @@ export default function PeriodosPage() {
           </div>
         )}
 
-        {/* Lista de Períodos - SIN CUADRO AZUL INFORMATIVO */}
+        {/* Lista de Períodos */}
         {sortedPeriodos.length > 0 ? (
           <div className="space-y-6">
             {sortedPeriodos.map((periodo) => (
@@ -146,6 +154,9 @@ export default function PeriodosPage() {
                 onUpdate={actualizarPeriodo}
                 onUpdateTrimestre={actualizarTrimestre}
                 onCambiarEstado={cambiarEstadoPeriodo}
+                onActivarSupletorios={activarSupletorios}
+                onCerrarSupletorios={cerrarSupletorios}
+                onReabrirSupletorios={reabrirSupletorios}
               />
             ))}
           </div>

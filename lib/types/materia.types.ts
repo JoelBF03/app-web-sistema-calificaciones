@@ -5,11 +5,9 @@ export enum NivelEducativo {
   GENERAL = 'GENERAL',
 }
 
-export enum TrimestreAplicable {
-  TODOS = 'TODOS',
-  PRIMERO = 'PRIMERO',
-  SEGUNDO = 'SEGUNDO',
-  TERCERO = 'TERCERO',
+export enum TipoCalificacion {
+  CUALITATIVA = 'CUALITATIVA',
+  CUANTITATIVA = 'CUANTITATIVA',
 }
 
 export enum EstadoMateria {
@@ -23,18 +21,16 @@ export const NivelEducativoLabels: Record<NivelEducativo, string> = {
   [NivelEducativo.GENERAL]: 'General (Todos los niveles)',
 };
 
-export const TrimestreAplicableLabels: Record<TrimestreAplicable, string> = {
-  [TrimestreAplicable.TODOS]: 'Todos los trimestres',
-  [TrimestreAplicable.PRIMERO]: 'Primer trimestre',
-  [TrimestreAplicable.SEGUNDO]: 'Segundo trimestre',
-  [TrimestreAplicable.TERCERO]: 'Tercer trimestre',
+export const TipoCalificacionLabels: Record<TipoCalificacion, string> = {
+  [TipoCalificacion.CUALITATIVA]: 'Cualitativa',
+  [TipoCalificacion.CUANTITATIVA]: 'Cuantitativa',
 };
 
 export interface Materia {
   id: string;
   nombre: string;
   nivelEducativo: NivelEducativo;
-  trimestreAplicable: TrimestreAplicable;
+  tipoCalificacion: TipoCalificacion;
   descripcion?: string;
   estado: EstadoMateria;
   createdAt: string;
@@ -44,14 +40,14 @@ export interface Materia {
 export interface CreateMateriaDto {
   nombre: string;
   nivelEducativo: NivelEducativo;
-  trimestreAplicable: TrimestreAplicable;
+  tipoCalificacion: TipoCalificacion;
   descripcion?: string;
 }
 
 export interface UpdateMateriaDto {
   nombre?: string;
   nivelEducativo?: NivelEducativo;
-  trimestreAplicable?: TrimestreAplicable;
+  tipoCalificacion?: TipoCalificacion;
   descripcion?: string;
 }
 

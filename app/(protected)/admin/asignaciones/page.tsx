@@ -10,7 +10,7 @@ import { useDocentes } from '@/lib/hooks/useDocentes';
 import { useMateriaCurso } from '@/lib/hooks/useMateriaCurso';
 
 import { NivelCurso, EspecialidadCurso } from '@/lib/types/curso.types';
-import { NivelEducativo, Materia, EstadoMateria } from '@/lib/types/materia.types';
+import { NivelEducativo, Materia, EstadoMateria, TipoCalificacion } from '@/lib/types/materia.types';
 import { MateriaCurso } from '@/lib/types/materia-curso.types';
 
 import { NivelSelector } from '@/lib/components/features/asignaciones/NivelSelector';
@@ -42,7 +42,7 @@ export default function AsignacionesPage() {
   const [modalAgregarMateria, setModalAgregarMateria] = useState(false);
   const [modalAsignarDocente, setModalAsignarDocente] = useState(false);
   const [materiaSeleccionada, setMateriaSeleccionada] = useState<Materia | null>(null);
-  
+
   // 🆕 Estado para MateriaCurso
   const [materiasCurso, setMateriasCurso] = useState<MateriaCurso[]>([]);
   const [loadingMateriaCurso, setLoadingMateriaCurso] = useState(true);
@@ -83,7 +83,7 @@ export default function AsignacionesPage() {
   };
 
   // 🆕 Filtrar MateriaCurso por cursos actuales
-  const materiasCursoFiltradas = materiasCurso.filter(mc => 
+  const materiasCursoFiltradas = materiasCurso.filter(mc =>
     cursosIds.includes(mc.curso_id)
   );
 
@@ -92,20 +92,22 @@ export default function AsignacionesPage() {
     materiasCursoFiltradas.map(mc => mc.materia_id)
   );
 
-  // 🆕 Para bachillerato: mostrar solo materias asignadas
-  // Para básica: mostrar BASICA + GENERAL
+  // 🆕 Para bachillerato: mostrar solo materias asignadas (Y NO CUALITATIVAS)
+  // Para básica: mostrar BASICA + GENERAL (Y NO CUALITATIVAS)
   const materiasFiltradas = esBasica
     ? materias.filter(
-        (materia) =>
-          materia.estado === EstadoMateria.ACTIVO &&
-          (materia.nivelEducativo === NivelEducativo.BASICA ||
-            materia.nivelEducativo === NivelEducativo.GENERAL)
-      )
+      (materia) =>
+        materia.estado === EstadoMateria.ACTIVO &&
+        materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA && // 🆕 FILTRO CRÍTICO
+        (materia.nivelEducativo === NivelEducativo.BASICA ||
+          materia.nivelEducativo === NivelEducativo.GENERAL)
+    )
     : materias.filter(
-        (materia) =>
-          materia.estado === EstadoMateria.ACTIVO &&
-          materiasYaAsignadas.has(materia.id) // Solo las asignadas
-      );
+      (materia) =>
+        materia.estado === EstadoMateria.ACTIVO &&
+        materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA && // 🆕 FILTRO CRÍTICO
+        materiasYaAsignadas.has(materia.id) // Solo las asignadas
+    );
 
   const handleNivelChange = (nivel: NivelCurso, especialidad?: EspecialidadCurso) => {
     setNivelSeleccionado({ nivel, especialidad });
@@ -114,12 +116,12 @@ export default function AsignacionesPage() {
   // 🆕 Calcular estadísticas reales
   const getEstadoAsignacion = (materia: Materia) => {
     const totalParalelos = cursosFiltrados.length;
-    
+
     // Contar cuántos cursos tienen esta materia asignada con docente
     const asignacionesMateria = materiasCursoFiltradas.filter(
       mc => mc.materia_id === materia.id
     );
-    
+
     const asignados = asignacionesMateria.filter(mc => mc.docente_id !== null).length;
     const pendientes = asignacionesMateria.length - asignados;
 

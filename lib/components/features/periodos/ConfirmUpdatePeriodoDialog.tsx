@@ -1,5 +1,3 @@
-// app/lib/components/admin/ConfirmUpdatePeriodoDialog.tsx
-// filepath: c:\Users\luisb\OneDrive\Escritorio\devScholarSystem\nextjs-frontend\app\lib\components\admin\ConfirmUpdatePeriodoDialog.tsx
 'use client';
 
 import {

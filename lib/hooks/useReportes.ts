@@ -100,10 +100,114 @@ export const useReportes = () => {
     }
   };
 
+  const descargarConcentradoCalificaciones = async (
+    curso_id: string,
+    curso_nombre: string,
+    trimestre_id: string,
+    trimestre_nombre: string
+  ) => {
+    try {
+      setDescargando(true);
+      toast.loading('Generando concentrado de calificaciones...', {
+        id: 'concentrado-calificaciones',
+      });
+
+      const blob = await reportesService.descargarConcentradoCalificaciones(
+        curso_id,
+        trimestre_id
+      );
+
+      const fecha = new Date().toISOString().split('T')[0];
+      const nombreArchivo = `Concentrado_${curso_nombre}_${trimestre_nombre}_${fecha}.pdf`;
+      reportesService.descargarBlob(blob, nombreArchivo);
+
+      toast.success('Concentrado descargado exitosamente', {
+        id: 'concentrado-calificaciones',
+      });
+    } catch (error: any) {
+      console.error('Error al descargar concentrado:', error);
+      toast.error(
+        error.response?.data?.message || 'Error al descargar el concentrado',
+        { id: 'concentrado-calificaciones' }
+      );
+    } finally {
+      setDescargando(false);
+    }
+  };
+
+  const descargarReporteInsumos = async (
+    materia_curso_id: string,
+    materia_nombre: string,
+    trimestre_id: string,
+    trimestre_nombre: string
+  ) => {
+    try {
+      setDescargando(true);
+      toast.loading('Generando reporte de aportes...', { id: 'reporte-insumos' });
+
+      const blob = await reportesService.descargarReporteInsumos(
+        materia_curso_id,
+        trimestre_id
+      );
+
+      const fecha = new Date().toISOString().split('T')[0];
+      const nombreArchivo = `Aportes_${materia_nombre}_${trimestre_nombre}_${fecha}.pdf`;
+      reportesService.descargarBlob(blob, nombreArchivo);
+
+      toast.success('Reporte de aportes descargado exitosamente', { id: 'reporte-insumos' });
+    } catch (error: any) {
+      console.error('Error al descargar reporte de insumos:', error);
+      toast.error(
+        error.response?.data?.message || 'Error al descargar el reporte',
+        { id: 'reporte-insumos' }
+      );
+    } finally {
+      setDescargando(false);
+    }
+  };
+
+  const descargarRendimientoAnual = async (
+    materia_curso_id: string,
+    materia_nombre: string,
+    periodo_lectivo_id: string,
+    periodo_nombre: string
+  ) => {
+    try {
+      setDescargando(true);
+      toast.loading('Generando reporte de rendimiento anual...', {
+        id: 'rendimiento-anual'
+      });
+
+      const blob = await reportesService.descargarRendimientoAnual(
+        materia_curso_id,
+        periodo_lectivo_id
+      );
+
+      const fecha = new Date().toISOString().split('T')[0];
+      const nombreArchivo = `Rendimiento_Anual_${materia_nombre}_${periodo_nombre}_${fecha}.pdf`;
+      reportesService.descargarBlob(blob, nombreArchivo);
+
+      toast.success('Reporte de rendimiento anual descargado exitosamente', {
+        id: 'rendimiento-anual'
+      });
+    } catch (error: any) {
+      console.error('Error al descargar reporte de rendimiento anual:', error);
+      toast.error(
+        error.response?.data?.message || 'Error al descargar el reporte',
+        { id: 'rendimiento-anual' }
+      );
+    } finally {
+      setDescargando(false);
+    }
+  };
+
   return {
     descargando,
     descargarLibretaIndividual,
     descargarLibretasCurso,
     descargarReporteMateria,
+    descargarConcentradoCalificaciones,
+    descargarReporteInsumos,
+    descargarRendimientoAnual,
   };
 };

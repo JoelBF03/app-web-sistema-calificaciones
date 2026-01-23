@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { calcularCualitativo, getColorCualitativo } from '@/lib/utils/calificaciones.utils';
 import { EstadoEstudiante, TrimestreEstado } from '@/lib/types';
 import { Alert, AlertDescription } from '../../ui/alert';
+import { calificacionExamenService } from '@/lib/services/calificacion-examen';
 
 interface TablaExamenProps {
   materia_curso_id: string;
@@ -232,7 +233,10 @@ export function TablaExamen({ materia_curso_id, trimestre_id, estudiantes, porce
           estudiante_nombre={modalDetalle.estudiante_nombre}
           open={modalDetalle.open}
           onClose={() => setModalDetalle(null)}
-          onSuccess={() => { }}
+          onSuccess={() => {
+            // ✅ Sin reload - El hook maneja el refetch automáticamente mediante invalidateQueries
+            setModalDetalle(null);
+          }}
           trimestreEstado={modalDetalle.trimestreEstado}
         />
       )}

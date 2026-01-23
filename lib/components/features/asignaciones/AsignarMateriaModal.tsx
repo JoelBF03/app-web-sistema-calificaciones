@@ -9,7 +9,7 @@ import { Select, SelectItem, SelectTrigger, SelectContent, SelectValue } from '@
 import { useMaterias } from '@/lib/hooks/useMaterias';
 import { useMateriaCurso } from '@/lib/hooks/useMateriaCurso';
 import { Curso } from '@/lib/types/curso.types';
-import { NivelEducativo } from '@/lib/types/materia.types';
+import { EstadoMateria, NivelEducativo, TipoCalificacion } from '@/lib/types/materia.types';
 import { toast } from 'sonner';
 
 interface Props {
@@ -34,11 +34,12 @@ export function AsignarMateriaModal({
 
   const [materiaSeleccionada, setMateriaSeleccionada] = useState<string>('');
 
-  // 🆕 Filtrar materias disponibles (que no estén ya asignadas)
+  // 🆕 Filtrar materias disponibles (NO CUALITATIVAS, NO YA ASIGNADAS)
   const materiasDisponibles = materias.filter(
     (materia) =>
       nivelEducativo.includes(materia.nivelEducativo) &&
-      materia.estado === 'ACTIVO' &&
+      materia.estado === EstadoMateria.ACTIVO &&
+      materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA && // 🆕 FILTRO CRÍTICO
       !materiasYaAsignadas.has(materia.id) // Excluir ya asignadas
   );
 

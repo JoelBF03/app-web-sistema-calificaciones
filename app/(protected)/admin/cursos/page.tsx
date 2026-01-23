@@ -29,9 +29,10 @@ import {
 } from '@/lib/types/curso.types';
 
 import { Docente } from '@/lib/types/docente.types';
-import DocenteDetailsModal from '@/lib/components/features/docentes/DocenteDetailsModal'; 
+import DocenteDetailsModal from '@/lib/components/features/docentes/DocenteDetailsModal';
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/lib/components/ui/card';
+import MateriasDelCursoModal from '@/lib/components/features/cursos/MateriasDelCursoModal';
 
 type ViewMode = 'cards' | 'compact';
 
@@ -136,8 +137,8 @@ export default function CursosPage() {
   };
 
   const handleViewDocente = (docente: Curso['docente']) => {
-    if (!docente) return;    
-      setSelectedDocente(docente);
+    if (!docente) return;
+    setSelectedDocente(docente);
   };
 
   const handleViewMaterias = (curso: Curso) => {
@@ -331,6 +332,15 @@ export default function CursosPage() {
           }, 100);
         }}
         onSave={handleSaveEdit}
+      />
+
+      <MateriasDelCursoModal
+        curso={selectedCurso}
+        isOpen={showMateriasModal}
+        onClose={() => {
+          setShowMateriasModal(false);
+          setSelectedCurso(null);
+        }}
       />
     </div>
   );

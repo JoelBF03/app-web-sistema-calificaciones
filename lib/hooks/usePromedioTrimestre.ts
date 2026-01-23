@@ -1,19 +1,15 @@
+// nextjs-frontend/lib/hooks/usePromedioTrimestre.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { promedioTrimestreService } from '../services/promedio-trimestre';
 import { toast } from 'sonner';
 
-export function usePromedioTrimestre(materia_curso_id_o_curso_id: string, trimestre_id: string) {
+export function usePromedioTrimestre(materia_curso_id: string, trimestre_id: string) {
   const queryClient = useQueryClient();
-  const esCurso = materia_curso_id_o_curso_id && materia_curso_id_o_curso_id.length > 0;
 
   const { data: promedios, isLoading, error } = useQuery({
-    queryKey: ['promedio-trimestre', materia_curso_id_o_curso_id, trimestre_id],
-    queryFn: () => {
-      // Intentar primero por curso (para tutoría), si falla usar materia-curso
-      return promedioTrimestreService.getByCursoYTrimestre(materia_curso_id_o_curso_id, trimestre_id)
-        .catch(() => promedioTrimestreService.getByMateriaCursoYTrimestre(materia_curso_id_o_curso_id, trimestre_id));
-    },
-    enabled: !!materia_curso_id_o_curso_id && !!trimestre_id,
+    queryKey: ['promedio-trimestre', materia_curso_id, trimestre_id],
+    queryFn: () => promedioTrimestreService.getByMateriaCursoYTrimestre(materia_curso_id, trimestre_id),
+    enabled: !!materia_curso_id && !!trimestre_id,
   });
 
   const generarMutation = useMutation({
@@ -35,7 +31,7 @@ export function usePromedioTrimestre(materia_curso_id_o_curso_id: string, trimes
     mutationFn: ({ id, observaciones }: { id: string; observaciones: string }) => 
       promedioTrimestreService.update(id, observaciones),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['promedio-trimestre', materia_curso_id_o_curso_id, trimestre_id] });
+      queryClient.invalidateQueries({ queryKey: ['promedio-trimestre', materia_curso_id, trimestre_id] });
       toast.success('Observaciones actualizadas');
     },
     onError: (error: any) => {
@@ -46,7 +42,7 @@ export function usePromedioTrimestre(materia_curso_id_o_curso_id: string, trimes
   const recalcularMutation = useMutation({
     mutationFn: promedioTrimestreService.recalcular,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['promedio-trimestre', materia_curso_id_o_curso_id, trimestre_id] });
+      queryClient.invalidateQueries({ queryKey: ['promedio-trimestre', materia_curso_id, trimestre_id] });
       toast.success('Promedio recalculado correctamente');
     },
     onError: (error: any) => {

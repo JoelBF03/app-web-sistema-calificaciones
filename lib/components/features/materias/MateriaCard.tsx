@@ -4,7 +4,7 @@ import {
   EstadoMateria,
   Materia,
   NivelEducativoLabels,
-  TrimestreAplicableLabels
+  TipoCalificacionLabels
 } from '@/lib/types/materia.types';
 import { Card, CardContent } from '@/lib/components/ui/card';
 import { Button } from '@/lib/components/ui/button';
@@ -91,8 +91,8 @@ export default function MateriaCard({
                   {NivelEducativoLabels[materia.nivelEducativo]}
                 </p>
                 <p>
-                  <span className="font-medium text-gray-700">Trimestre:</span>{' '}
-                  {TrimestreAplicableLabels[materia.trimestreAplicable]}
+                  <span className="font-medium text-gray-700">Tipo de calificación:</span>{' '}
+                  {TipoCalificacionLabels[materia.tipoCalificacion]}
                 </p>
               </div>
             </div>

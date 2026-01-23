@@ -20,40 +20,52 @@ import {
     GraduationCap,
     CalendarCheck,
     CalendarX,
-    ChevronDown,
     Clock,
     Power,
     CheckCircle2,
     AlertCircle,
-    Percent
+    Percent,
+    BookCheck,
+    Lock,
+    RotateCcw,
+    AlertTriangle
 } from 'lucide-react';
-import { PeriodoLectivo, EstadoPeriodo, Trimestre, TrimestreEstado } from '@/lib/types/periodo.types';
+import { PeriodoLectivo, EstadoPeriodo, Trimestre, TrimestreEstado, EstadoSupletorio } from '@/lib/types/periodo.types';
 import { TipoEvaluacion } from '@/lib/types/tipos-evaluacion.types';
-import { trimestresService } from '@/lib/services/periodos';
+import { periodosService, trimestresService } from '@/lib/services/periodos';
 import { tiposEvaluacionService } from '@/lib/services/tipos-evaluacion';
 import { toast } from 'sonner';
 import TrimestreCard from './trimestres/TrimestreCard';
 import ConfirmUpdatePeriodoDialog from './ConfirmUpdatePeriodoDialog';
 import ConfirmCambiarEstadoDialog from './ConfirmCambiarEstadoDialog';
 import EditPorcentajesDialog from './EditPorcentajesDialog';
+import ConfirmUpdateSupletoriosDialog from './ConfirmUpdateSupletoriosDialog';
 
 interface PeriodoCardProps {
     periodo: PeriodoLectivo;
     onUpdate: (id: string, data: any) => void;
     onUpdateTrimestre: (trimestreId: string, data: any) => void;
     onCambiarEstado: (id: string) => void;
+    onActivarSupletorios?: (id: string) => void;
+    onCerrarSupletorios?: (id: string) => void;
+    onReabrirSupletorios?: (id: string) => void;
 }
 
 export default function PeriodoCard({
     periodo,
     onUpdate,
     onUpdateTrimestre,
-    onCambiarEstado
+    onCambiarEstado,
+    onActivarSupletorios,
+    onCerrarSupletorios,
+    onReabrirSupletorios
 }: PeriodoCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [showCambiarEstadoDialog, setShowCambiarEstadoDialog] = useState(false);
     const [showEditPorcentajesDialog, setShowEditPorcentajesDialog] = useState(false);
+    const [showConfirmSupletoriosDialog, setShowConfirmSupletoriosDialog] = useState(false);
+    const [nuevoEstadoSupletorio, setNuevoEstadoSupletorio] = useState<EstadoSupletorio | null>(null);
     const [trimestres, setTrimestres] = useState<Trimestre[]>([]);
     const [tiposEvaluacion, setTiposEvaluacion] = useState<TipoEvaluacion[]>([]);
     const [loadingTrimestres, setLoadingTrimestres] = useState(false);
@@ -94,11 +106,9 @@ export default function PeriodoCard({
 
     const getProgressPercentage = () => {
         if (trimestres.length === 0) return 0;
-
         const trimestresFinalizados = trimestres.filter(
             (t) => t.estado === TrimestreEstado.FINALIZADO
         ).length;
-
         return Math.round((trimestresFinalizados / trimestres.length) * 100);
     };
 
@@ -137,7 +147,6 @@ export default function PeriodoCard({
         }
     };
 
-    // Cargar trimestres al montar el componente para calcular el progreso correcto
     useEffect(() => {
         loadTrimestres();
     }, [periodo.id]);
@@ -178,10 +187,8 @@ export default function PeriodoCard({
         try {
             const changes = getChanges();
             await onUpdate(periodo.id, changes);
-
             setShowConfirmDialog(false);
             setIsEditing(false);
-
             if (accordionValue === 'trimestres') {
                 setTimeout(() => loadTrimestres(), 500);
             }
@@ -189,23 +196,6 @@ export default function PeriodoCard({
             console.error('Error updating periodo:', error);
             toast.error(error.response?.data?.message || 'Error al actualizar el período');
             setShowConfirmDialog(false);
-        }
-    };
-
-    const handleCambiarEstado = () => {
-        setShowCambiarEstadoDialog(true);
-    };
-
-    const handleConfirmCambiarEstado = async () => {
-        try {
-            await onCambiarEstado(periodo.id);
-            setShowCambiarEstadoDialog(false);
-
-            setTimeout(() => loadTrimestres(), 500);
-        } catch (error: any) {
-            console.error('Error changing estado:', error);
-            toast.error(error.response?.data?.message || 'Error al cambiar estado');
-            setShowCambiarEstadoDialog(false);
         }
     };
 
@@ -218,8 +208,57 @@ export default function PeriodoCard({
         setIsEditing(false);
     };
 
+    const handleSolicitarCambioSupletorio = (nuevoEstado: EstadoSupletorio) => {
+        setNuevoEstadoSupletorio(nuevoEstado);
+        setShowConfirmSupletoriosDialog(true);
+    };
+
+    const handleConfirmCambioSupletorio = async () => {
+        if (!nuevoEstadoSupletorio) return;
+
+        try {
+            switch (nuevoEstadoSupletorio) {
+                case EstadoSupletorio.ACTIVADO:
+                    if (periodo.estado_supletorio === EstadoSupletorio.PENDIENTE && onActivarSupletorios) {
+                        await onActivarSupletorios(periodo.id);
+                    } else if (periodo.estado_supletorio === EstadoSupletorio.CERRADO && onReabrirSupletorios) {
+                        await onReabrirSupletorios(periodo.id);
+                    }
+                    break;
+                case EstadoSupletorio.CERRADO:
+                    if (onCerrarSupletorios) {
+                        await onCerrarSupletorios(periodo.id);
+                    }
+                    break;
+                case EstadoSupletorio.PENDIENTE:
+                    if (periodo.estado_supletorio === EstadoSupletorio.ACTIVADO) {
+                        // Llamar al nuevo endpoint que elimina datos
+                        await periodosService.regresarSupletoriosPendiente(periodo.id);
+                        toast.success('Supletorios regresados a PENDIENTE. Se eliminaron las calificaciones registradas.');
+                    }
+                    break;
+            }
+
+            setShowConfirmSupletoriosDialog(false);
+            setNuevoEstadoSupletorio(null);
+            // Recargar datos
+            window.location.reload();
+        } catch (error: any) {
+            console.error('Error changing supletorio state:', error);
+            toast.error(error.response?.data?.message || 'Error al cambiar el estado de supletorios');
+        }
+    };
+
     const isActive = periodo.estado === EstadoPeriodo.ACTIVO;
+    const finalizado = periodo.estado === EstadoPeriodo.FINALIZADO;
+
+    const supletoriosPendientes = periodo.estado_supletorio === EstadoSupletorio.PENDIENTE;
+    const supletoriosActivos = periodo.estado_supletorio === EstadoSupletorio.ACTIVADO;
+    const supletoriosCerrados = periodo.estado_supletorio === EstadoSupletorio.CERRADO;
+
     const progressValue = getProgressPercentage();
+    const todosTrimestresFinalizados = trimestres.length === 3 &&
+        trimestres.every(t => t.estado === TrimestreEstado.FINALIZADO);
 
     const getEvaluacionIcon = (nombre: string) => {
         if (nombre.includes('INSUMO')) return FileText;
@@ -228,92 +267,64 @@ export default function PeriodoCard({
         return Percent;
     };
 
+    const getHeaderColor = () => {
+        if (finalizado) return 'from-gray-500 to-slate-500';
+        if (supletoriosActivos) return 'from-orange-500 to-amber-500';
+        if (supletoriosCerrados) return 'from-amber-600 to-yellow-600';
+        return 'from-green-500 to-emerald-500';
+    };
+
     return (
         <>
             <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2">
-                {/* Header con gradiente mejorado */}
-                <CardHeader className={`pb-4 ${isActive ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-gray-500 to-slate-500'}`}>
+                <CardHeader className={`pb-4 bg-gradient-to-r ${getHeaderColor()}`}>
                     <div className="flex items-start justify-between">
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <CalendarCheck className="h-6 w-6 text-white" />
-                                {!isEditing ? (
-                                    <CardTitle className="text-white text-2xl font-bold">
-                                        {periodo.nombre}
-                                    </CardTitle>
-                                ) : (
-                                    <Input
-                                        value={editData.nombre}
-                                        onChange={(e) => setEditData({ ...editData, nombre: e.target.value })}
-                                        className="flex-1 bg-white text-gray-900 font-bold text-xl border-2 border-white/50"
-                                        placeholder="Nombre del período"
-                                    />
-                                )}
+                                <CardTitle className="text-white text-2xl font-bold">
+                                    {periodo.nombre}
+                                </CardTitle>
                             </div>
 
                             <div className="flex items-center gap-4 text-white/90 text-sm">
-                                {!isEditing ? (
-                                    <>
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="h-4 w-4" />
-                                            <span className="font-medium">
-                                                {formatDateForDisplay(periodo.fechaInicio)} - {formatDateForDisplay(periodo.fechaFin)}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Clock className="h-4 w-4" />
-                                            <span>{getDuration()}</span>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="grid grid-cols-2 gap-4 flex-1">
-                                        <div>
-                                            <Label className="text-white/80 text-xs mb-1">Fecha Inicio</Label>
-                                            <Input
-                                                type="date"
-                                                value={formatDateForInput(editData.fechaInicio)}
-                                                onChange={(e) => setEditData({ ...editData, fechaInicio: e.target.value })}
-                                                className="bg-white border-2 border-white/50"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label className="text-white/80 text-xs mb-1">Fecha Fin</Label>
-                                            <Input
-                                                type="date"
-                                                value={formatDateForInput(editData.fechaFin)}
-                                                onChange={(e) => setEditData({ ...editData, fechaFin: e.target.value })}
-                                                className="bg-white border-2 border-white/50"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4" />
+                                    <span className="font-medium">
+                                        {formatDateForDisplay(periodo.fechaInicio)} - {formatDateForDisplay(periodo.fechaFin)}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="h-4 w-4" />
+                                    <span>{getDuration()}</span>
+                                </div>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {!isEditing ? (
-                                <>
-                                    <Badge className={`${isActive ? 'bg-white text-green-700 border-white' : 'bg-white text-gray-700 border-white'} border-2 px-3 py-1`}>
-                                        {isActive ? (
-                                            <><CheckCircle2 className="h-3 w-3 mr-1" /> Activo</>
-                                        ) : (
-                                            <><CalendarX className="h-3 w-3 mr-1" /> Finalizado</>
-                                        )}
-                                    </Badge>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setIsEditing(true)}
-                                        className="text-white hover:bg-white/20 h-9 w-9 p-0"
-                                    >
-                                        <Edit2 className="h-4 w-4" />
-                                    </Button>
-                                </>
-                            ) : null}
+                            <Badge className={`${finalizado ? 'bg-white text-gray-700' :
+                                supletoriosActivos ? 'bg-white text-orange-700' :
+                                    supletoriosCerrados ? 'bg-white text-amber-700' :
+                                        'bg-white text-green-700'
+                                } border-2 border-white px-3 py-1`}>
+                                {finalizado && <><CalendarX className="h-3 w-3 mr-1" /> Finalizado</>}
+                                {!finalizado && supletoriosActivos && <><BookCheck className="h-3 w-3 mr-1" /> Supletorios Activos</>}
+                                {!finalizado && supletoriosCerrados && <><Lock className="h-3 w-3 mr-1" /> Supletorios Cerrados</>}
+                                {!finalizado && supletoriosPendientes && <><CheckCircle2 className="h-3 w-3 mr-1" /> Activo</>}
+                            </Badge>
+                            {!finalizado && !isEditing && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setIsEditing(true)}
+                                    className="text-white hover:bg-white/20 h-9 w-9 p-0"
+                                >
+                                    <Edit2 className="h-4 w-4" />
+                                </Button>
+                            )}
                         </div>
                     </div>
 
-                    {/* Barra de progreso mejorada */}
                     {!isEditing && (
                         <div className="mt-4">
                             <div className="flex items-center justify-between text-white/90 text-sm mb-2">
@@ -334,56 +345,219 @@ export default function PeriodoCard({
                             </div>
                         </div>
                     )}
+                </CardHeader>
 
-                    {/* Botones de acción en modo edición */}
-                    {isEditing && (
-                        <div className="mt-6 space-y-3">
-                            {/* Botones principales de edición */}
-                            <div className="flex gap-2">
+                {isEditing && (
+                    <CardContent className="p-6 space-y-6">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="p-2 bg-blue-100 rounded-lg">
+                                    <Edit className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <h3 className="font-semibold text-lg text-gray-900">Datos del Período</h3>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div>
+                                    <Label className="text-gray-700 font-medium">Nombre del Período</Label>
+                                    <Input
+                                        value={editData.nombre}
+                                        onChange={(e) => setEditData({ ...editData, nombre: e.target.value })}
+                                        className="mt-1 border-2 border-gray-300 focus:border-blue-500"
+                                        placeholder="Ej: 2025-2026"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label className="text-gray-700 font-medium">Fecha de Inicio</Label>
+                                        <Input
+                                            type="date"
+                                            value={formatDateForInput(editData.fechaInicio)}
+                                            onChange={(e) => setEditData({ ...editData, fechaInicio: e.target.value })}
+                                            className="mt-1 border-2 border-gray-300 focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label className="text-gray-700 font-medium">Fecha de Fin</Label>
+                                        <Input
+                                            type="date"
+                                            value={formatDateForInput(editData.fechaFin)}
+                                            onChange={(e) => setEditData({ ...editData, fechaFin: e.target.value })}
+                                            className="mt-1 border-2 border-gray-300 focus:border-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 pt-2">
                                 <Button
                                     variant="outline"
                                     onClick={handleCancel}
-                                    className="flex-1 bg-white/10 text-white border-2 border-white/30 hover:bg-white/20 hover:border-white/50"
+                                    className="border-2 border-gray-300 hover:bg-gray-50"
                                 >
                                     <X className="mr-2 h-4 w-4" />
                                     Cancelar
                                 </Button>
                                 <Button
                                     onClick={handleSave}
-                                    className="flex-1 bg-white text-gray-900 hover:bg-white/90 font-semibold border-2 border-white shadow-lg"
+                                    className="bg-blue-600 hover:bg-blue-700"
                                 >
                                     <Save className="mr-2 h-4 w-4" />
-                                    Guardar
+                                    Guardar Cambios
                                 </Button>
                             </div>
+                        </div>
 
-                            {/* Solo mostrar opción de finalizar si está ACTIVO */}
-                            {isActive && (
-                                <>
-                                    <Separator className="bg-white/20" />
-                                    <Button
-                                        onClick={handleCambiarEstado}
-                                        variant="destructive"
-                                        className="w-full bg-red-600 hover:bg-red-700 border-2 border-red-400 text-white font-semibold shadow-lg"
-                                    >
-                                        <Power className="mr-2 h-4 w-4" />
-                                        Finalizar Período Lectivo
-                                    </Button>
-                                    <p className="text-white/70 text-xs text-center -mt-2">
-                                        Esta acción es irreversible. Se finalizarán matrículas y actualizarán estados.
-                                    </p>
-                                </>
+                        <Separator />
+
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <div className="p-2 bg-purple-100 rounded-lg">
+                                    <Power className="h-5 w-5 text-purple-600" />
+                                </div>
+                                <h3 className="font-semibold text-lg text-gray-900">Gestión de Estado del Período</h3>
+                            </div>
+
+                            {isActive && supletoriosPendientes && (
+                                <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+                                    <div className="flex items-start gap-3 mb-4">
+                                        <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-green-900 mb-1">Período Activo</h4>
+                                            <p className="text-sm text-green-700">
+                                                El período lectivo está activo. Los docentes pueden calificar a los estudiantes.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {todosTrimestresFinalizados ? (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2 text-sm text-green-800 bg-green-100 p-3 rounded border border-green-300">
+                                                <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                                                <span className="font-medium">Los 3 trimestres están finalizados</span>
+                                            </div>
+
+                                            <p className="text-sm text-gray-700 font-medium">Opciones disponibles:</p>
+
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {onActivarSupletorios && (
+                                                    <Button
+                                                        onClick={() => handleSolicitarCambioSupletorio(EstadoSupletorio.ACTIVADO)}
+                                                        className="bg-orange-500 hover:bg-orange-600 text-white"
+                                                    >
+                                                        <BookCheck className="mr-2 h-4 w-4" />
+                                                        Activar Supletorios
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    onClick={() => setShowCambiarEstadoDialog(true)}
+                                                    variant="destructive"
+                                                >
+                                                    <Power className="mr-2 h-4 w-4" />
+                                                    Finalizar Período
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 p-3 rounded border border-amber-300">
+                                            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                            <span>
+                                                Debes finalizar los 3 trimestres antes de activar supletorios o finalizar el período.
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {isActive && supletoriosActivos && (
+                                <div className="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">
+                                    <div className="flex items-start gap-3 mb-4">
+                                        <BookCheck className="h-5 w-5 text-orange-600 mt-0.5" />
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-orange-900 mb-1">Supletorios Activos</h4>
+                                            <p className="text-sm text-orange-700">
+                                                Los docentes pueden calificar a los estudiantes que necesitan rendir exámenes supletorios.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <Button
+                                            onClick={() => handleSolicitarCambioSupletorio(EstadoSupletorio.PENDIENTE)}
+                                            variant="outline"
+                                            className="border-2 border-red-500 text-red-700 hover:bg-red-50"
+                                        >
+                                            <RotateCcw className="mr-2 h-4 w-4" />
+                                            Regresar a Pendiente
+                                        </Button>
+                                        {onCerrarSupletorios && (
+                                            <Button
+                                                onClick={() => handleSolicitarCambioSupletorio(EstadoSupletorio.CERRADO)}
+                                                className="bg-amber-600 hover:bg-amber-700 text-white"
+                                            >
+                                                <Lock className="mr-2 h-4 w-4" />
+                                                Cerrar Supletorios
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {isActive && supletoriosCerrados && (
+                                <div className="border-2 border-amber-200 rounded-lg p-4 bg-amber-50">
+                                    <div className="flex items-start gap-3 mb-4">
+                                        <Lock className="h-5 w-5 text-amber-600 mt-0.5" />
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-amber-900 mb-1">Supletorios Cerrados</h4>
+                                            <p className="text-sm text-amber-700">
+                                                El período de supletorios ha finalizado. Puedes finalizar el período o reabrirlos si es necesario.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {onReabrirSupletorios && (
+                                            <Button
+                                                onClick={() => handleSolicitarCambioSupletorio(EstadoSupletorio.ACTIVADO)}
+                                                variant="outline"
+                                                className="border-2 border-blue-500 text-blue-700 hover:bg-blue-50"
+                                            >
+                                                <RotateCcw className="mr-2 h-4 w-4" />
+                                                Reabrir Supletorios
+                                            </Button>
+                                        )}
+                                        <Button
+                                            onClick={() => setShowCambiarEstadoDialog(true)}
+                                            variant="destructive"
+                                        >
+                                            <Power className="mr-2 h-4 w-4" />
+                                            Finalizar Período
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {finalizado && (
+                                <div className="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
+                                    <div className="flex items-start gap-3">
+                                        <CalendarX className="h-5 w-5 text-gray-600 mt-0.5" />
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-gray-900 mb-1">Período Finalizado</h4>
+                                            <p className="text-sm text-gray-700">
+                                                Este período ha sido finalizado y está archivado. No se pueden realizar modificaciones.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
-                    )}
+                    </CardContent>
+                )}
 
-                </CardHeader>
-
-                {/* Contenido - Solo visible si NO está editando */}
                 {!isEditing && (
                     <CardContent className="p-0">
                         <Accordion type="single" collapsible value={accordionValue} onValueChange={handleAccordionChange}>
-                            {/* Trimestres */}
                             <AccordionItem value="trimestres" className="border-none">
                                 <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 transition-colors">
                                     <div className="flex items-center gap-3">
@@ -429,11 +603,7 @@ export default function PeriodoCard({
 
                             <Separator />
 
-                            {/* Tipos de Evaluación */}
-
-
                             <AccordionItem value="evaluacion" className="border-none">
-                                {/* Wrapper personalizado para el header con botón */}
                                 <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors border-b">
                                     <AccordionTrigger className="flex-1 py-0 hover:no-underline">
                                         <div className="flex items-center gap-3">
@@ -451,7 +621,6 @@ export default function PeriodoCard({
                                         </div>
                                     </AccordionTrigger>
 
-                                    {/* Botón de editar FUERA del AccordionTrigger */}
                                     {tiposEvaluacion.length > 0 && (
                                         <Button
                                             variant="ghost"
@@ -533,7 +702,7 @@ export default function PeriodoCard({
             <ConfirmCambiarEstadoDialog
                 isOpen={showCambiarEstadoDialog}
                 onClose={() => setShowCambiarEstadoDialog(false)}
-                onConfirm={handleConfirmCambiarEstado}
+                onConfirm={() => onCambiarEstado(periodo.id)}
                 periodo={periodo}
                 trimestres={trimestres}
             />
@@ -547,6 +716,19 @@ export default function PeriodoCard({
                     loadTiposEvaluacion();
                 }}
             />
+
+            {showConfirmSupletoriosDialog && nuevoEstadoSupletorio && (
+                <ConfirmUpdateSupletoriosDialog
+                    isOpen={showConfirmSupletoriosDialog}
+                    onClose={() => {
+                        setShowConfirmSupletoriosDialog(false);
+                        setNuevoEstadoSupletorio(null);
+                    }}
+                    onConfirm={handleConfirmCambioSupletorio}
+                    periodo={periodo}
+                    nuevoEstado={nuevoEstadoSupletorio}
+                />
+            )}
         </>
     );
 }

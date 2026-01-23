@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { EstadoEstudiante, Estudiante } from '@/lib/types/estudiante.types';
-import { X, User, Users, UserCheck, History, Edit, UserX } from 'lucide-react';
+import { X, User, Users, UserCheck, History, Edit, UserX, Download } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
 import { Card } from '@/lib/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/lib/components/ui/tabs';
@@ -8,6 +8,8 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { EspecialidadCurso } from '@/lib/types';
 import { EstadoBadge } from './badges/EstadoBadge';
+import { reportesService } from '@/lib/services/reportes.services';
+import { toast } from 'sonner';
 
 interface ModalDetallesEstudianteProps {
   estudiante: Estudiante;
@@ -23,6 +25,8 @@ export function ModalDetallesEstudiante({
   onRetirar,
 }: ModalDetallesEstudianteProps) {
   const [activeTab, setActiveTab] = useState('datos-personales');
+  const [descargando, setDescargando] = useState<string | null>(null);
+
 
   const formatearFecha = (fecha?: string) => {
     if (!fecha) return 'No registrado';
@@ -43,6 +47,19 @@ export function ModalDetallesEstudiante({
       edad--;
     }
     return edad;
+  };
+
+  const handleDescargarLibreta = async (matriculaId: string, periodoNombre: string) => {
+    try {
+      setDescargando(matriculaId);
+      await reportesService.descargarLibretaHistorica(matriculaId);
+      toast.success(`Libreta de ${periodoNombre} descargada exitosamente`);
+    } catch (error) {
+      console.error('Error al descargar libreta:', error);
+      toast.error('Error al descargar la libreta. Intente nuevamente.');
+    } finally {
+      setDescargando(null);
+    }
   };
 
   return (
@@ -139,9 +156,9 @@ export function ModalDetallesEstudiante({
                   <div className="flex items-center gap-2">
                     <EstadoBadge estado={estudiante.estado} />
                     <span className={`text-sm font-semibold ${estudiante.estado === EstadoEstudiante.ACTIVO ? 'text-green-700' :
-                        estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL ? 'text-gray-700' :
-                          estudiante.estado === EstadoEstudiante.RETIRADO ? 'text-red-700' :
-                            'text-gray-700'
+                      estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL ? 'text-gray-700' :
+                        estudiante.estado === EstadoEstudiante.RETIRADO ? 'text-red-700' :
+                          'text-gray-700'
                       }`}>
                       {estudiante.estado === EstadoEstudiante.ACTIVO && 'Activo'}
                       {estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL && 'Inactivo Temporal'}
@@ -294,8 +311,8 @@ export function ModalDetallesEstudiante({
                         <div
                           key={matricula.id}
                           className={`p-4 border rounded-lg ${matricula.estado === 'ACTIVO'
-                              ? 'bg-green-50 border-green-200'
-                              : 'bg-gray-50 border-gray-200'
+                            ? 'bg-green-50 border-green-200'
+                            : 'bg-gray-50 border-gray-200'
                             }`}
                         >
                           <div className="flex items-start justify-between">
@@ -315,12 +332,35 @@ export function ModalDetallesEstudiante({
                             </div>
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${matricula.estado === 'ACTIVO'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-gray-100 text-gray-800'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
                                 }`}
                             >
                               {matricula.estado}
                             </span>
+                            {/* 🆕 Botón de descarga */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDescargarLibreta(
+                                matricula.id,
+                                matricula.periodo_lectivo?.nombre || 'Período'
+                              )}
+                              disabled={descargando === matricula.id}
+                              className="gap-2 hover:bg-purple-50 hover:border-purple-300"
+                            >
+                              {descargando === matricula.id ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                                  Descargando...
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="w-4 h-4" />
+                                  Libreta
+                                </>
+                              )}
+                            </Button>
                           </div>
                         </div>
                       ))}

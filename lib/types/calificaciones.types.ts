@@ -7,11 +7,30 @@ export enum CalificacionCualitativa {
   NA = 'NA'  // No alcanza (≤4.00)
 }
 
+export enum CalificacionComponente {
+  MAS_A = '+A',
+  A = 'A',
+  A_MENOS = 'A-',
+  B_MAS = 'B+',
+  B = 'B',
+  B_MENOS = 'B-',
+  C_MAS = 'C+',
+  C = 'C',
+  C_MENOS = 'C-',
+  D = 'D'
+}
+
 export enum EstadoInsumo {
   BORRADOR = 'BORRADOR',
   ACTIVO = 'ACTIVO',
   PUBLICADO = 'PUBLICADO',
   CERRADO = 'CERRADO'
+}
+
+export enum EstadoPromedioAnual {
+  APROBADO = 'APROBADO',
+  REPROBADO = 'REPROBADO',
+  SUPLETORIO = 'SUPLETORIO'
 }
 
 export interface Insumo {
@@ -44,7 +63,7 @@ export interface CalificacionInsumo {
     id: string;
     nombre: string;
     estado: EstadoInsumo;
-  }; 
+  };
 }
 
 export interface CalificacionProyecto {
@@ -147,6 +166,44 @@ export interface CreateCalificacionExamenDto {
   }>;
 }
 
+// Agregar después de la interfaz RecuperacionInsumo (línea ~112)
+
+export interface RecuperacionExamen {
+  id: string;
+  calificacion_examen_id: string;
+  segundo_examen: number | null;
+  trabajo_refuerzo: number | null;
+  observaciones?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HistorialRecuperacionExamen {
+  calificacion: {
+    id: string;
+    estudiante: string;
+    materia: string;
+    trimestre: string;
+    calificacion_original: number;
+    calificacion_actual: number;
+  };
+  necesita_trabajo_refuerzo: boolean;
+  recuperacion: RecuperacionExamen | null;
+}
+
+export interface CreateRecuperacionExamenDto {
+  calificacion_examen_id: string;
+  segundo_examen?: number;
+  trabajo_refuerzo?: number;
+  observaciones?: string;
+}
+
+export interface UpdateRecuperacionExamenDto {
+  segundo_examen?: number;
+  trabajo_refuerzo?: number;
+  observaciones?: string;
+}
+
 export interface Trimestre {
   id: string;
   nombre: string;
@@ -214,4 +271,87 @@ export interface EstadisticasRendimiento {
   porcentaje_AA: number;
   porcentaje_PA: number;
   porcentaje_NA: number;
+}
+
+export interface CalificacionComponenteCualitativo {
+  id: string;
+  estudiante_id: string;
+  curso_id: string;
+  materia_id: string;
+  trimestre_id: string;
+  calificacion: CalificacionComponente | null;
+  createdAt: string;
+  updatedAt: string;
+  estudiante: {
+    id: string;
+    nombres_completos: string;
+    estudiante_cedula: string;
+  };
+  materia: {
+    id: string;
+    nombre: string;
+  };
+  curso: {
+    id: string;
+    nivel: string;
+    paralelo: string;
+  };
+  trimestre: {
+    id: string;
+    nombre: string;
+  };
+}
+
+export interface CalificacionIndividual {
+  estudiante_id: string;
+  materia_id: string;
+  calificacion?: CalificacionComponente | null;
+}
+
+export interface CalificarMasivoDto {
+  curso_id: string;
+  trimestre_id: string;
+  calificaciones: CalificacionIndividual[];
+}
+
+export interface ComponenteCualitativo {
+  id: string;
+  nombre: string;
+  nivelEducativo: string;
+}
+
+export interface PromedioPeriodo {
+  id: string;
+  estudiante_id: string;
+  materia_curso_id: string;
+  periodo_lectivo_id: string;
+  nota_trimestre_1: number;
+  nota_trimestre_2: number;
+  nota_trimestre_3: number;
+  promedio_anual: number;
+  cualitativa_anual: CalificacionCualitativa;
+  nota_supletorio: number | null;
+  promedio_final: number | null;
+  cualitativa_final: CalificacionCualitativa | null;
+  estado: EstadoPromedioAnual;
+  observaciones: string | null;
+  createdAt: string;
+  updatedAt: string;
+  estudiante?: any;
+  materia_curso?: any;
+  periodo_lectivo?: any;
+}
+
+export interface RegistrarSupletorioDto {
+  nota_supletorio: number;
+}
+
+export interface RegistrarSupletorioResponse {
+  message: string;
+  promedio: PromedioPeriodo;
+}
+
+export interface EstudiantesSupletorioResponse {
+  total: number;
+  estudiantes: PromedioPeriodo[];
 }

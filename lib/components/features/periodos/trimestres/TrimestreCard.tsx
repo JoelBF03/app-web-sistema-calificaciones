@@ -14,19 +14,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/lib/components/ui/select';
-import { 
-  Calendar, 
-  Edit2, 
-  Save, 
-  X, 
-  Activity, 
-  PlayCircle, 
-  Clock, 
-  CheckCircle2 
+import {
+  Calendar,
+  Edit2,
+  Save,
+  X,
+  Activity,
+  PlayCircle,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { Trimestre, TrimestreEstado, NombreTrimestre } from '@/lib/types/periodo.types';
 import { toast } from 'sonner';
 import ConfirmUpdateTrimestreDialog from './ConfirmUpdateTrimestreDialog';
+import { ModalErroresCierreTrimestre } from './ModalErroresCierreTrimestre';
 
 interface TrimestreCardProps {
   trimestre: Trimestre;
@@ -50,6 +51,13 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload }: Trimest
     const day = String(date.getUTCDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
+
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorData, setErrorData] = useState<{
+    mensaje: string;
+    resumen_por_docente: any[];
+    estadisticas?: any;
+  } | null>(null);
 
   const formatDateForDisplay = (dateString: string) => {
     const date = new Date(dateString);
@@ -151,16 +159,29 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload }: Trimest
     try {
       const changes = getChanges();
       await onUpdate(trimestre.id, changes);
-      
+
       setShowConfirmDialog(false);
       setIsEditing(false);
-      
+
       if (onReload) {
         setTimeout(() => onReload(), 500);
       }
     } catch (error: any) {
       console.error('Error updating trimestre:', error);
-      toast.error(error.response?.data?.message || 'Error al actualizar el trimestre');
+
+      // ✅ SI EL ERROR CONTIENE resumen_por_docente, MOSTRAR MODAL
+      if (error.response?.data?.resumen_por_docente) {
+        setErrorData({
+          mensaje: error.response.data.message || 'No se puede cerrar el trimestre',
+          resumen_por_docente: error.response.data.resumen_por_docente,
+          estadisticas: error.response.data.estadisticas
+        });
+        setShowErrorDialog(true);
+      } else {
+        // Error genérico en toast
+        toast.error(error.response?.data?.message || 'Error al actualizar el trimestre');
+      }
+
       setShowConfirmDialog(false);
     }
   };
@@ -193,13 +214,13 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload }: Trimest
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               {getEstadoBadge(isEditing ? editData.estado : trimestre.estado)}
               {!isEditing && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setIsEditing(true)}
                   className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
                 >
@@ -222,7 +243,7 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload }: Trimest
                 <Input
                   type="date"
                   value={formatDateForInput(editData.fechaInicio)}
-                  onChange={(e) => setEditData({...editData, fechaInicio: e.target.value})}
+                  onChange={(e) => setEditData({ ...editData, fechaInicio: e.target.value })}
                   className="border-2"
                 />
               ) : (
@@ -231,7 +252,7 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload }: Trimest
                 </p>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <Label className="text-xs flex items-center gap-1 text-gray-600 font-semibold">
                 <Calendar className="h-3 w-3" />
@@ -241,7 +262,7 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload }: Trimest
                 <Input
                   type="date"
                   value={formatDateForInput(editData.fechaFin)}
-                  onChange={(e) => setEditData({...editData, fechaFin: e.target.value})}
+                  onChange={(e) => setEditData({ ...editData, fechaFin: e.target.value })}
                   className="border-2"
                 />
               ) : (
@@ -259,9 +280,9 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload }: Trimest
                 <Activity className="h-3 w-3" />
                 Estado del Trimestre
               </Label>
-              <Select 
-                value={editData.estado} 
-                onValueChange={(value) => setEditData({...editData, estado: value as TrimestreEstado})}
+              <Select
+                value={editData.estado}
+                onValueChange={(value) => setEditData({ ...editData, estado: value as TrimestreEstado })}
               >
                 <SelectTrigger className="border-2">
                   <SelectValue />
@@ -305,6 +326,16 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload }: Trimest
           )}
         </CardContent>
       </Card>
+
+      {showErrorDialog && errorData && (
+        <ModalErroresCierreTrimestre
+          open={showErrorDialog}
+          onClose={() => setShowErrorDialog(false)}
+          mensaje={errorData.mensaje}
+          resumenDocentes={errorData.resumen_por_docente}
+          estadisticas={errorData.estadisticas}
+        />
+      )}
 
       <ConfirmUpdateTrimestreDialog
         isOpen={showConfirmDialog}

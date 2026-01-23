@@ -13,7 +13,7 @@ import { TrimestreSelector } from '@/lib/components/features/calificaciones/Trim
 import { TutoriaTabs, type TipoTutoriaTab } from '@/lib/components/features/calificaciones/tutoria/TutoriaTabs';
 import { TablaProyectoTutoria } from '@/lib/components/features/calificaciones/tutoria/TablaProyectoTutoria';
 import { TablaComponentesTutoria } from '@/lib/components/features/calificaciones/tutoria/TablaComponentesTutoria';
-import { TablaReportes } from '@/lib/components/features/calificaciones/TablaReportes';
+import { TablaReportes } from '@/lib/components/features/calificaciones/tutoria/TablaReportes';
 import { usePromedioTrimestre } from '@/lib/hooks/usePromedioTrimestre';
 import { EstadoMatricula } from '@/lib/types/matricula.types';
 import { TrimestreEstado } from '@/lib/types/periodo.types';
@@ -140,6 +140,7 @@ export default function TutoriaDashboard() {
             trimestre_id={trimestreSeleccionado!}
             estudiantes={estudiantes}
             trimestreEstado={estadoTrimestre}
+            nivel={curso.nivel}
           />
         );
       case 'reportes':
@@ -149,6 +150,7 @@ export default function TutoriaDashboard() {
             promedios={promedios}
             trimestre_id={trimestreSeleccionado!}
             trimestre_nombre={trimestreActual?.nombre || ''}
+            trimestre_estado={estadoTrimestre}
             curso_id={curso_id}
           />
         );

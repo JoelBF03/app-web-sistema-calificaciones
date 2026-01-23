@@ -4,6 +4,12 @@ export enum EstadoPeriodo {
   FINALIZADO = 'FINALIZADO'
 }
 
+export enum EstadoSupletorio {
+  PENDIENTE = 'PENDIENTE',
+  ACTIVADO = 'ACTIVADO',
+  CERRADO = 'CERRADO'
+}
+
 export enum TrimestreEstado {
   ACTIVO = 'ACTIVO',
   FINALIZADO = 'FINALIZADO',
@@ -34,6 +40,7 @@ export interface PeriodoLectivo {
   fechaInicio: string;
   fechaFin: string;
   estado: EstadoPeriodo;
+  estado_supletorio: EstadoSupletorio;
   createdAt: string;
   updatedAt: string;
   trimestres?: Trimestre[];
@@ -147,4 +154,34 @@ export interface ValidarCierrePeriodoResponse {
     total_materias_curso_a_inactivar: number;
     advertencia: string;
   };
+}
+
+export interface ActivarSupletoriosResponse {
+  message: string;
+  periodo: PeriodoLectivo;
+  estadisticas: {
+    total_promedios_anuales: number;
+    estudiantes_en_supletorio: number;
+    estudiantes_aprobados: number;
+    estudiantes_reprobados: number;
+  };
+}
+
+export interface CerrarSupletoriosResponse {
+  message: string;
+  periodo: PeriodoLectivo;
+  estadisticas: {
+    total_estudiantes_en_supletorio: number;
+    estudiantes_que_rindieron: number;
+    estudiantes_que_no_rindieron: number;
+    estudiantes_que_aprobaron: number;
+    estudiantes_que_reprobaron: number;
+  };
+  advertencia: string;
+}
+
+export interface ReabrirSupletoriosResponse {
+  message: string;
+  periodo: PeriodoLectivo;
+  advertencia: string;
 }

@@ -95,8 +95,60 @@ export const reportesService = {
       throw error;
     }
   },
-/**
- * Helper para descargar un blob como archivo
+
+  /**
+   * Descarga concentrado de calificaciones (ranking del curso) en PDF
+   */
+  descargarConcentradoCalificaciones: async (
+    curso_id: string,
+    trimestre_id: string
+  ): Promise<Blob> => {
+    const response = await api.get(
+      `/reportes/concentrado/curso/${curso_id}/pdf`,
+      {
+        params: { trimestre_id },
+        responseType: 'blob',
+      }
+    );
+    return response.data;
+  },
+
+  /**
+ * Descarga reporte de insumos en PDF
  */
-descargarBlob,
+  descargarReporteInsumos: async (
+    materia_curso_id: string,
+    trimestre_id: string
+  ): Promise<Blob> => {
+    const response = await api.get(
+      `/reportes/insumos/${materia_curso_id}/pdf`,
+      {
+        params: { trimestre_id },
+        responseType: 'blob',
+      }
+    );
+    return response.data;
+  },
+
+  /**
+ * Descarga reporte de rendimiento académico anual en PDF
+ */
+  descargarRendimientoAnual: async (
+    materia_curso_id: string,
+    periodo_lectivo_id: string
+  ): Promise<Blob> => {
+    const response = await api.get(
+      `/reportes/rendimiento-anual/${materia_curso_id}/pdf`,
+      {
+        params: { periodo_lectivo_id },
+        responseType: 'blob',
+      }
+    );
+    return response.data;
+  },
+
+  /**
+   * Helper para descargar un blob como archivo
+   */
+  descargarBlob,
 };

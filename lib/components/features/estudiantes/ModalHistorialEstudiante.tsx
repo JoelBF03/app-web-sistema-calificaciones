@@ -9,7 +9,7 @@ import { Button } from '@/lib/components/ui/button';
 import { Card } from '@/lib/components/ui/card';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { EspecialidadCurso } from '@/lib/types';
+import { EspecialidadCurso, EstadoMatricula } from '@/lib/types';
 import { toast } from 'sonner';
 import { reportesService } from '@/lib/services/reportes.services';
 
@@ -103,9 +103,9 @@ export function ModalHistorialEstudiante({
                     {/* Punto en la línea */}
                     <div
                       className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                        matricula.estado === 'ACTIVO'
+                        matricula.estado === EstadoMatricula.ACTIVO
                           ? 'bg-green-500'
-                          : matricula.estado === 'RETIRADO'
+                          : matricula.estado === EstadoMatricula.RETIRADO
                           ? 'bg-red-500'
                           : 'bg-gray-400'
                       }`}
@@ -116,9 +116,9 @@ export function ModalHistorialEstudiante({
                     {/* Card de matrícula */}
                     <Card
                       className={`p-4 ${
-                        matricula.estado === 'ACTIVO'
+                        matricula.estado === EstadoMatricula.ACTIVO
                           ? 'border-green-300 bg-green-50'
-                          : matricula.estado === 'RETIRADO'
+                          : matricula.estado === EstadoMatricula.RETIRADO
                           ? 'border-red-300 bg-red-50'
                           : 'border-gray-300'
                       }`}
@@ -163,9 +163,9 @@ export function ModalHistorialEstudiante({
                           {/* Badge de estado */}
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                              matricula.estado === 'ACTIVO'
+                              matricula.estado === EstadoMatricula.ACTIVO
                                 ? 'bg-green-100 text-green-800'
-                                : matricula.estado === 'RETIRADO'
+                                : matricula.estado === EstadoMatricula.RETIRADO
                                 ? 'bg-red-100 text-red-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}

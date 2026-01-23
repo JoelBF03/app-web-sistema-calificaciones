@@ -7,6 +7,7 @@ import { docentesService } from '../services/docentes';
 import type { MateriaCurso } from '../types/materia-curso.types';
 import type { Curso } from '../types/curso.types';
 import type { Docente } from '../types/docente.types';
+import { TipoCalificacion } from '../types/materia.types'; // 🆕 IMPORTAR
 import { toast } from 'sonner';
 
 export function useMateriasDocente() {
@@ -26,7 +27,6 @@ export function useMateriasDocente() {
       const myProfile = await docentesService.getMyProfile();
       console.log('✅ Perfil obtenido:', myProfile);
       
-      // ✅ AGREGAR: Validar que myProfile existe
       if (!myProfile || !myProfile.id) {
         throw new Error('No se pudo obtener el perfil del docente. Por favor, contacta al administrador.');
       }
@@ -38,7 +38,14 @@ export function useMateriasDocente() {
       console.log('📚 Obteniendo materias para docente:', docenteId);
       const materiasResponse = await materiaCursoService.getByDocente(docenteId);
       console.log('✅ Materias obtenidas:', materiasResponse);
-      setMateriasAsignadas(materiasResponse.materias || []);
+      
+      // 🆕 FILTRAR MATERIAS CUALITATIVAS (NO mostrarlas en "Mis Cursos")
+      const materiasCuantitativas = (materiasResponse.materias || []).filter(
+        (mc) => mc.materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA
+      );
+      console.log('✅ Materias cuantitativas filtradas:', materiasCuantitativas);
+      
+      setMateriasAsignadas(materiasCuantitativas); // 🆕 GUARDAR SOLO CUANTITATIVAS
 
       // Obtener todos los cursos para ver si es tutor de alguno
       console.log('🎓 Obteniendo cursos...');

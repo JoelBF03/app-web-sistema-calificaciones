@@ -3,7 +3,8 @@
 
 import { BookOpen, Calculator, FileText, GraduationCap } from 'lucide-react';
 
-export type TipoEvaluacion = 'insumos' | 'proyecto' | 'examen' | 'promedio';
+// ✅ SOLO los tipos de evaluación reales del backend + promedio
+export type TipoEvaluacion = 'insumos' | 'proyecto' | 'examen' | 'promedios';
 
 interface TipoEvaluacionTabsProps {
   tipoActivo: TipoEvaluacion;
@@ -20,7 +21,7 @@ export function TipoEvaluacionTabs({ tipoActivo, onCambiar, porcentajes }: TipoE
     { value: 'insumos' as const, label: 'Insumos', icon: BookOpen, porcentaje: porcentajes.insumos },
     { value: 'proyecto' as const, label: 'Proyecto', icon: FileText, porcentaje: porcentajes.proyecto },
     { value: 'examen' as const, label: 'Examen', icon: GraduationCap, porcentaje: porcentajes.examen },
-    { value: 'promedio' as const, label: 'Promedio Trimestral', icon: Calculator, porcentaje: 100 },
+    { value: 'promedios' as const, label: 'Promedio Trimestral', icon: Calculator, porcentaje: 100 },
   ];
 
   return (
@@ -35,7 +36,7 @@ export function TipoEvaluacionTabs({ tipoActivo, onCambiar, porcentajes }: TipoE
             onClick={() => onCambiar(tab.value)}
             className={`flex items-center gap-2 px-6 py-4 font-semibold border-b-4 transition-all duration-200 whitespace-nowrap cursor-pointer ${
               isActive
-                ? tab.value === 'promedio'
+                ? tab.value === 'promedios'
                   ? 'border-purple-600 text-purple-600 bg-white'
                   : 'border-red-600 text-red-600 bg-white'
                 : 'border-transparent text-gray-600 hover:text-red-600 hover:bg-white/50'

@@ -1,12 +1,14 @@
-// nextjs-frontend/lib/components/features/calificaciones/TablaReportes.tsx
+// nextjs-frontend/lib/components/features/calificaciones/tutoria/TablaReportes.tsx
 'use client';
 
 import { useState } from 'react';
-import { Download, FileText, Loader2, CheckCircle2, XCircle, FileStack } from 'lucide-react';
+import { Download, FileText, Loader2, CheckCircle2, XCircle, FileStack, BarChart3 } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/lib/components/ui/table';
 import { reportesService } from '@/lib/services/reportes.services';
+import { useReportes } from '@/lib/hooks/useReportes';
 import { toast } from 'sonner';
+import { TrimestreEstado } from '@/lib/types';
 
 interface TablaReportesProps {
   estudiantes: Array<{
@@ -19,18 +21,23 @@ interface TablaReportesProps {
   }>;
   trimestre_id: string;
   trimestre_nombre: string;
-  curso_id: string; // ✅ Nuevo prop
+  trimestre_estado: TrimestreEstado;
+  curso_id: string;
 }
 
-export function TablaReportes({ 
-  estudiantes, 
-  promedios, 
-  trimestre_id, 
+export function TablaReportes({
+  estudiantes,
+  promedios,
+  trimestre_id,
   trimestre_nombre,
-  curso_id // ✅ Nuevo prop
+  trimestre_estado,
+  curso_id
 }: TablaReportesProps) {
   const [descargando, setDescargando] = useState<string | null>(null);
   const [descargandoConsolidado, setDescargandoConsolidado] = useState(false);
+  const trimestreFinalizado = trimestre_estado === TrimestreEstado.FINALIZADO;
+  
+  const { descargarConcentradoCalificaciones, descargando: descargandoConcentrado } = useReportes();
 
   // Verificar si un estudiante tiene promedio registrado
   const tienePromedio = (estudiante_id: string): boolean => {
@@ -43,13 +50,12 @@ export function TablaReportes({
   const handleDescargarReporte = async (estudiante_id: string, nombres_completos: string) => {
     try {
       setDescargando(estudiante_id);
-      
+
       const blob = await reportesService.descargarLibretaIndividual(estudiante_id, trimestre_id);
-      
-      // Formato: Libreta_NombreEstudiante_Trimestre.pdf
+
       const nombreArchivo = `Libreta_${nombres_completos.replace(/\s+/g, '_')}_${trimestre_nombre}.pdf`;
       reportesService.descargarBlob(blob, nombreArchivo);
-      
+
       toast.success(`Libreta de ${nombres_completos} descargada`);
     } catch (error: any) {
       console.error('Error al descargar libreta:', error);
@@ -59,18 +65,16 @@ export function TablaReportes({
     }
   };
 
-  // ✅ Nueva función para descargar libretas consolidadas
   const handleDescargarConsolidado = async () => {
     try {
       setDescargandoConsolidado(true);
-      
+
       const blob = await reportesService.descargarLibretasCursoConsolidado(curso_id, trimestre_id);
-      
-      // Formato: Libretas_Consolidadas_Trimestre_Fecha.pdf
-      const fecha = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+      const fecha = new Date().toISOString().split('T')[0];
       const nombreArchivo = `Libretas_Consolidadas_${trimestre_nombre}_${fecha}.pdf`;
       reportesService.descargarBlob(blob, nombreArchivo);
-      
+
       toast.success('Libretas consolidadas descargadas exitosamente');
     } catch (error: any) {
       console.error('Error al descargar libretas consolidadas:', error);
@@ -78,6 +82,15 @@ export function TablaReportes({
     } finally {
       setDescargandoConsolidado(false);
     }
+  };
+
+  const handleDescargarConcentrado = async () => {
+    await descargarConcentradoCalificaciones(
+      curso_id,
+      `Curso_${curso_id}`,
+      trimestre_id,
+      trimestre_nombre
+    );
   };
 
   return (
@@ -92,35 +105,60 @@ export function TablaReportes({
             <div>
               <h3 className="text-lg font-bold text-gray-900">Libretas Individuales - {trimestre_nombre}</h3>
               <p className="text-sm text-gray-600">
-                Descarga los reportes de calificaciones de cada estudiante
+                {trimestreFinalizado
+                  ? 'Descarga los reportes de calificaciones de cada estudiante'
+                  : 'Las libretas estarán disponibles cuando el trimestre esté finalizado'
+                }
               </p>
             </div>
           </div>
-          
-          {/* ✅ Botón de descarga consolidada */}
-          {hayEstudiantesConDatos && (
-            <Button
-              onClick={handleDescargarConsolidado}
-              disabled={descargandoConsolidado}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer"
-            >
-              {descargandoConsolidado ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generando PDF...
-                </>
-              ) : (
-                <>
-                  <FileStack className="w-4 h-4 mr-2" />
-                  Descargar Todas las Libretas
-                </>
-              )}
-            </Button>
+
+          {/* ✅ DOS BOTONES: Concentrado + Consolidado */}
+          {trimestreFinalizado && (
+            <div className="flex gap-3">
+              {/* BOTÓN 1: Concentrado de Calificaciones (NUEVO) */}
+              <Button
+                onClick={handleDescargarConcentrado}
+                disabled={descargandoConcentrado}
+                className="bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer"
+              >
+                {descargandoConcentrado ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generando...
+                  </>
+                ) : (
+                  <>
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Concentrado de Calificaciones
+                  </>
+                )}
+              </Button>
+
+              {/* BOTÓN 2: Libretas Consolidadas (EXISTENTE) */}
+              <Button
+                onClick={handleDescargarConsolidado}
+                disabled={descargandoConsolidado}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer"
+              >
+                {descargandoConsolidado ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generando PDF...
+                  </>
+                ) : (
+                  <>
+                    <FileStack className="w-4 h-4 mr-2" />
+                    Descargar Todas las Libretas
+                  </>
+                )}
+              </Button>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Tabla con componentes shadcn/ui */}
+      {/* Tabla */}
       <div className="overflow-x-auto rounded-lg border-2 border-gray-400 bg-card">
         <Table className="border-collapse">
           <TableHeader>
@@ -142,15 +180,13 @@ export function TablaReportes({
 
           <TableBody>
             {estudiantes.map((estudiante, index) => {
-              const tieneDatos = tienePromedio(estudiante.id);
               const estaDescargando = descargando === estudiante.id;
 
               return (
-                <TableRow 
-                  key={estudiante.id} 
-                  className={`transition-colors border-b border-gray-300 ${
-                    tieneDatos ? 'hover:bg-blue-50' : 'bg-gray-50 hover:bg-gray-100'
-                  }`}
+                <TableRow
+                  key={estudiante.id}
+                  className={`transition-colors border-b border-gray-300 ${trimestreFinalizado ? 'hover:bg-blue-50' : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
                 >
                   {/* Número */}
                   <TableCell className="text-center text-gray-500 font-medium px-3 border-r-2 border-gray-400">
@@ -160,9 +196,8 @@ export function TablaReportes({
                   {/* Nombre del estudiante */}
                   <TableCell className="font-medium px-4 border-r-2 border-gray-400">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm ${
-                        tieneDatos ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-gray-400'
-                      }`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm ${trimestreFinalizado ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-gray-400'
+                        }`}>
                         {estudiante.nombres_completos.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-sm">
@@ -173,7 +208,7 @@ export function TablaReportes({
 
                   {/* Estado */}
                   <TableCell className="border-x border-gray-300 text-center px-2 py-2">
-                    {tieneDatos ? (
+                    {trimestreFinalizado ? (
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full border-2 border-green-300">
                         <CheckCircle2 className="w-4 h-4" />
                         <span className="text-xs font-semibold">Disponible</span>
@@ -181,14 +216,14 @@ export function TablaReportes({
                     ) : (
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full border-2 border-gray-300">
                         <XCircle className="w-4 h-4" />
-                        <span className="text-xs font-semibold">Sin datos</span>
+                        <span className="text-xs font-semibold">Pendiente</span>
                       </div>
                     )}
                   </TableCell>
 
                   {/* Acción */}
                   <TableCell className="border-l-2 border-gray-400 text-center px-2 py-2">
-                    {tieneDatos ? (
+                    {trimestreFinalizado ? (
                       <Button
                         onClick={() => handleDescargarReporte(estudiante.id, estudiante.nombres_completos)}
                         disabled={estaDescargando}
@@ -209,7 +244,7 @@ export function TablaReportes({
                       </Button>
                     ) : (
                       <span className="text-xs text-gray-400 italic">
-                        No hay calificaciones registradas
+                        Trimestre no finalizado
                       </span>
                     )}
                   </TableCell>

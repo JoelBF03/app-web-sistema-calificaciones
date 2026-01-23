@@ -60,7 +60,7 @@ export function usePeriodos() {
       }
       
       if (response.trimestres_afectados && response.trimestres_afectados > 0) {
-        toast.info(`📅 ${response.trimestres_afectados} trimestres actualizados`, { duration: 5000 });
+        toast.info(`${response.trimestres_afectados} trimestres actualizados`, { duration: 5000 });
       }
     },
     onError: (error: any) => {
@@ -102,6 +102,84 @@ export function usePeriodos() {
     },
   });
 
+  // 🆕 Mutation: Activar supletorios
+  const activarSupletoriosMutation = useMutation({
+    mutationFn: (id: string) => periodosService.activarSupletorios(id),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['periodos'] });
+      queryClient.invalidateQueries({ queryKey: ['periodo-activo'] });
+      toast.success(response.message);
+      
+      if (response.estadisticas) {
+        const { 
+          total_promedios_anuales,
+          estudiantes_en_supletorio,
+          estudiantes_aprobados,
+          estudiantes_reprobados
+        } = response.estadisticas;
+
+        toast.info(
+          `Promedios: ${total_promedios_anuales} | En supletorio: ${estudiantes_en_supletorio} | Aprobados: ${estudiantes_aprobados} | Reprobados: ${estudiantes_reprobados}`,
+          { duration: 10000 }
+        );
+      }
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al activar supletorios';
+      toast.error(errorMsg);
+    },
+  });
+
+  // 🆕 Mutation: Cerrar supletorios
+  const cerrarSupletoriosMutation = useMutation({
+    mutationFn: (id: string) => periodosService.cerrarSupletorios(id),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['periodos'] });
+      queryClient.invalidateQueries({ queryKey: ['periodo-activo'] });
+      toast.success(response.message);
+      
+      if (response.advertencia) {
+        toast.warning(response.advertencia, { duration: 10000 });
+      }
+
+      if (response.estadisticas) {
+        const { 
+          total_estudiantes_en_supletorio,
+          estudiantes_que_rindieron,
+          estudiantes_que_aprobaron,
+          estudiantes_que_reprobaron
+        } = response.estadisticas;
+
+        toast.info(
+          `Total en supletorio: ${total_estudiantes_en_supletorio} | Rindieron: ${estudiantes_que_rindieron} | Aprobaron: ${estudiantes_que_aprobaron} | Reprobaron: ${estudiantes_que_reprobaron}`,
+          { duration: 10000 }
+        );
+      }
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al cerrar supletorios';
+      toast.error(errorMsg);
+    },
+  });
+
+  // 🆕 Mutation: Reabrir supletorios
+  const reabrirSupletoriosMutation = useMutation({
+    mutationFn: (id: string) => periodosService.reabrirSupletorios(id),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['periodos'] });
+      queryClient.invalidateQueries({ queryKey: ['periodo-activo'] });
+      toast.success(response.message);
+      
+      if (response.advertencia) {
+        toast.warning(response.advertencia, { duration: 8000 });
+      }
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al reabrir supletorios';
+      toast.error(errorMsg);
+    },
+  });
+
   // Mutation: Validar cierre
   const validarCierreMutation = useMutation({
     mutationFn: (id: string) => periodosService.validarCierre(id),
@@ -138,11 +216,19 @@ export function usePeriodos() {
       actualizarPeriodoMutation.mutateAsync({ id, data }),
     cambiarEstadoPeriodo: cambiarEstadoMutation.mutateAsync,
     validarCierre: validarCierreMutation.mutateAsync,
+    // 🆕 Nuevas mutaciones
+    activarSupletorios: activarSupletoriosMutation.mutateAsync,
+    cerrarSupletorios: cerrarSupletoriosMutation.mutateAsync,
+    reabrirSupletorios: reabrirSupletoriosMutation.mutateAsync,
 
     // Loading states
     isCreating: crearPeriodoMutation.isPending,
     isUpdating: actualizarPeriodoMutation.isPending,
     isChangingState: cambiarEstadoMutation.isPending,
     isValidating: validarCierreMutation.isPending,
+    // 🆕 Nuevos loading states
+    isActivatingSupletorios: activarSupletoriosMutation.isPending,
+    isClosingSupletorios: cerrarSupletoriosMutation.isPending,
+    isReopeningSupletorios: reabrirSupletoriosMutation.isPending,
   };
 }

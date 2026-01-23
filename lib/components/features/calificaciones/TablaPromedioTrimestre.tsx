@@ -154,7 +154,7 @@ export function TablaPromedioTrimestre({
         {/* Alertas según estado del trimestre */}
         {promedios.length === 0 && (
           <div className="p-6">
-            {trimestreEstado !== 'FINALIZADO' ? (
+            {trimestreEstado !== TrimestreEstado.FINALIZADO ? (
               <Alert className="bg-blue-50 border-blue-200">
                 <AlertTriangle className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-800">

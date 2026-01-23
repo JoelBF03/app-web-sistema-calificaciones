@@ -70,7 +70,7 @@ export default function AdminDashboard() {
       gradient: 'from-red-500 to-red-600',
       bgGradient: 'from-red-50 to-red-100',
     },
-    {
+/*     {
       title: 'Reportes',
       description: 'Generar reportes del sistema',
       icon: BarChart3,
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
       color: 'text-teal-600',
       gradient: 'from-teal-500 to-teal-600',
       bgGradient: 'from-teal-50 to-teal-100',
-    },
+    }, */
     {
       title: 'Matrículas',
       description: 'Matricular estudiantes',
