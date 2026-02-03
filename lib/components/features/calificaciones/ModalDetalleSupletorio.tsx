@@ -12,7 +12,7 @@ import { Loader2, Info, Edit, X, Save, AlertTriangle, BookCheck, TrendingUp, Loc
 import { toast } from 'sonner';
 import { promediosPeriodoService } from '@/lib/services/promedio-periodo';
 import { EstadoSupletorio } from '@/lib/types/periodo.types';
-import { calcularCualitativo, getColorCualitativo } from '@/lib/utils/calificaciones.utils';
+import { getColorCualitativo } from '@/lib/utils/calificaciones.utils';
 
 interface ModalDetalleSupletorioProps {
   promedio_id: string;
@@ -76,8 +76,9 @@ export function ModalDetalleSupletorio({
     }
 
     const nota = parseFloat(nuevaNota);
-    if (isNaN(nota) || nota < 0 || nota > 10) {
-      toast.error('La nota debe estar entre 0 y 10');
+    // ✅ VALIDACIÓN: Máximo 7.00
+    if (isNaN(nota) || nota < 0 || nota > 7.00) {
+      toast.error('La nota debe estar entre 0 y 7.00');
       return;
     }
 
@@ -103,11 +104,6 @@ export function ModalDetalleSupletorio({
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const calcularPromedioFinal = (promedioAnual: number, notaSupletorio: number) => {
-    const promedio = (promedioAnual + notaSupletorio) / 2;
-    return promedio >= 7.0 ? 7.0 : promedio;
   };
 
   const formatearFecha = (fecha: string) => {
@@ -140,7 +136,6 @@ export function ModalDetalleSupletorio({
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Alertas de estado */}
             {supletoriosCerrados && (
               <Alert className="bg-yellow-50 border-yellow-200">
                 <Lock className="h-4 w-4 text-yellow-600" />
@@ -159,7 +154,6 @@ export function ModalDetalleSupletorio({
               </Alert>
             )}
 
-            {/* Información del Promedio Anual */}
             <div className="p-4 bg-red-50 border-2 border-red-200 rounded-lg">
               <h3 className="font-semibold text-red-900 mb-3 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
@@ -178,8 +172,8 @@ export function ModalDetalleSupletorio({
                   <p className="text-gray-600">Trimestre 3</p>
                   <p className="font-semibold text-lg">{parseFloat(promedio.nota_trimestre_3 as any).toFixed(2)}</p>
                 </div>
-                <div className="bg-white p-2 rounded border border-red-300">
-                  <p className="text-gray-600">Promedio Anual</p>
+                <div className="bg-white p-2 rounded border border-red-300 text-center">
+                  <p className="text-gray-600">Anual</p>
                   <p className="font-bold text-xl text-red-700">{parseFloat(promedio.promedio_anual as any).toFixed(2)}</p>
                   <Badge className={`mt-1 ${getColorCualitativo(promedio.cualitativa_anual)}`}>
                     {promedio.cualitativa_anual}
@@ -190,7 +184,6 @@ export function ModalDetalleSupletorio({
 
             <Separator />
 
-            {/* Sección de Nota de Supletorio */}
             <div className="p-4 bg-orange-50 border-2 border-orange-200 rounded-lg">
               <h3 className="font-semibold text-orange-900 mb-3 flex items-center gap-2">
                 <BookCheck className="h-4 w-4" />
@@ -200,7 +193,7 @@ export function ModalDetalleSupletorio({
               {isEditing ? (
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="nota">Nota de Supletorio (0 - 10)</Label>
+                    <Label htmlFor="nota">Nota de Supletorio (0.00 - 7.00)</Label>
                     <Input
                       id="nota"
                       type="text"
@@ -209,36 +202,20 @@ export function ModalDetalleSupletorio({
                         const value = e.target.value;
                         if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
                           const num = parseFloat(value);
-                          if (value === '' || (!isNaN(num) && num >= 0 && num <= 10)) {
+                          // ✅ RESTRICCIÓN VISUAL: No permite escribir más de 7.00
+                          if (value === '' || (!isNaN(num) && num >= 0 && num <= 7.00)) {
                             setNuevaNota(value);
                           }
                         }
                       }}
-                      placeholder="Ej: 8.50"
+                      placeholder="0.00"
                       className="mt-1 text-lg font-semibold"
                       disabled={isSaving}
                     />
+                    <p className="text-xs text-orange-600 mt-1">* La nota máxima permitida es 7.00</p>
                   </div>
 
-                  {nuevaNota && !isNaN(parseFloat(nuevaNota)) && (
-                    <Alert className="bg-green-50 border-green-200">
-                      <Info className="h-4 w-4 text-green-600" />
-                      <AlertDescription>
-                        <p className="text-sm text-green-800 mb-2"><strong>Vista Previa del Cálculo:</strong></p>
-                        <div className="text-sm space-y-1 text-green-700">
-                          <p>• Promedio Anual: <strong>{parseFloat(promedio.promedio_anual as any).toFixed(2)}</strong></p>
-                          <p>• Nota Supletorio: <strong>{parseFloat(nuevaNota).toFixed(2)}</strong></p>
-                          <p>• Cálculo: <strong>({parseFloat(promedio.promedio_anual as any).toFixed(2)} + {parseFloat(nuevaNota).toFixed(2)}) / 2 = {((parseFloat(promedio.promedio_anual as any) + parseFloat(nuevaNota)) / 2).toFixed(2)}</strong></p>
-                          <p className="pt-2 font-bold text-base">
-                            → Promedio Final: <span className="text-green-900">{calcularPromedioFinal(parseFloat(promedio.promedio_anual as any), parseFloat(nuevaNota)).toFixed(2)}</span>
-                            {((parseFloat(promedio.promedio_anual as any) + parseFloat(nuevaNota)) / 2) >= 7.0 && (
-                              <span className="text-xs ml-2">(Tope aplicado: 7.00)</span>
-                            )}
-                          </p>
-                        </div>
-                      </AlertDescription>
-                    </Alert>
-                  )}
+                  {/* 🚫 SE ELIMINÓ EL BLOQUE DE "VISTA PREVIA DEL CÁLCULO" */}
 
                   <div className="flex gap-2">
                     <Button
@@ -256,16 +233,11 @@ export function ModalDetalleSupletorio({
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
                       {isSaving ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Guardando...
-                        </>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Guardar Cambios
-                        </>
+                        <Save className="h-4 w-4 mr-2" />
                       )}
+                      Guardar Cambios
                     </Button>
                   </div>
                 </div>
@@ -291,7 +263,7 @@ export function ModalDetalleSupletorio({
                         </div>
                       </div>
 
-                      <div className="bg-white p-3 rounded border border-gray-300">
+                      <div className="bg-white p-3 rounded border border-gray-300 text-center">
                         <p className="text-sm text-gray-600 mb-2">Estado Final</p>
                         <Badge className={
                           promedio.estado === 'APROBADO' 
@@ -302,25 +274,14 @@ export function ModalDetalleSupletorio({
                         </Badge>
                       </div>
 
-                      {puedeEditar && (
+                      {(puedeEditar || supletoriosCerrados) && (
                         <Button
                           onClick={handleEditar}
                           variant="outline"
                           className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
                         >
                           <Edit className="h-4 w-4 mr-2" />
-                          Editar Nota
-                        </Button>
-                      )}
-
-                      {supletoriosCerrados && (
-                        <Button
-                          onClick={handleEditar}
-                          variant="outline"
-                          className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Corregir Nota (Modo Detalle)
+                          {supletoriosCerrados ? 'Corregir Nota (Modo Detalle)' : 'Editar Nota'}
                         </Button>
                       )}
                     </>
@@ -336,7 +297,6 @@ export function ModalDetalleSupletorio({
               )}
             </div>
 
-            {/* Información de Auditoría */}
             {promedio.createdAt && (
               <div className="text-xs text-gray-500 space-y-1 p-3 bg-gray-50 rounded">
                 <p><strong>Creado:</strong> {formatearFecha(promedio.createdAt)}</p>
@@ -348,10 +308,9 @@ export function ModalDetalleSupletorio({
           </div>
         )}
 
-        {/* Modal de Confirmación */}
         {mostrarConfirmacion && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <div className="bg-white rounded-lg p-6 max-w-md mx-4 shadow-2xl">
               <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-orange-600" />
                 Confirmar Cambio
@@ -361,17 +320,10 @@ export function ModalDetalleSupletorio({
                 la nota de supletorio a <strong>{parseFloat(nuevaNota).toFixed(2)}</strong>?
               </p>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setMostrarConfirmacion(false)}
-                  className="flex-1"
-                >
+                <Button variant="outline" onClick={() => setMostrarConfirmacion(false)} className="flex-1">
                   Cancelar
                 </Button>
-                <Button
-                  onClick={handleGuardar}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700"
-                >
+                <Button onClick={handleGuardar} className="flex-1 bg-orange-600 hover:bg-orange-700">
                   Confirmar
                 </Button>
               </div>

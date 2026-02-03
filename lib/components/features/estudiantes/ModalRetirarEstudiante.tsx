@@ -10,12 +10,14 @@ import { Textarea } from '@/lib/components/ui/textarea';
 
 interface ModalRetirarEstudianteProps {
   estudiante: Estudiante;
+  isOpen: boolean;
   onClose: () => void;
   onConfirm: (id: string, motivo?: string) => Promise<void>;
 }
 
 export function ModalRetirarEstudiante({
   estudiante,
+  isOpen,
   onClose,
   onConfirm,
 }: ModalRetirarEstudianteProps) {
@@ -33,6 +35,8 @@ export function ModalRetirarEstudiante({
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">

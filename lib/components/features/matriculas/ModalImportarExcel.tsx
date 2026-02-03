@@ -18,12 +18,12 @@ type Paso = 'seleccionar' | 'vista-previa' | 'procesando' | 'resultado';
 
 export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelProps) {
   const { periodos, fetchPeriodos } = usePeriodos();
-  const { 
-    descargarPlantilla, 
-    procesarImportacion, 
-    confirmarImportacion 
+  const {
+    descargarPlantilla,
+    procesarImportacion,
+    confirmarImportacion
   } = useMatriculas(); // ✅ USAR HOOK
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [paso, setPaso] = useState<Paso>('seleccionar');
@@ -114,7 +114,7 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
 
       setResultado(resultadoData);
       setPaso('resultado');
-      
+
       // Si hubo importaciones exitosas, notificar al padre
       if (resultadoData.exitosas > 0) {
         setTimeout(() => {
@@ -140,7 +140,7 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
     }
   };
 
-    return (
+  return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
@@ -171,11 +171,10 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
           <div className="flex items-center justify-center gap-4 mt-6">
             <div className="flex items-center gap-2">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  paso === 'seleccionar'
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${paso === 'seleccionar'
                     ? 'bg-white text-purple-600'
                     : 'bg-purple-400 text-white'
-                }`}
+                  }`}
               >
                 1
               </div>
@@ -186,13 +185,12 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
 
             <div className="flex items-center gap-2">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  paso === 'vista-previa' || paso === 'procesando' || paso === 'resultado'
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${paso === 'vista-previa' || paso === 'procesando' || paso === 'resultado'
                     ? paso === 'vista-previa'
                       ? 'bg-white text-purple-600'
                       : 'bg-purple-400 text-white'
                     : 'bg-purple-700 text-purple-300'
-                }`}
+                  }`}
               >
                 2
               </div>
@@ -203,13 +201,12 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
 
             <div className="flex items-center gap-2">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  paso === 'resultado'
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${paso === 'resultado'
                     ? 'bg-white text-purple-600'
                     : paso === 'procesando'
-                    ? 'bg-yellow-400 text-yellow-900'
-                    : 'bg-purple-700 text-purple-300'
-                }`}
+                      ? 'bg-yellow-400 text-yellow-900'
+                      : 'bg-purple-700 text-purple-300'
+                  }`}
               >
                 {paso === 'procesando' ? <i className="fas fa-spinner fa-spin"></i> : '3'}
               </div>
@@ -461,11 +458,12 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
 
 // 🔧 COMPONENTE: Vista Previa
 function VistaPrevia({ resumen }: { resumen: ResumenImportacionDto }) {
-  const [filtro, setFiltro] = useState<'todos' | 'validos' | 'invalidos'>('todos');
+  const [filtro, setFiltro] = useState<'todos' | 'validos' | 'invalidos' | 'existentes'>('todos');
 
   const registrosFiltrados = resumen.registros.filter((r) => {
-    if (filtro === 'validos') return r.valido;
-    if (filtro === 'invalidos') return !r.valido;
+    if (filtro === 'validos') return r.valido && !r.ya_matriculado;
+    if (filtro === 'invalidos') return !r.valido && !r.ya_matriculado;
+    if (filtro === 'existentes') return r.ya_matriculado;
     return true;
   });
 
@@ -502,39 +500,54 @@ function VistaPrevia({ resumen }: { resumen: ResumenImportacionDto }) {
             <i className="fas fa-times-circle text-4xl text-red-300"></i>
           </div>
         </div>
+
+        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+          <p className="text-xs text-yellow-600 font-medium">Ya Matriculados</p>
+          <p className="text-2xl font-bold text-yellow-700">{resumen.existentes}</p>
+        </div>
       </div>
 
       {/* Filtros */}
       <div className="flex gap-2">
         <button
           onClick={() => setFiltro('todos')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
             filtro === 'todos'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           Todos ({resumen.total_registros})
         </button>
         <button
           onClick={() => setFiltro('validos')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
             filtro === 'validos'
               ? 'bg-green-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           Válidos ({resumen.validos})
         </button>
         <button
           onClick={() => setFiltro('invalidos')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
             filtro === 'invalidos'
               ? 'bg-red-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           Inválidos ({resumen.invalidos})
+        </button>
+        <button
+          onClick={() => setFiltro('existentes')}
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            filtro === 'existentes'
+              ? 'bg-yellow-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          Ya Matriculados ({resumen.existentes})
         </button>
       </div>
 
@@ -555,9 +568,8 @@ function VistaPrevia({ resumen }: { resumen: ResumenImportacionDto }) {
               {registrosFiltrados.map((registro, idx) => (
                 <tr
                   key={idx}
-                  className={`${
-                    registro.valido ? 'bg-white' : 'bg-red-50'
-                  } hover:bg-gray-50`}
+                  className={`${registro.valido ? 'bg-white' : 'bg-red-50'
+                    } hover:bg-gray-50`}
                 >
                   <td className="px-4 py-2 text-sm">{registro.fila}</td>
                   <td className="px-4 py-2 text-sm font-medium">{registro.cedula}</td>
@@ -598,69 +610,103 @@ function Resultado({ resultado }: { resultado: ResultadoImportacionDto }) {
   return (
     <div className="space-y-6">
       {/* Resumen final */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-lg p-6">
-        <h4 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <i className="fas fa-check-circle text-green-600"></i>
-          Importación Completada
-        </h4>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-green-50 p-6 rounded-lg border-2 border-green-200">
+          <p className="text-sm text-green-600 font-medium mb-1">Exitosas</p>
+          <p className="text-3xl font-bold text-green-700">{resultado.exitosas}</p>
+        </div>
+        <div className="bg-red-50 p-6 rounded-lg border-2 border-red-200">
+          <p className="text-sm text-red-600 font-medium mb-1">Fallidas</p>
+          <p className="text-3xl font-bold text-red-700">{resultado.fallidas}</p>
+        </div>
+        {/* ✅ NUEVO: Card de Duplicados */}
+        <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-200">
+          <p className="text-sm text-yellow-600 font-medium mb-1">Duplicados</p>
+          <p className="text-3xl font-bold text-yellow-700">{resultado.duplicados}</p>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-lg p-4 shadow">
-            <p className="text-sm text-gray-600 mb-1">Importaciones Exitosas</p>
-            <p className="text-4xl font-bold text-green-600">{resultado.exitosas}</p>
+      {/* Detalle */}
+      <div className="border rounded-lg p-4 bg-gray-50">
+        <h4 className="font-semibold text-gray-700 mb-3">Resumen Detallado</h4>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Registros recibidos:</span>
+            <span className="font-medium">{resultado.resumen.registros_recibidos}</span>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow">
-            <p className="text-sm text-gray-600 mb-1">Importaciones Fallidas</p>
-            <p className="text-4xl font-bold text-red-600">{resultado.fallidas}</p>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Registros válidos:</span>
+            <span className="font-medium text-green-600">{resultado.resumen.registros_validos}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Registros inválidos:</span>
+            <span className="font-medium text-red-600">{resultado.resumen.registros_invalidos}</span>
+          </div>
+          {/* ✅ NUEVO: Mostrar existentes */}
+          <div className="flex justify-between">
+            <span className="text-gray-600">Ya matriculados:</span>
+            <span className="font-medium text-yellow-600">{resultado.resumen.registros_existentes}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Importados:</span>
+            <span className="font-medium text-green-600">{resultado.resumen.registros_importados}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Fallidos:</span>
+            <span className="font-medium text-red-600">{resultado.resumen.registros_fallidos}</span>
           </div>
         </div>
       </div>
 
-      {/* Detalles */}
-      <div>
-        <h5 className="font-bold text-gray-900 mb-3">Detalle de registros:</h5>
-        <div className="border rounded-lg overflow-hidden max-h-96 overflow-y-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 sticky top-0">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Cédula</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Nombre</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Curso</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {resultado.detalles.map((detalle, idx) => (
-                <tr
-                  key={idx}
-                  className={`${
-                    detalle.estado === 'EXITOSO' ? 'bg-white' : 'bg-red-50'
-                  }`}
-                >
-                  <td className="px-4 py-2 text-sm">{detalle.cedula}</td>
-                  <td className="px-4 py-2 text-sm">{detalle.nombre}</td>
-                  <td className="px-4 py-2 text-sm">{detalle.curso}</td>
-                  <td className="px-4 py-2">
-                    {detalle.estado === 'EXITOSO' ? (
-                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                        ✓ Exitoso
+      {/* Tabla de detalles */}
+      <div className="max-h-96 overflow-y-auto border rounded-lg">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 sticky top-0">
+            <tr>
+              <th className="px-3 py-2 text-left">Cédula</th>
+              <th className="px-3 py-2 text-left">Nombre</th>
+              <th className="px-3 py-2 text-left">Curso</th>
+              <th className="px-3 py-2 text-left">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {resultado.detalles.map((detalle, idx) => (
+              <tr key={idx}>
+                <td className="px-3 py-2 font-mono text-xs">{detalle.cedula}</td>
+                <td className="px-3 py-2">{detalle.nombre}</td>
+                <td className="px-3 py-2">{detalle.curso}</td>
+                <td className="px-3 py-2">
+                  {detalle.estado === 'EXITOSO' && (
+                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+                      Exitoso
+                    </span>
+                  )}
+                  {detalle.estado === 'FALLIDO' && (
+                    <div className="flex flex-col gap-1">
+                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
+                        Fallido
                       </span>
-                    ) : (
-                      <div>
-                        <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
-                          ✗ Fallido
-                        </span>
-                        {detalle.error && (
-                          <div className="text-xs text-red-600 mt-1">{detalle.error}</div>
-                        )}
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      {detalle.error && (
+                        <span className="text-xs text-red-600">{detalle.error}</span>
+                      )}
+                    </div>
+                  )}
+                  {/* ✅ NUEVO: Badge de duplicado */}
+                  {detalle.estado === 'DUPLICADO' && (
+                    <div className="flex flex-col gap-1">
+                      <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">
+                        Duplicado
+                      </span>
+                      {detalle.error && (
+                        <span className="text-xs text-yellow-600">{detalle.error}</span>
+                      )}
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

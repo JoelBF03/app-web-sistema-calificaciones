@@ -15,6 +15,7 @@ export function useCalificacionInsumo(insumo_id: string) {
     mutationFn: calificacionInsumoService.createBatch,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calificaciones-insumo', insumo_id] });
+      queryClient.invalidateQueries({ queryKey: ['insumos'] });
       toast.success('Calificaciones guardadas correctamente');
     },
     onError: (error: any) => {
@@ -27,6 +28,7 @@ export function useCalificacionInsumo(insumo_id: string) {
       calificacionInsumoService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calificaciones-insumo', insumo_id] });
+      queryClient.invalidateQueries({ queryKey: ['insumos'] });
       toast.success('Calificación actualizada');
     },
     onError: (error: any) => {

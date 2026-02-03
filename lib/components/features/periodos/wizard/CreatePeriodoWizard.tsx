@@ -12,6 +12,7 @@ import Step1PeriodoInfo from './Step1PeriodoInfo';
 import Step2TrimestresConfig from './Step2TrimestresConfig';
 import Step3TiposEvaluacion from './Step3TiposEvaluacion';
 import Step4Preview from './Step4Preview';
+import { LayoutGrid } from 'lucide-react';
 
 interface CreatePeriodoWizardProps {
   isOpen: boolean;
@@ -170,22 +171,28 @@ export default function CreatePeriodoWizard({ isOpen, onClose, onSuccess }: Crea
       setIsCreating(false);
     }
   };
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <VisuallyHidden>
-            <DialogTitle>Crear Nuevo Período Lectivo - Paso {wizardState.currentStep} de 4</DialogTitle>
-          </VisuallyHidden>
-        </DialogHeader>
-        
-        <div className="space-y-6 py-4">
-          {/* Progress Bar */}
-          <WizardProgressBar currentStep={wizardState.currentStep} steps={WIZARD_STEPS} />
+      <DialogContent className="max-w-screen-xl w-[95vw] lg:w-[85vw] p-0 overflow-hidden border-none shadow-2xl bg-white rounded-2xl">
 
-          {/* Step Content */}
-          <div className="min-h-[500px]">
+        {/* Header con gradiente y padding adaptable */}
+        <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-8 py-3 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-lg sm:text-xl font-black flex items-center gap-2 uppercase tracking-tight">
+              <LayoutGrid className="h-5 w-5" />
+              Configuración de Período Lectivo
+            </DialogTitle>
+          </DialogHeader>
+        </div>
+
+        {/* Contenedor con scroll interno solo si es necesario (para móviles) */}
+        <div className="px-4 sm:px-12 pt-4 pb-6 overflow-y-auto max-h-[85vh]">
+
+          <div className="mb-8">
+            <WizardProgressBar currentStep={wizardState.currentStep} steps={WIZARD_STEPS} />
+          </div>
+
+          <div className="min-h-[300px]">
             {wizardState.currentStep === 1 && (
               <Step1PeriodoInfo
                 initialData={wizardState.periodoData}

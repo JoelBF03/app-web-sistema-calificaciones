@@ -66,6 +66,18 @@ export function useInsumos(materia_curso_id: string, trimestre_id: string) {
     },
   });
 
+  // ✅ NUEVO: Mutation para reactivar insumo
+  const reactivarMutation = useMutation({
+    mutationFn: insumosService.reactivar,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['insumos', materia_curso_id, trimestre_id] });
+      toast.success('Insumo reactivado correctamente');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Error al reactivar insumo');
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: insumosService.delete,
     onSuccess: () => {
@@ -79,16 +91,18 @@ export function useInsumos(materia_curso_id: string, trimestre_id: string) {
 
   return {
     insumos: insumos || [],
-    calificacionesPorInsumo, // EXPORTAR ESTO
+    calificacionesPorInsumo,
     isLoading,
     error,
     createInsumo: createMutation.mutate,
     updateInsumo: updateMutation.mutate,
     publicarInsumo: publicarMutation.mutate,
+    reactivarInsumo: reactivarMutation.mutate, // ✅ NUEVO
     deleteInsumo: deleteMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isPublicando: publicarMutation.isPending,
+    isReactivando: reactivarMutation.isPending, // ✅ NUEVO
     isDeleting: deleteMutation.isPending,
   };
 }

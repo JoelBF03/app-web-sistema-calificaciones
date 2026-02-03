@@ -103,9 +103,7 @@ export interface EstudiantesResponse {
 export interface EstadisticasEstudiantes {
   activos: number;
   sinMatricula: number;
+  graduados: number;
   completos: number;
   incompletos: number;
-  graduados: number;
-  retirados: number;
-  inactivosTemporales: number;
 }

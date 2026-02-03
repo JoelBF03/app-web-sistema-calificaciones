@@ -589,6 +589,7 @@ export default function PeriodoCard({
                                                     trimestre={trimestre}
                                                     onUpdate={onUpdateTrimestre}
                                                     onReload={loadTrimestres}
+                                                    isPeriodoFinalizado={EstadoPeriodo.FINALIZADO === periodo.estado}
                                                 />
                                             ))}
                                         </div>
@@ -630,6 +631,7 @@ export default function PeriodoCard({
                                                 setShowEditPorcentajesDialog(true);
                                             }}
                                             className="hover:bg-purple-100 text-purple-600 ml-2"
+                                            hidden={finalizado}
                                         >
                                             <Edit className="h-4 w-4 mr-1" />
                                             Editar

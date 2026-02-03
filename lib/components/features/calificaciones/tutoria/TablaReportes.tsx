@@ -1,14 +1,14 @@
 // nextjs-frontend/lib/components/features/calificaciones/tutoria/TablaReportes.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Download, FileText, Loader2, CheckCircle2, XCircle, FileStack, BarChart3 } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/lib/components/ui/table';
 import { reportesService } from '@/lib/services/reportes.services';
 import { useReportes } from '@/lib/hooks/useReportes';
 import { toast } from 'sonner';
-import { TrimestreEstado } from '@/lib/types';
+import { Role, TrimestreEstado } from '@/lib/types';
 
 interface TablaReportesProps {
   estudiantes: Array<{
@@ -36,7 +36,16 @@ export function TablaReportes({
   const [descargando, setDescargando] = useState<string | null>(null);
   const [descargandoConsolidado, setDescargandoConsolidado] = useState(false);
   const trimestreFinalizado = trimestre_estado === TrimestreEstado.FINALIZADO;
-  
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem('usuario');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setIsAdmin(parsedUser.rol === Role.ADMIN);
+    }
+  }, []);
+
   const { descargarConcentradoCalificaciones, descargando: descargandoConcentrado } = useReportes();
 
   // Verificar si un estudiante tiene promedio registrado
@@ -114,7 +123,7 @@ export function TablaReportes({
           </div>
 
           {/* ✅ DOS BOTONES: Concentrado + Consolidado */}
-          {trimestreFinalizado && (
+          {trimestreFinalizado && !isAdmin && (
             <div className="flex gap-3">
               {/* BOTÓN 1: Concentrado de Calificaciones (NUEVO) */}
               <Button
@@ -226,7 +235,7 @@ export function TablaReportes({
                     {trimestreFinalizado ? (
                       <Button
                         onClick={() => handleDescargarReporte(estudiante.id, estudiante.nombres_completos)}
-                        disabled={estaDescargando}
+                        disabled={estaDescargando || isAdmin}
                         size="sm"
                         className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold cursor-pointer"
                       >

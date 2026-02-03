@@ -4,10 +4,15 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/lib/components/ui/input';
 import { Label } from '@/lib/components/ui/label';
 import { Button } from '@/lib/components/ui/button';
-import { Alert, AlertDescription } from '@/lib/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/lib/components/ui/card';
-import { Progress } from '@/lib/components/ui/progress';
-import { Info, AlertCircle, CheckCircle2, Percent } from 'lucide-react';
+import { 
+  CheckCircle2, 
+  Percent, 
+  Calculator, 
+  BookOpen, 
+  LayoutDashboard, 
+  FileText 
+} from 'lucide-react';
 
 interface Step3Data {
   insumos: number;
@@ -34,9 +39,9 @@ export default function Step3TiposEvaluacion({
 
   useEffect(() => {
     if (total > 100) {
-      setError(`Los porcentajes suman ${total.toFixed(1)}%. Deben sumar exactamente 100%`);
+      setError(`Exceso: ${total.toFixed(0)}% (debe ser 100%)`);
     } else if (total < 100 && total > 0) {
-      setError(`Los porcentajes suman ${total.toFixed(1)}%. Faltan ${(100 - total).toFixed(1)}%`);
+      setError(`Faltan ${(100 - total).toFixed(0)}% para completar`);
     } else if (isValid) {
       setError('');
     }
@@ -49,98 +54,113 @@ export default function Step3TiposEvaluacion({
     }
   };
 
-  const handleNext = () => {
-    if (isValid) {
-      onNext(formData);
-    }
-  };
-
   const tiposEvaluacion = [
     {
       key: 'insumos' as const,
-      nombre: 'Insumos',
-      descripcion: 'Tareas, deberes, trabajos en clase, participación',
-      icon: '📚',
-      color: 'border-red-200 bg-red-50',
-      barColor: 'bg-red-600',
+      nombre: 'INSUMOS',
+      icon: <BookOpen className="h-6 w-6 text-blue-600" />,
+      color: 'border-blue-200 bg-blue-50/30',
+      barColor: 'bg-blue-600',
     },
     {
       key: 'proyecto' as const,
-      nombre: 'Proyecto',
-      descripcion: 'Proyectos trimestrales, trabajos de investigación',
-      icon: '📊',
-      color: 'border-yellow-200 bg-yellow-50',
-      barColor: 'bg-yellow-500',
+      nombre: 'PROYECTO INTEGRADOR',
+      icon: <LayoutDashboard className="h-6 w-6 text-amber-600" />,
+      color: 'border-amber-200 bg-amber-50/30',
+      barColor: 'bg-amber-500',
     },
     {
       key: 'examen' as const,
-      nombre: 'Examen',
-      descripcion: 'Exámenes quimestrales, pruebas de fin de trimestre',
-      icon: '📝',
-      color: 'border-gray-800 bg-gray-50',
-      barColor: 'bg-gray-800',
+      nombre: 'EXAMEN',
+      icon: <FileText className="h-6 w-6 text-slate-700" />,
+      color: 'border-slate-200 bg-slate-50/30',
+      barColor: 'bg-slate-800',
     },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-gray-900">Porcentajes de Evaluación</h2>
-        <p className="text-sm text-gray-600">
-          Define cómo se distribuirá la calificación final
+    <div className="space-y-4">
+      {/* Header Compacto */}
+      <div className="flex items-center justify-between border-b pb-3">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Porcentajes de Evaluación</h2>
+          <p className="text-xs text-gray-500">Define el peso de cada componente</p>
+        </div>
+        
+        <div className="flex flex-col items-end gap-1">
+           <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase text-gray-400">Total Acumulado:</span>
+              <span className={`text-2xl font-black ${isValid ? 'text-emerald-600' : 'text-red-500'}`}>
+                {total}%
+              </span>
+           </div>
+           <div className="w-48 h-2 bg-gray-100 rounded-full overflow-hidden border">
+              <div 
+                className={`h-full transition-all duration-500 ${isValid ? 'bg-emerald-500' : 'bg-red-500'}`}
+                style={{ width: `${Math.min(total, 100)}%` }}
+              />
+           </div>
+        </div>
+      </div>
+
+      {/* Alerta de validación */}
+      <div className={`p-2.5 rounded-lg border flex items-center gap-3 transition-colors ${
+        isValid ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'
+      }`}>
+        {isValid ? (
+          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+        ) : (
+          <Calculator className="h-5 w-5 text-amber-600" />
+        )}
+        <p className={`text-xs font-bold ${isValid ? 'text-emerald-800' : 'text-amber-800'}`}>
+          {isValid 
+            ? 'CONFIGURACIÓN VÁLIDA: Los pesos suman el 100% requerido.' 
+            : error || 'Ajusta los valores para completar el 100%'}
         </p>
       </div>
 
-      {/* Info Alert */}
-      <Alert className="border-blue-200 bg-blue-50 max-w-3xl mx-auto">
-        <Info className="h-4 w-4 text-blue-600" />
-        <AlertDescription>
-          <p className="text-sm text-blue-700">
-            Los porcentajes deben sumar exactamente <strong>100%</strong>. Estos porcentajes se aplicarán a todas las materias del período.
-          </p>
-        </AlertDescription>
-      </Alert>
-
-      {/* Tipos de Evaluación Cards */}
-      <div className="grid grid-cols-1 gap-4 max-w-3xl mx-auto">
-        {tiposEvaluacion.map(({ key, nombre, descripcion, icon, color, barColor }) => (
-          <Card key={key} className={`${color} border-2`}>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <span className="text-2xl">{icon}</span>
-                {nombre}
-              </CardTitle>
-              <p className="text-xs text-gray-600">{descripcion}</p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <Label htmlFor={key} className="text-xs mb-1 block">
-                    Porcentaje
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id={key}
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={formData[key]}
-                      onChange={(e) => handleChange(key, e.target.value)}
-                      className="border-2 pr-8"
-                    />
-                    <Percent className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  </div>
+      {/* Grid de 3 Columnas */}
+      <div className="grid grid-cols-3 gap-4">
+        {tiposEvaluacion.map(({ key, nombre, icon, color, barColor }) => (
+          <Card key={key} className={`${color} border shadow-none relative overflow-hidden`}>
+            <CardHeader className="p-4 pb-2 space-y-0 text-center">
+              <div className="flex flex-col items-center gap-2">
+                <div className="p-2 bg-white rounded-full shadow-sm border">
+                  {icon}
                 </div>
-                <div className="w-32">
-                  <Label className="text-xs mb-1 block opacity-0">-</Label>
-                  <div className="text-3xl font-bold text-gray-900">{formData[key]}%</div>
+                <CardTitle className="text-xs font-black text-gray-800 tracking-tight leading-tight uppercase">
+                  {nombre}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="p-4 pt-2 space-y-4">
+              {/* Badge de Porcentaje Grande */}
+              <div className="flex justify-center">
+                <div className="bg-white/90 border-2 border-white px-4 py-2 rounded-2xl shadow-sm text-center min-w-[80px]">
+                  <span className="text-2xl font-black text-gray-900">{formData[key]}%</span>
                 </div>
               </div>
-              {/* Custom Progress Bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div
+
+              <div className="space-y-1.5">
+                <Label htmlFor={key} className="text-[10px] uppercase font-black text-gray-500 text-center block">
+                  ASIGNAR PESO
+                </Label>
+                <div className="relative">
+                  <Input
+                    id={key}
+                    type="number"
+                    value={formData[key]}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    className="h-10 text-center text-base font-black bg-white border-gray-200 focus:ring-2 focus:ring-blue-500 rounded-lg"
+                  />
+                  <Percent className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+              
+              {/* Barra de progreso visual */}
+              <div className="h-2 w-full bg-gray-200/50 rounded-full overflow-hidden">
+                <div 
                   className={`${barColor} h-full transition-all duration-300`}
                   style={{ width: `${formData[key]}%` }}
                 />
@@ -150,49 +170,21 @@ export default function Step3TiposEvaluacion({
         ))}
       </div>
 
-      {/* Total Progress */}
-      <Card className="max-w-3xl mx-auto border-2 border-gray-300">
-        <CardContent className="pt-6">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-lg font-semibold">Total</Label>
-              <div className={`text-4xl font-bold ${isValid ? 'text-green-600' : 'text-red-600'}`}>
-                {total.toFixed(1)}%
-              </div>
-            </div>
-            {/* Custom Progress Bar for Total */}
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-              <div
-                className={`${isValid ? 'bg-green-600' : 'bg-red-600'} h-full transition-all duration-300`}
-                style={{ width: `${total > 100 ? 100 : total}%` }}
-              />
-            </div>
-            {isValid ? (
-              <div className="flex items-center gap-2 text-green-700 text-sm">
-                <CheckCircle2 className="h-4 w-4" />
-                <span className="font-medium">Los porcentajes suman 100% correctamente</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-red-700 text-sm">
-                <AlertCircle className="h-4 w-4" />
-                <span className="font-medium">{error}</span>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Buttons */}
-      <div className="flex justify-between pt-4 border-t max-w-3xl mx-auto">
-        <Button variant="outline" onClick={onBack}>
-          ← Atrás
+      {/* Footer de Botones */}
+      <div className="flex justify-between pt-4 border-t items-center">
+        <Button variant="ghost" onClick={onBack} className="text-gray-500 font-bold">
+          ← ATRÁS
         </Button>
-        <Button
-          onClick={handleNext}
+        <Button 
+          onClick={() => { if (isValid) onNext(formData); }} 
           disabled={!isValid}
-          className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+          className={`px-10 h-11 font-black rounded-xl shadow-lg transition-all active:scale-95 ${
+            isValid 
+            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+            : 'bg-gray-200 text-gray-400 cursor-not-allowed border-none'
+          }`}
         >
-          Siguiente: Revisar y Confirmar →
+          SIGUIENTE: FINALIZAR →
         </Button>
       </div>
     </div>

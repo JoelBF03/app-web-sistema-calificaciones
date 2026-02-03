@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/lib/components/ui/select';
 import { useDocentes } from '@/lib/hooks/useDocentes';
-import { Docente } from '@/lib/types/docente.types';
+import { Docente, NivelAsignado } from '@/lib/types/docente.types';
 import { Estado } from '@/lib/types';
 import { toast } from 'sonner';
 
@@ -26,11 +26,11 @@ interface EditCursoModalProps {
   onSave: (id: string, data: any) => Promise<void>;
 }
 
-export default function EditCursoModal({ 
-  curso, 
-  isOpen, 
+export default function EditCursoModal({
+  curso,
+  isOpen,
   onClose,
-  onSave 
+  onSave
 }: EditCursoModalProps) {
 
   const { fetchDocentes } = useDocentes();
@@ -55,12 +55,13 @@ export default function EditCursoModal({
 
   // Cargar datos del curso
   useEffect(() => {
+    // Quitamos la dependencia de 'isOpen' aquí para que sea más directo
     if (curso) {
       setFormData({
-        nivel: curso.nivel,
-        paralelo: curso.paralelo,
-        especialidad: curso.especialidad,
-        docente_id: curso.docente_id ? curso.docente_id : 'none' // 🔥 Convertir a string o 'none'
+        nivel: curso.nivel || '',
+        paralelo: curso.paralelo || '',
+        especialidad: curso.especialidad || '',
+        docente_id: curso.docente_id ? curso.docente_id : 'none'
       });
       setErrors({});
     }
@@ -80,7 +81,8 @@ export default function EditCursoModal({
     }
   };
 
-  if (!isOpen || !curso) return null;
+  if (!isOpen) return null;
+  if (!curso) return null;
 
   const nivelesBasicos = [NivelCurso.OCTAVO, NivelCurso.NOVENO, NivelCurso.DECIMO];
   const nivelesBachillerato = [
@@ -93,12 +95,12 @@ export default function EditCursoModal({
   // 🔥 Filtrar docentes según el nivel del curso
   const getDocentesDisponibles = () => {
     if (!formData.nivel) return [];
-    
+
     const esBasica = isBasicaCurso(formData.nivel as NivelCurso);
-    
+
     return docentes.filter(docente => {
-      if (esBasica && docente.nivelAsignado === 'BASICA') return true;
-      if (!esBasica && docente.nivelAsignado === 'BACHILLERATO') return true;
+      if (esBasica && docente.nivelAsignado === NivelAsignado.BASICA) return true;
+      if (!esBasica && docente.nivelAsignado === NivelAsignado.BACHILLERATO) return true;
       return false;
     });
   };
@@ -182,7 +184,7 @@ export default function EditCursoModal({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        
+
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 relative">
           <button
@@ -201,7 +203,7 @@ export default function EditCursoModal({
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[calc(90vh-200px)] overflow-y-auto">
-          
+
           {/* Advertencia si el período está activo */}
           {curso.periodo_lectivo.estado === EstadoPeriodo.ACTIVO && (
             <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 flex items-start gap-3">
@@ -223,6 +225,7 @@ export default function EditCursoModal({
               Nivel <span className="text-red-500">*</span>
             </Label>
             <Select
+              key={formData.docente_id}
               value={formData.nivel}
               onValueChange={handleNivelChange}
               disabled={isSubmitting}
@@ -330,11 +333,11 @@ export default function EditCursoModal({
               onValueChange={(value) => setFormData({ ...formData, docente_id: value })}
               disabled={!formData.nivel || isSubmitting || loadingDocentes}
             >
-              <SelectTrigger  className="cursor-pointer">
+              <SelectTrigger className="cursor-pointer">
                 <SelectValue placeholder={
-                  loadingDocentes 
-                    ? "Cargando docentes..." 
-                    : !formData.nivel 
+                  loadingDocentes
+                    ? "Cargando docentes..."
+                    : !formData.nivel
                       ? "Selecciona primero un nivel"
                       : "Selecciona un tutor (opcional)"
                 } />

@@ -23,7 +23,7 @@ export function useCalificacionExamen(materia_curso_id: string, trimestre_id: st
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { calificacion_examen: number; observaciones?: string } }) => 
+    mutationFn: ({ id, data }: { id: string; data: { calificacion_examen: number; observaciones?: string } }) =>
       calificacionExamenService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calificaciones-examen', materia_curso_id, trimestre_id] });
@@ -31,6 +31,17 @@ export function useCalificacionExamen(materia_curso_id: string, trimestre_id: st
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Error al actualizar calificación');
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: calificacionExamenService.remove,
+    onSuccess: () => {
+      // ✅ Invalidar lista de calificaciones
+      queryClient.invalidateQueries({ queryKey: ['calificaciones-examen', materia_curso_id, trimestre_id] });
+      toast.success('Calificación eliminada');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Error al eliminar calificación');
     },
   });
 
@@ -45,9 +56,11 @@ export function useCalificacionExamen(materia_curso_id: string, trimestre_id: st
     sinCalificar: sinCalificar || [],
     isLoading,
     error,
+    eliminarCalificacion: deleteMutation.mutate,
     guardarCalificaciones: createBatchMutation.mutate,
     updateCalificacion: updateMutation.mutate,
     isSaving: createBatchMutation.isPending,
     isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 }

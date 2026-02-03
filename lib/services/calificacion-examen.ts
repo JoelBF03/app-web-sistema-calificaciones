@@ -22,8 +22,9 @@ export const calificacionExamenService = {
     return data;
   },
 
-  async remove(id: string): Promise<void> {
-    await api.delete(`/calificacion-examen/${id}`);
+  async remove(id: string): Promise<{ message: string }> {
+    const { data } = await api.delete(`/calificacion-examen/${id}`);
+    return data;
   },
 
   async estudiantesSinCalificar(materia_curso_id: string, trimestre_id: string) {

@@ -1,7 +1,6 @@
-// nextjs-frontend/lib/components/features/calificaciones/tutoria/TablaProyectoTutoria.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2, Save, Eye, Target } from 'lucide-react';
 import { useCalificacionProyecto } from '@/lib/hooks/useCalificacionProyecto';
 import { ModalDetalleProyecto } from '@/lib/components/features/calificaciones/ModalDetalleProyecto';
@@ -11,7 +10,7 @@ import { Input } from '@/lib/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/lib/components/ui/table';
 import { toast } from 'sonner';
 import { calcularCualitativo, getColorCualitativo } from '@/lib/utils/calificaciones.utils';
-import { TrimestreEstado } from '@/lib/types';
+import { Role, TrimestreEstado } from '@/lib/types';
 
 interface TablaProyectoTutoriaProps {
     curso_id: string;
@@ -56,6 +55,15 @@ export function TablaProyectoTutoria({
         open: boolean;
         estudiante: any;
     } | null>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        const user = localStorage.getItem('usuario');
+        if (user) {
+            const parsedUser = JSON.parse(user);
+            setIsAdmin(parsedUser.rol === Role.ADMIN);
+        }
+    }, []);
 
     const handleGuardar = async () => {
         const estudiantesParaCrear: any[] = [];
@@ -157,7 +165,7 @@ export function TablaProyectoTutoria({
                             </p>
                         </div>
                     </div>
-                    {!estadoFinalizado && hayDatos && (
+                    {!estadoFinalizado && hayDatos && !isAdmin && (
                         <Button
                             onClick={handleGuardar}
                             disabled={isSaving || isUpdating}
@@ -251,8 +259,8 @@ export function TablaProyectoTutoria({
                                             // ✅ SI YA ESTÁ CALIFICADO: MOSTRAR NOTA (NO INPUT)
                                             <div className="flex flex-col items-center gap-1">
                                                 <span className={`font-semibold text-lg ${Number(notaGuardadaNum) >= 7 ? 'text-green-700' :
-                                                        Number(notaGuardadaNum) >= 4 ? 'text-yellow-700' :
-                                                            'text-red-700'
+                                                    Number(notaGuardadaNum) >= 4 ? 'text-yellow-700' :
+                                                        'text-red-700'
                                                     }`}>
                                                     {notaGuardadaNum?.toFixed(2)}
                                                 </span>
@@ -272,6 +280,7 @@ export function TablaProyectoTutoria({
                                                     value={notasTemp[estudiante.id] ?? ''}
                                                     onChange={(e) => handleNotaChange(estudiante.id, e.target.value)}
                                                     placeholder="0.00"
+                                                    disabled={estadoFinalizado || isAdmin}
                                                     className="w-full max-w-[100px] mx-auto text-center border-2 border-gray-300 focus:border-yellow-500 rounded-lg"
                                                 />
                                             )

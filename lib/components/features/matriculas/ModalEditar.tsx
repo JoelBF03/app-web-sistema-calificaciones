@@ -143,7 +143,7 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
               type="text"
               value={formData.estudiante_cedula}
               onChange={(e) => setFormData({ ...formData, estudiante_cedula: e.target.value })}
-              maxLength={10}
+              maxLength={13}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               required
             />

@@ -80,11 +80,8 @@ export function CursoCard({ materiaCurso, docenteNombre = 'Usuario', isTutor = f
       {/* Contenido */}
       <div className="p-5">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {cursoData.paralelo} - {materiaData.nombre.toUpperCase()} / {formatNivel(cursoData.nivel)} EGB
+          {cursoData.paralelo} - {materiaData.nombre.toUpperCase()} / {formatNivel(cursoData.nivel)} {(cursoData.especialidad)} / {(cursoData.periodo_lectivo.nombre)}
         </h3>
-        <p className="text-gray-600 text-sm mb-4">
-          Prof. {docenteNombre}
-        </p>
         
         {/* Acciones */}
         <div className="flex justify-between items-center pt-4 border-t border-gray-100">

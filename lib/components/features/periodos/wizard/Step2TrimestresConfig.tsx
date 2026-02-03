@@ -5,8 +5,8 @@ import { Input } from '@/lib/components/ui/input';
 import { Label } from '@/lib/components/ui/label';
 import { Button } from '@/lib/components/ui/button';
 import { Alert, AlertDescription } from '@/lib/components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/lib/components/ui/card';
-import { Calendar, Info, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/lib/components/ui/card';
+import { Calendar, Info, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { NombreTrimestre } from '@/lib/types/periodo.types';
 
 interface TrimestreData {
@@ -81,11 +81,10 @@ export default function Step2TrimestresConfig({
     const periodoInicio = new Date(periodoFechaInicio);
     const periodoFin = new Date(periodoFechaFin);
 
-    // Validar cada trimestre
     const trimestres = [
-      { nombre: 'Primer Trimestre', data: formData.trimestre1 },
-      { nombre: 'Segundo Trimestre', data: formData.trimestre2 },
-      { nombre: 'Tercer Trimestre', data: formData.trimestre3 },
+      { nombre: '1er Trimestre', data: formData.trimestre1 },
+      { nombre: '2do Trimestre', data: formData.trimestre2 },
+      { nombre: '3er Trimestre', data: formData.trimestre3 },
     ];
 
     trimestres.forEach((trimestre) => {
@@ -93,40 +92,22 @@ export default function Step2TrimestresConfig({
       const fin = new Date(trimestre.data.fechaFin);
 
       if (fin <= inicio) {
-        newErrors.push(`${trimestre.nombre}: La fecha de fin debe ser posterior a la fecha de inicio`);
+        newErrors.push(`${trimestre.nombre}: Fin debe ser posterior al inicio`);
       }
-
-      if (inicio < periodoInicio) {
-        newErrors.push(`${trimestre.nombre}: La fecha de inicio no puede ser anterior al inicio del período`);
-      }
-
-      if (fin > periodoFin) {
-        newErrors.push(`${trimestre.nombre}: La fecha de fin no puede ser posterior al fin del período`);
+      if (inicio < periodoInicio || fin > periodoFin) {
+        newErrors.push(`${trimestre.nombre}: Fuera del rango del periodo`);
       }
     });
 
-    // Validar que no se solapen
-    const t1Fin = new Date(formData.trimestre1.fechaFin);
-    const t2Inicio = new Date(formData.trimestre2.fechaInicio);
-    const t2Fin = new Date(formData.trimestre2.fechaFin);
-    const t3Inicio = new Date(formData.trimestre3.fechaInicio);
-
-    if (t2Inicio < t1Fin) {
-      newErrors.push('El Segundo Trimestre debe iniciar después de que finalice el Primer Trimestre');
+    if (new Date(formData.trimestre2.fechaInicio) < new Date(formData.trimestre1.fechaFin)) {
+      newErrors.push('T2 no puede iniciar antes que termine T1');
     }
-
-    if (t3Inicio < t2Fin) {
-      newErrors.push('El Tercer Trimestre debe iniciar después de que finalice el Segundo Trimestre');
+    if (new Date(formData.trimestre3.fechaInicio) < new Date(formData.trimestre2.fechaFin)) {
+      newErrors.push('T3 no puede iniciar antes que termine T2');
     }
 
     setErrors(newErrors);
     return newErrors.length === 0;
-  };
-
-  const handleNext = () => {
-    if (validateForm()) {
-      onNext(formData);
-    }
   };
 
   const getDuration = (inicio: string, fin: string) => {
@@ -137,70 +118,72 @@ export default function Step2TrimestresConfig({
   };
 
   const trimestreCards = [
-    { key: 'trimestre1' as const, nombre: NombreTrimestre.PRIMER_TRIMESTRE, icon: '1️⃣', color: 'border-red-200 bg-red-50' },
-    { key: 'trimestre2' as const, nombre: NombreTrimestre.SEGUNDO_TRIMESTRE, icon: '2️⃣', color: 'border-yellow-200 bg-yellow-50' },
-    { key: 'trimestre3' as const, nombre: NombreTrimestre.TERCER_TRIMESTRE, icon: '3️⃣', color: 'border-gray-800 bg-gray-50' },
+    { key: 'trimestre1' as const, nombre: '1er Trimestre', color: 'border-blue-200 bg-blue-50/30', text: 'text-blue-700' },
+    { key: 'trimestre2' as const, nombre: '2do Trimestre', color: 'border-indigo-200 bg-indigo-50/30', text: 'text-indigo-700' },
+    { key: 'trimestre3' as const, nombre: '3er Trimestre', color: 'border-purple-200 bg-purple-50/30', text: 'text-purple-700' },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-gray-900">Configuración de Trimestres</h2>
-        <p className="text-sm text-gray-600">
-          Ajusta las fechas de cada trimestre (opcional)
+    <div className="space-y-4">
+      {/* Header Compacto */}
+      <div className="flex items-center justify-between border-b pb-2">
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">Configuración de Tiempos</h2>
+          <p className="text-xs text-gray-500">Distribución de trimestres</p>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] font-medium text-gray-400 uppercase">Periodo Total</p>
+          <p className="text-xs font-bold text-blue-600">{periodoFechaInicio} al {periodoFechaFin}</p>
+        </div>
+      </div>
+
+      {/* Info Alert reducida */}
+      <div className="bg-blue-50 border border-blue-100 rounded-lg p-2 flex items-center gap-2">
+        <Info className="h-4 w-4 text-blue-500 shrink-0" />
+        <p className="text-[11px] text-blue-700">
+          Fechas calculadas <strong>equitativamente</strong>. Ajusta con cuidado de no solapar periodos.
         </p>
       </div>
 
-      {/* Info Alert */}
-      <Alert className="border-blue-200 bg-blue-50 max-w-3xl mx-auto">
-        <Info className="h-4 w-4 text-blue-600" />
-        <AlertDescription>
-          <p className="text-sm text-blue-700">
-            Los trimestres se han distribuido automáticamente de forma equitativa. Puedes ajustar las fechas si es necesario.
-          </p>
-        </AlertDescription>
-      </Alert>
-
-      {/* Trimestres Cards */}
-      <div className="grid grid-cols-1 gap-4 max-w-3xl mx-auto">
-        {trimestreCards.map(({ key, nombre, icon, color }) => (
-          <Card key={key} className={`${color} border-2`}>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <span className="text-2xl">{icon}</span>
-                {nombre}
-                <span className="ml-auto text-sm font-normal text-gray-600">
+      {/* GRID HORIZONTAL COMPACTO */}
+      <div className="grid grid-cols-3 gap-3">
+        {trimestreCards.map(({ key, nombre, color, text }) => (
+          <Card key={key} className={`${color} border shadow-none`}>
+            <CardHeader className="py-2 px-3 border-b border-white/50 space-y-0">
+              <div className="flex justify-between items-center">
+                <CardTitle className={`text-[11px] font-bold uppercase ${text}`}>{nombre}</CardTitle>
+                <span className="text-[10px] font-bold bg-white/80 px-1.5 py-0.5 rounded text-gray-600">
                   {getDuration(formData[key].fechaInicio, formData[key].fechaFin)}
                 </span>
-              </CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`${key}-inicio`} className="flex items-center gap-1.5 text-xs">
-                    <Calendar className="h-3 w-3" />
-                    Fecha de Inicio
-                  </Label>
+            <CardContent className="p-3 space-y-3">
+              <div className="space-y-1">
+                <Label className="text-[10px] text-gray-500">Inicia</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-2 top-2 h-3.5 w-3.5 text-gray-400" />
                   <Input
-                    id={`${key}-inicio`}
                     type="date"
                     value={formData[key].fechaInicio}
                     onChange={(e) => handleTrimestreChange(key, 'fechaInicio', e.target.value)}
-                    className="border-2"
+                    className="pl-7 h-8 text-xs bg-white border-gray-200"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`${key}-fin`} className="flex items-center gap-1.5 text-xs">
-                    <Calendar className="h-3 w-3" />
-                    Fecha de Fin
-                  </Label>
+              </div>
+
+              <div className="flex justify-center -my-1">
+                <ArrowRight className="h-3 w-3 text-gray-300" />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[10px] text-gray-500">Finaliza</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-2 top-2 h-3.5 w-3.5 text-gray-400" />
                   <Input
-                    id={`${key}-fin`}
                     type="date"
                     value={formData[key].fechaFin}
                     onChange={(e) => handleTrimestreChange(key, 'fechaFin', e.target.value)}
-                    className="border-2"
+                    className="pl-7 h-8 text-xs bg-white border-gray-200"
                   />
                 </div>
               </div>
@@ -209,40 +192,37 @@ export default function Step2TrimestresConfig({
         ))}
       </div>
 
-      {/* Errors */}
-      {errors.length > 0 && (
-        <Alert className="border-red-200 bg-red-50 max-w-3xl mx-auto">
-          <AlertCircle className="h-4 w-4 text-red-600" />
-          <AlertDescription>
-            <p className="font-medium text-red-800 mb-2">Se encontraron los siguientes errores:</p>
-            <ul className="text-sm text-red-700 space-y-1">
-              {errors.map((error, index) => (
-                <li key={index}>• {error}</li>
-              ))}
-            </ul>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Success Message */}
-      {errors.length === 0 && formData.modificados && (
-        <Alert className="border-green-200 bg-green-50 max-w-3xl mx-auto">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertDescription>
-            <p className="text-sm text-green-700 font-medium">
-              ✅ Las fechas de los trimestres son válidas
+      {/* Feedback de validación compacto */}
+      <div className="h-10">
+        {errors.length > 0 ? (
+          <div className="flex items-center gap-2 text-red-600 bg-red-50 p-2 rounded border border-red-100">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <p className="text-[10px] font-medium truncate">
+              {errors[0]} {errors.length > 1 && `(+${errors.length - 1} más)`}
             </p>
-          </AlertDescription>
-        </Alert>
-      )}
+          </div>
+        ) : formData.modificados && (
+          <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 p-2 rounded border border-emerald-100">
+            <CheckCircle2 className="h-4 w-4" />
+            <p className="text-[10px] font-medium">Cronograma válido y consistente.</p>
+          </div>
+        )}
+      </div>
 
-      {/* Buttons */}
-      <div className="flex justify-between pt-4 border-t max-w-3xl mx-auto">
-        <Button variant="outline" onClick={onBack}>
+      {/* Footer de Botones */}
+      <div className="flex justify-between pt-3 border-t">
+        <Button 
+          variant="outline" 
+          onClick={onBack} 
+          className="h-9 text-xs border-gray-300 text-gray-600"
+        >
           ← Atrás
         </Button>
-        <Button onClick={handleNext} className="bg-yellow-500 hover:bg-yellow-600 text-gray-900">
-          Siguiente: Porcentajes de Evaluación →
+        <Button 
+          onClick={() => { if (validateForm()) onNext(formData); }} 
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 h-9 text-xs font-bold shadow-sm"
+        >
+          Siguiente: Evaluación →
         </Button>
       </div>
     </div>

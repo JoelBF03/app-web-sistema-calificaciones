@@ -18,6 +18,19 @@ export default function DocenteLayout({
   const router = useRouter();
   const pathname = usePathname();
 
+  const handleVolverAdmin = () => {
+    // Si el admin está metido en calificaciones o tutoría de un docente
+    const esRutaEspecifica = pathname.includes('/calificaciones') || pathname.includes('/tutoria');
+
+    if (esRutaEspecifica) {
+      // Lo regresamos a la gestión de cursos de admin
+      router.push('/admin/cursos');
+    } else {
+      // Si está en el "index" de docente, lo mandamos al dashboard principal de admin
+      router.push('/admin');
+    }
+  };
+
   useEffect(() => {
     initFromStorage();
   }, [initFromStorage]);
@@ -60,7 +73,7 @@ export default function DocenteLayout({
           {/* ✅ Si es admin, mostrar botón de volver */}
           {esAdmin ? (
             <button
-              onClick={() => router.push('/admin')}
+              onClick={handleVolverAdmin}
               className="flex items-center gap-2 hover:bg-gray-700 px-3 py-2 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -76,25 +89,23 @@ export default function DocenteLayout({
               <nav>
                 <ul className="flex gap-6">
                   <li>
-                    <Link 
-                      href="/docente" 
-                      className={`font-medium pb-1 transition-colors ${
-                        isCoursesActive 
-                          ? 'text-yellow-400 border-b-2 border-yellow-400' 
+                    <Link
+                      href="/docente"
+                      className={`font-medium pb-1 transition-colors ${isCoursesActive
+                          ? 'text-yellow-400 border-b-2 border-yellow-400'
                           : 'text-white hover:text-yellow-400'
-                      }`}
+                        }`}
                     >
                       Mis cursos
                     </Link>
                   </li>
                   <li>
-                    <Link 
-                      href="/docente/perfil" 
-                      className={`font-medium pb-1 transition-colors ${
-                        isProfileActive 
-                          ? 'text-yellow-400 border-b-2 border-yellow-400' 
+                    <Link
+                      href="/docente/perfil"
+                      className={`font-medium pb-1 transition-colors ${isProfileActive
+                          ? 'text-yellow-400 border-b-2 border-yellow-400'
                           : 'text-white hover:text-yellow-400'
-                      }`}
+                        }`}
                     >
                       Mi perfil
                     </Link>
@@ -118,9 +129,8 @@ export default function DocenteLayout({
             <span className="font-medium text-sm">
               {esAdmin ? 'Admin' : 'Prof.'} {usuario?.email?.split('@')[0] || 'Usuario'}
             </span>
-            <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${
-              esAdmin ? 'bg-red-400 border-red-400' : 'bg-yellow-400 border-yellow-400'
-            }`}>
+            <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${esAdmin ? 'bg-red-400 border-red-400' : 'bg-yellow-400 border-yellow-400'
+              }`}>
               <User className="w-5 h-5 text-gray-800" />
             </div>
           </div>

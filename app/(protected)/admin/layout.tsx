@@ -1,10 +1,16 @@
-// app/admin/layout.tsx
 'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { Role } from '@/lib/types';
+import { 
+  LogOut, 
+  User, 
+  Settings, 
+  LayoutDashboard,
+  GraduationCap
+} from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -33,79 +39,78 @@ export default function AdminLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-yellow-50">
-        <div className="flex items-center space-x-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-          <span className="text-red-600 font-medium">Cargando...</span>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900"></div>
       </div>
     );
   }
 
-  if (!isAuthenticated || usuario?.rol !== Role.ADMIN) {
-    return null;
-  }
+  if (!isAuthenticated || usuario?.rol !== Role.ADMIN) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-red-50">
-      {/* HEADER MEJORADO */}
-      <header className="bg-white shadow-lg border-b-2 border-red-100 sticky top-0 z-50">
+    <div className="min-h-screen bg-[#F4F7FE]">
+      {/* HEADER CON COLOR INSTITUCIONAL */}
+      <header className="bg-[#0F172A] text-white shadow-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-20">
+          <div className="flex h-16 items-center justify-between">
             
-            {/* Logo y navegación */}
-            <div className="flex items-center">
-              <div className="flex items-center gap-4">
-                {/* Logo mejorado */}
-                <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                    🎓
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
-                </div>
-                
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    Unidad Educativa Cinco de Junio 
-                  </h1>
-                  <div className="flex items-center gap-2">
-                    <span className="bg-gradient-to-r from-red-100 to-red-200 text-red-800 text-xs font-semibold px-3 py-1 rounded-full border border-red-300">
-                      Panel de Administración
-                    </span>
-                  </div>
-                </div>
+            {/* LADO IZQUIERDO: LOGO Y TÍTULO */}
+            <div className="flex items-center gap-4">
+              <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-900/20">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-base font-bold tracking-tight leading-none">
+                  Unidad Educativa Cinco de Junio
+                </h1>
+                <span className="text-[11px] text-blue-400 font-bold uppercase tracking-widest mt-1">
+                  Sistema de Gestión Académica
+                </span>
               </div>
             </div>
 
-            {/* Usuario y logout mejorado */}
-            <div className="flex items-center space-x-6">
-              <div className="hidden md:flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center text-white font-bold">
-                  👤
+            {/* LADO DERECHO: USUARIO Y SALIR */}
+            <div className="flex items-center gap-3 sm:gap-6">
+              {/* Info Usuario */}
+              <div className="hidden md:flex items-center gap-3 border-r border-slate-700 pr-6">
+                <div className="flex flex-col text-right">
+                  <span className="text-xs font-bold text-white uppercase">Administrador</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{usuario?.email}</span>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-900">Administrador</p>
-                  <p className="text-xs text-gray-500">{usuario?.email}</p>
+                <div className="h-9 w-9 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700">
+                  <User className="w-5 h-5 text-blue-400" />
                 </div>
               </div>
-              
+
+              {/* Botón Salir - Inspirado en tu botón rojo de cierre */}
               <button
                 onClick={handleLogout}
-                className="group flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white px-5 py-2.5 rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center gap-2 bg-[#E11D48] hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all font-bold text-sm shadow-lg shadow-red-900/20 cursor-pointer"
               >
-                <svg className="w-4 h-4 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Cerrar Sesión
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Cerrar Sesión</span>
               </button>
             </div>
+
           </div>
         </div>
       </header>
 
-      {/* CONTENIDO */}
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {children}
+      {/* SUB-BARRA DE NAVEGACIÓN (Opcional, para dar más cuerpo) */}
+      <div className="bg-white border-b border-slate-200 py-3 mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-slate-500 text-xs font-bold">
+            <LayoutDashboard className="w-4 h-4 text-blue-600" />
+            <span className="uppercase tracking-wider">Panel de Control</span>
+          </div>
+        </div>
+      </div>
+
+      {/* CONTENIDO PRINCIPAL */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+          {children}
+        </div>
       </main>
     </div>
   );

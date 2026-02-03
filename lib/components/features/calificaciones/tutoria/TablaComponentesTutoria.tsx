@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/calificaciones/tutoria/TablaComponentesTutoria.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ import { Button } from '@/lib/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/lib/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/lib/components/ui/table';
 import { toast } from 'sonner';
-import { TrimestreEstado } from '@/lib/types';
+import { Role, TrimestreEstado } from '@/lib/types';
 import { useComponentesCualitativos, useCalificacionCualitativa } from '@/lib/hooks/useCalificacionCualitativa';
 import { CalificacionComponente, CalificarMasivoDto } from '@/lib/types/calificaciones.types';
 import { NivelCurso } from '@/lib/types/curso.types';
@@ -58,6 +57,15 @@ export function TablaComponentesTutoria({
     open: boolean;
     estudiante: any;
   } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem('usuario');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setIsAdmin(parsedUser.rol === Role.ADMIN);
+    }
+  }, []);
 
   // Cargar calificaciones iniciales
   useEffect(() => {
@@ -94,7 +102,7 @@ export function TablaComponentesTutoria({
     const key = `${estudianteId}:${materiaId}`;
     setCambiosPendientes((prev) => {
       const newSet = new Set(prev);
-      
+
       // Si la nueva calificación es diferente a la original, marcar como cambio
       if (nuevaCalificacion !== calificacionOriginal) {
         newSet.add(key);
@@ -102,7 +110,7 @@ export function TablaComponentesTutoria({
         // Si volvió al valor original, remover del tracking
         newSet.delete(key);
       }
-      
+
       return newSet;
     });
   };
@@ -119,7 +127,7 @@ export function TablaComponentesTutoria({
     cambiosPendientes.forEach((key) => {
       const [estudianteId, materiaId] = key.split(':');
       const calificacion = notasTemp[estudianteId]?.[materiaId] ?? null;
-      
+
       calificacionesArray.push({
         estudiante_id: estudianteId,
         materia_id: materiaId,
@@ -133,9 +141,8 @@ export function TablaComponentesTutoria({
       calificaciones: calificacionesArray,
     };
 
-    console.log(`💾 Guardando ${calificacionesArray.length} calificaciones modificadas`);
     await guardarCalificaciones(dto);
-    
+
     // Actualizar estado después de guardar exitosamente
     setNotasOriginales(notasTemp);
     setCambiosPendientes(new Set());
@@ -183,7 +190,7 @@ export function TablaComponentesTutoria({
           {!estadoFinalizado && (
             <Button
               onClick={handleGuardar}
-              disabled={isSaving || cambiosPendientes.size === 0}
+              disabled={isSaving || cambiosPendientes.size === 0 || isAdmin}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
@@ -251,13 +258,12 @@ export function TablaComponentesTutoria({
                 {componentes.map((componente) => {
                   const key = `${estudiante.id}:${componente.id}`;
                   const tieneCambio = cambiosPendientes.has(key);
-                  
+
                   return (
                     <TableCell
                       key={componente.id}
-                      className={`border-x border-gray-300 text-center px-2 py-2 transition-colors ${
-                        tieneCambio ? 'bg-yellow-50' : ''
-                      }`}
+                      className={`border-x border-gray-300 text-center px-2 py-2 transition-colors ${tieneCambio ? 'bg-yellow-50' : ''
+                        }`}
                     >
                       {estadoFinalizado ? (
                         <span className="font-bold text-gray-900">
@@ -265,28 +271,28 @@ export function TablaComponentesTutoria({
                         </span>
                       ) : (
                         <Select
+                          disabled={isAdmin}
                           value={(notasTemp[estudiante.id]?.[componente.id] as string) || SIN_CALIFICAR}
                           onValueChange={(value) =>
                             handleNotaChange(estudiante.id, componente.id, value)
                           }
                         >
-                          <SelectTrigger className={`w-full max-w-[140px] mx-auto border-2 focus:border-purple-500 ${
-                            tieneCambio ? 'border-orange-400 bg-orange-50' : 'border-gray-300'
-                          }`}>
+                          <SelectTrigger className={`w-full max-w-[140px] mx-auto border-2 focus:border-purple-500 ${tieneCambio ? 'border-orange-400 bg-orange-50' : 'border-gray-300'
+                            }`}>
                             <SelectValue placeholder="Sin calificar" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value={SIN_CALIFICAR}>Sin calificar</SelectItem>
-                            <SelectItem value={CalificacionComponente.MAS_A}>+A (Excelente)</SelectItem>
-                            <SelectItem value={CalificacionComponente.A}>A (Muy Bueno)</SelectItem>
-                            <SelectItem value={CalificacionComponente.A_MENOS}>A- (Bueno)</SelectItem>
-                            <SelectItem value={CalificacionComponente.B_MAS}>B+ (Satisfactorio+)</SelectItem>
-                            <SelectItem value={CalificacionComponente.B}>B (Satisfactorio)</SelectItem>
-                            <SelectItem value={CalificacionComponente.B_MENOS}>B- (Satisfactorio-)</SelectItem>
-                            <SelectItem value={CalificacionComponente.C_MAS}>C+ (Regular+)</SelectItem>
-                            <SelectItem value={CalificacionComponente.C}>C (Regular)</SelectItem>
-                            <SelectItem value={CalificacionComponente.C_MENOS}>C- (Regular-)</SelectItem>
-                            <SelectItem value={CalificacionComponente.D}>D (Insuficiente)</SelectItem>
+                            <SelectItem value={CalificacionComponente.MAS_A}>+A</SelectItem>
+                            <SelectItem value={CalificacionComponente.A}>A</SelectItem>
+                            <SelectItem value={CalificacionComponente.A_MENOS}>A-</SelectItem>
+                            <SelectItem value={CalificacionComponente.B_MAS}>B+</SelectItem>
+                            <SelectItem value={CalificacionComponente.B}>B</SelectItem>
+                            <SelectItem value={CalificacionComponente.B_MENOS}>B-</SelectItem>
+                            <SelectItem value={CalificacionComponente.C_MAS}>C+</SelectItem>
+                            <SelectItem value={CalificacionComponente.C}>C</SelectItem>
+                            <SelectItem value={CalificacionComponente.C_MENOS}>C-</SelectItem>
+                            <SelectItem value={CalificacionComponente.D}>D</SelectItem>
                           </SelectContent>
                         </Select>
                       )}

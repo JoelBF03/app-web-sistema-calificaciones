@@ -8,12 +8,14 @@ import { Card } from '@/lib/components/ui/card';
 
 interface ModalReactivarEstudianteProps {
   estudiante: Estudiante;
+  isOpen: boolean;
   onClose: () => void;
   onConfirm: (id: string) => Promise<void>;
 }
 
 export function ModalReactivarEstudiante({
   estudiante,
+  isOpen,  
   onClose,
   onConfirm,
 }: ModalReactivarEstudianteProps) {
@@ -30,6 +32,8 @@ export function ModalReactivarEstudiante({
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">

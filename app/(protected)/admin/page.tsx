@@ -10,21 +10,13 @@ import {
   UserCircle,
   Link2,
   BarChart3,
-  FileText
+  FileText,
+  Settings
 } from 'lucide-react';
 import { Card, CardContent } from '@/lib/components/ui/card';
 
 export default function AdminDashboard() {
   const adminModules = [
-    {
-      title: 'Docentes',
-      description: 'Gestionar docentes del sistema',
-      icon: Users,
-      href: '/admin/docentes',
-      color: 'text-blue-600',
-      gradient: 'from-blue-500 to-blue-600',
-      bgGradient: 'from-blue-50 to-blue-100',
-    },
     {
       title: 'Períodos Lectivos',
       description: 'Administrar años lectivos',
@@ -44,6 +36,24 @@ export default function AdminDashboard() {
       bgGradient: 'from-purple-50 to-purple-100',
     },
     {
+      title: 'Matrículas',
+      description: 'Matricular estudiantes',
+      icon: FileText,
+      href: '/admin/matriculas',
+      color: 'text-gray-600',
+      gradient: 'from-gray-500 to-gray-600',
+      bgGradient: 'from-gray-50 to-gray-100',
+    },
+    {
+      title: 'Asignaciones',
+      description: 'Asignar materias a cursos',
+      icon: Link2,
+      href: '/admin/asignaciones',
+      color: 'text-red-600',
+      gradient: 'from-red-500 to-red-600',
+      bgGradient: 'from-red-50 to-red-100',
+    },
+    {
       title: 'Materias',
       description: 'Administrar asignaturas',
       icon: BookOpen,
@@ -51,6 +61,15 @@ export default function AdminDashboard() {
       color: 'text-yellow-600',
       gradient: 'from-yellow-500 to-yellow-600',
       bgGradient: 'from-yellow-50 to-yellow-100',
+    },
+    {
+      title: 'Docentes',
+      description: 'Gestionar docentes del sistema',
+      icon: Users,
+      href: '/admin/docentes',
+      color: 'text-blue-600',
+      gradient: 'from-blue-500 to-blue-600',
+      bgGradient: 'from-blue-50 to-blue-100',
     },
     {
       title: 'Estudiantes',
@@ -62,32 +81,14 @@ export default function AdminDashboard() {
       bgGradient: 'from-indigo-50 to-indigo-100',
     },
     {
-      title: 'Asignaciones',
-      description: 'Asignar materias a cursos',
-      icon: Link2,
-      href: '/admin/asignaciones',
-      color: 'text-red-600',
-      gradient: 'from-red-500 to-red-600',
-      bgGradient: 'from-red-50 to-red-100',
-    },
-/*     {
-      title: 'Reportes',
-      description: 'Generar reportes del sistema',
-      icon: BarChart3,
-      href: '/admin/reportes',
+      title: 'Configuración de Cuenta',
+      description: 'Configurar credenciales',
+      icon: Settings,
+      href: '/admin/configuracion',
       color: 'text-teal-600',
       gradient: 'from-teal-500 to-teal-600',
       bgGradient: 'from-teal-50 to-teal-100',
-    }, */
-    {
-      title: 'Matrículas',
-      description: 'Matricular estudiantes',
-      icon: FileText,
-      href: '/admin/matriculas',
-      color: 'text-gray-600',
-      gradient: 'from-gray-500 to-gray-600',
-      bgGradient: 'from-gray-50 to-gray-100',
-    }
+    },
   ];
 
   return (

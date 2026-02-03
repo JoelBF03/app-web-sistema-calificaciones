@@ -15,11 +15,13 @@ import { reportesService } from '@/lib/services/reportes.services';
 
 interface ModalHistorialEstudianteProps {
   estudiante: Estudiante;
+  isOpen: boolean;
   onClose: () => void;
 }
 
 export function ModalHistorialEstudiante({
   estudiante,
+  isOpen,
   onClose,
 }: ModalHistorialEstudianteProps) {
   const [descargando, setDescargando] = useState<string | null>(null);
@@ -48,6 +50,8 @@ export function ModalHistorialEstudiante({
   const matriculasOrdenadas = estudiante.matriculas?.sort((a, b) => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">

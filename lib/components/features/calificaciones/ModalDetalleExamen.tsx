@@ -11,6 +11,8 @@ import { calificacionExamenService } from '@/lib/services/calificacion-examen';
 import { useRecuperacionExamen } from '@/lib/hooks/useRecuperacionExamen';
 import { toast } from 'sonner';
 import { TrimestreEstado } from '@/lib/types/periodo.types';
+import { Role } from '@/lib/types';
+import { useCalificacionExamen } from '@/lib/hooks/useCalificacionExamen';
 
 interface ModalDetalleExamenProps {
   calificacion_id: string;
@@ -19,6 +21,8 @@ interface ModalDetalleExamenProps {
   onClose: () => void;
   onSuccess: () => void;
   trimestreEstado?: TrimestreEstado;
+  materia_curso_id: string;
+  trimestre_id: string;
 }
 
 export function ModalDetalleExamen({
@@ -27,7 +31,9 @@ export function ModalDetalleExamen({
   open,
   onClose,
   onSuccess,
-  trimestreEstado
+  trimestreEstado,
+  materia_curso_id,
+  trimestre_id
 }: ModalDetalleExamenProps) {
   const [calificacion, setCalificacion] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +44,7 @@ export function ModalDetalleExamen({
   const [observaciones, setObservaciones] = useState('');
   const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [mostrarConfirmacionEditar, setMostrarConfirmacionEditar] = useState(false);
-  
+
   // ✅ NUEVO: Modal de confirmación para eliminar recuperación
   const [mostrarConfirmacionEliminarRecuperacion, setMostrarConfirmacionEliminarRecuperacion] = useState(false);
 
@@ -49,9 +55,20 @@ export function ModalDetalleExamen({
   const [observacionesRecuperacion, setObservacionesRecuperacion] = useState('');
   const [editandoRecuperacion, setEditandoRecuperacion] = useState(false);
 
+  const { eliminarCalificacion, isDeleting: isDeletingFromHook } = useCalificacionExamen(materia_curso_id, trimestre_id);
   const { historial, recuperacion, necesitaTrabajoRefuerzo, isLoading: loadingRecuperacion, refetch, crearRecuperacion, actualizarRecuperacion, eliminarRecuperacion, isCreating, isUpdating, isDeleting: isDeletingRecuperacion } = useRecuperacionExamen(calificacion_id);
 
-  const puedeEditar = trimestreEstado !== TrimestreEstado.FINALIZADO;
+  const [isAdmin, setIsAdmin] = useState(false);
+  const puedeEditar = trimestreEstado !== TrimestreEstado.FINALIZADO && !isAdmin;
+
+
+  useEffect(() => {
+    const user = localStorage.getItem('usuario');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setIsAdmin(parsedUser.rol === Role.ADMIN);
+    }
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -111,7 +128,7 @@ export function ModalDetalleExamen({
     try {
       setIsSaving(true);
       setMostrarConfirmacionEditar(false);
-      
+
       const nota = parseFloat(nuevaNota);
       await calificacionExamenService.update(calificacion_id, {
         calificacion_examen: nota,
@@ -134,19 +151,14 @@ export function ModalDetalleExamen({
   };
 
   const handleEliminar = async () => {
+    setMostrarConfirmacionEliminar(false);
     try {
-      setIsDeleting(true);
-      setMostrarConfirmacionEliminar(false);
-      
-      await calificacionExamenService.remove(calificacion_id);
-      toast.success('Calificación eliminada. Registro guardado.');
-      
-      // ✅ ACTUALIZAR LISTA ANTES DE CERRAR
+      eliminarCalificacion(calificacion_id);
+      // El hook ya invalida las queries automáticamente
       onSuccess();
       onClose();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al eliminar');
-      setIsDeleting(false);
+      toast.error(error.response?.data?.message || 'Error al eliminar calificación');
     }
   };
 
@@ -176,7 +188,7 @@ export function ModalDetalleExamen({
 
   const handleGuardarRecuperacion = async () => {
     const segundoExamenNum = parseFloat(segundoExamen);
-    
+
     if (isNaN(segundoExamenNum) || segundoExamenNum < 0 || segundoExamenNum > 10) {
       toast.error('El segundo examen debe estar entre 0 y 10');
       return;
@@ -210,7 +222,7 @@ export function ModalDetalleExamen({
           observaciones: observacionesRecuperacion.trim() || undefined
         });
       }
-      
+
       setAbrirRecuperacion(false);
       setEditandoRecuperacion(false);
       await cargarCalificacion();
@@ -251,9 +263,10 @@ export function ModalDetalleExamen({
   };
 
   const puedeRecuperar = () => {
+    if (isAdmin) return false;
     if (!calificacion) return false;
     if (trimestreEstado !== TrimestreEstado.ACTIVO) return false;
-    const notaActual = historial?.calificacion?.calificacion_original 
+    const notaActual = historial?.calificacion?.calificacion_original
       ? Number(historial.calificacion.calificacion_original)
       : Number(calificacion.calificacion_examen);
     return notaActual < 10;
@@ -281,7 +294,7 @@ export function ModalDetalleExamen({
               <Alert className="bg-yellow-50 border-yellow-200">
                 <Info className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="text-yellow-800">
-                  El trimestre está finalizado. No se pueden realizar cambios en la calificación.
+                  No se pueden realizar cambios en la calificación.
                 </AlertDescription>
               </Alert>
             )}
@@ -345,7 +358,7 @@ export function ModalDetalleExamen({
                       <AlertDescription className="text-blue-800">
                         {historial?.calificacion?.calificacion_original != null && (
                           <span>
-                            Nota original: <strong>{Number(historial.calificacion.calificacion_original).toFixed(2)}</strong> | 
+                            Nota original: <strong>{Number(historial.calificacion.calificacion_original).toFixed(2)}</strong> |
                             Nota final: <strong>{Number(historial.calificacion.calificacion_actual).toFixed(2)}</strong>
                           </span>
                         )}
@@ -396,7 +409,7 @@ export function ModalDetalleExamen({
                         Agregar Recuperación
                       </Button>
                     )}
-                    
+
                     <Button onClick={handleEditar} variant="outline">
                       <Edit2 className="h-4 w-4 mr-2" />
                       Editar Calificación

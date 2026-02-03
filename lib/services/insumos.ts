@@ -22,6 +22,12 @@ export const insumosService = {
     return data;
   },
 
+  // ✅ NUEVO: Reactivar insumo publicado (solo admin)
+  async reactivar(id: string): Promise<Insumo> {
+    const { data } = await api.patch(`/insumos/${id}/reactivar`);
+    return data;
+  },
+
   async delete(id: string): Promise<void> {
     await api.delete(`/insumos/${id}`);
   }

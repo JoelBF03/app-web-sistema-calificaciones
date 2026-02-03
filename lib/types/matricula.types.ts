@@ -2,8 +2,9 @@ import { EspecialidadCurso, NivelCurso } from "./curso.types";
 
 export enum EstadoMatricula {
   ACTIVO = 'ACTIVO',
+  FINALIZADO = 'FINALIZADO',
   RETIRADO = 'RETIRADO',
-  INACTIVO = 'INACTIVO',
+  ANULADO = 'ANULADO',
 }
 
 export enum OrigenMatricula {
@@ -60,10 +61,11 @@ export interface RegistroImportacionDto {
   especialidad: string;
   cedula: string;
   nombres_completos: string;
-  correo: string;
+  correo?: string;
   curso_parseado?: string;
   curso_id?: string;
   valido: boolean;
+  ya_matriculado?: boolean;
   errores: string[];
 }
 
@@ -72,22 +74,25 @@ export interface ResumenImportacionDto {
   total_registros: number;
   validos: number;
   invalidos: number;
+  existentes: number;
   registros: RegistroImportacionDto[];
 }
 
 export interface ResultadoImportacionDto {
   exitosas: number;
   fallidas: number;
+  duplicados: number;
   detalles: {
     cedula: string;
     nombre: string;
     curso: string;
-    estado: 'EXITOSO' | 'FALLIDO';
+    estado: 'EXITOSO' | 'FALLIDO' | 'DUPLICADO';
     error?: string;
   }[];
   resumen: {
     registros_recibidos: number;
     registros_validos: number;
+    registros_existentes: number;
     registros_invalidos: number;
     registros_importados: number;
     registros_fallidos: number;

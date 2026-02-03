@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 
 interface ModalDetallesEstudianteProps {
   estudiante: Estudiante;
+  isOpen: boolean;
   onClose: () => void;
   onEditar: () => void;
   onRetirar: () => void;
@@ -20,6 +21,7 @@ interface ModalDetallesEstudianteProps {
 
 export function ModalDetallesEstudiante({
   estudiante,
+  isOpen,
   onClose,
   onEditar,
   onRetirar,
@@ -61,6 +63,8 @@ export function ModalDetallesEstudiante({
       setDescargando(null);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -393,7 +397,7 @@ export function ModalDetallesEstudiante({
             <Edit className="w-4 h-4 mr-2" />
             Editar Información
           </Button>
-          {estudiante.estado === 'ACTIVO' && (
+          {(estudiante.estado === EstadoEstudiante.ACTIVO || estudiante.estado === EstadoEstudiante.SIN_MATRICULA || estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL) && (
             <Button variant="destructive" onClick={onRetirar}>
               <UserX className="w-4 h-4 mr-2" />
               Retirar Estudiante

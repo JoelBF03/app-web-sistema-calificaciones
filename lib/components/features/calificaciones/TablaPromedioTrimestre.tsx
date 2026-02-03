@@ -128,23 +128,6 @@ export function TablaPromedioTrimestre({
                   Generar Promedios
                 </Button>
               )}
-
-              {promedios.length > 0 && (
-                <Button
-                  onClick={handleGenerarPromedios}
-                  disabled={isGenerando}
-                  variant="outline"
-                  size="sm"
-                  className="border-purple-300"
-                >
-                  {isGenerando ? (
-                    <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                  )}
-                  Recalcular
-                </Button>
-              )}
             </div>
           )}
         </div>
@@ -175,7 +158,7 @@ export function TablaPromedioTrimestre({
         )}
 
         {/* ✅ BOTÓN DE DESCARGA - Solo si hay promedios generados */}
-        {promedios.length > 0 && (
+        {promedios.length > 0 && !isAdmin && (
           <div className="p-4 border-b border-gray-200 flex justify-end">
             <BotonDescargaReporteMateria
               materia_curso_id={materia_curso_id}

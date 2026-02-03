@@ -124,11 +124,11 @@ export default function CursosPage() {
   };
 
   const handleEditFromDetails = (curso: Curso) => {
+    setSelectedCurso(curso);
     setShowDetailsModal(false);
     setTimeout(() => {
-      setSelectedCurso(curso);
       setShowEditModal(true);
-    }, 0);
+    }, 10);
   };
 
   const handleEdit = (curso: Curso) => {
@@ -309,7 +309,6 @@ export default function CursosPage() {
         isOpen={showDetailsModal}
         onClose={() => {
           setShowDetailsModal(false);
-          setSelectedCurso(null);
         }}
         onEdit={handleEditFromDetails}
         onViewDocente={handleViewDocente}
@@ -329,7 +328,7 @@ export default function CursosPage() {
           setShowEditModal(false);
           setTimeout(() => {
             setSelectedCurso(null);
-          }, 100);
+          }, 200);
         }}
         onSave={handleSaveEdit}
       />

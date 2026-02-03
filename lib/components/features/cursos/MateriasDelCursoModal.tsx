@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, BookOpen, User, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+import { X, BookOpen, User, CheckCircle, XCircle, ArrowRight, GraduationCap } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
 import { Card, CardContent } from '@/lib/components/ui/card';
 import { Badge } from '@/lib/components/ui/badge';
 import { Curso } from '@/lib/types/curso.types';
 import { MateriaCurso, MateriaCursoByCursoResponse, EstadoMateriaCurso } from '@/lib/types/materia-curso.types';
+import { TipoCalificacion } from '@/lib/types/materia.types';
 import { materiaCursoService } from '@/lib/services/materia-curso';
 import { toast } from 'sonner';
 
@@ -61,7 +62,23 @@ export default function MateriasDelCursoModal({
     onClose();
   };
 
+  const handleVerComponentesCualitativos = () => {
+    // Redirigir al módulo de tutoría (componentes cualitativos)
+    router.push(`/docente/tutoria/${curso!.id}`);
+    onClose();
+  };
+
   if (!isOpen || !curso) return null;
+
+  // ✅ Filtrar materias CUANTITATIVAS (las que tienen calificaciones numéricas)
+  const materiasCuantitativas = materias.filter(
+    m => m.materia.tipoCalificacion === TipoCalificacion.CUANTITATIVA
+  );
+
+  // ✅ Detectar si hay materias CUALITATIVAS
+  const tieneCualitativas = materias.some(
+    m => m.materia.tipoCalificacion === TipoCalificacion.CUALITATIVA
+  );
 
   return (
     <div
@@ -118,80 +135,126 @@ export default function MateriasDelCursoModal({
             </div>
           ) : (
             <div className="grid gap-4">
-              {materias.map((materiaCurso) => (
-                <Card
-                  key={materiaCurso.id}
-                  className="hover:shadow-md transition-shadow border-2 hover:border-blue-300"
-                >
+              {/* ✅ CARD ESPECIAL: Componentes Cualitativos */}
+              {tieneCualitativas && (
+                <Card className="hover:shadow-md transition-shadow border-2 border-purple-300 bg-gradient-to-r from-purple-50 to-pink-50">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-start gap-4 flex-1">
-                        <div className="p-3 bg-blue-50 rounded-lg">
-                          <BookOpen className="w-6 h-6 text-blue-600" />
+                        <div className="p-3 bg-purple-100 rounded-lg">
+                          <GraduationCap className="w-6 h-6 text-purple-600" />
                         </div>
                         
                         <div className="flex-1">
                           <div className="flex items-start justify-between mb-2">
-                            <h3 className="font-semibold text-lg text-gray-900">
-                              {materiaCurso.materia.nombre}
+                            <h3 className="font-semibold text-lg text-purple-900">
+                              Componentes Cualitativos
                             </h3>
-                            <Badge
-                              variant={
-                                materiaCurso.estado === EstadoMateriaCurso.ACTIVO
-                                  ? 'default'
-                                  : 'secondary'
-                              }
-                              className={
-                                materiaCurso.estado === EstadoMateriaCurso.ACTIVO
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }
-                            >
-                              {materiaCurso.estado === EstadoMateriaCurso.ACTIVO ? (
-                                <>
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  Activo
-                                </>
-                              ) : (
-                                <>
-                                  <XCircle className="w-3 h-3 mr-1" />
-                                  Inactivo
-                                </>
-                              )}
+                            <Badge className="bg-purple-500 hover:bg-purple-600 text-white">
+                              Tutoría
                             </Badge>
                           </div>
 
-                          <div className="space-y-1 text-sm text-gray-600">
-                            <div className="flex items-center gap-2">
-                              <User className="w-4 h-4" />
-                              {materiaCurso.docente ? (
-                                <span>
-                                  {materiaCurso.docente.nombres}{' '}
-                                  {materiaCurso.docente.apellidos}
-                                </span>
-                              ) : (
-                                <span className="text-orange-600 font-medium">
-                                  Sin docente asignado
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                          <p className="text-sm text-purple-700">
+                            Calificación cualitativa de componentes de tutoría
+                          </p>
                         </div>
                       </div>
 
-                      {materiaCurso.docente_id && (
-                        <Button
-                          onClick={() => handleVerCalificaciones(materiaCurso)}
-                          className="ml-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-                        >
-                          Ver Calificaciones
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      )}
+                      <Button
+                        onClick={handleVerComponentesCualitativos}
+                        className="ml-4 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+                      >
+                        Ver Componentes
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )}
+
+              {/* ✅ Materias CUANTITATIVAS */}
+              {materiasCuantitativas.length === 0 ? (
+                <div className="text-center py-8">
+                  <BookOpen className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600">No hay materias cuantitativas asignadas</p>
+                </div>
+              ) : (
+                materiasCuantitativas.map((materiaCurso) => (
+                  <Card
+                    key={materiaCurso.id}
+                    className="hover:shadow-md transition-shadow border-2 hover:border-blue-300"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-start gap-4 flex-1">
+                          <div className="p-3 bg-blue-50 rounded-lg">
+                            <BookOpen className="w-6 h-6 text-blue-600" />
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <h3 className="font-semibold text-lg text-gray-900">
+                                {materiaCurso.materia.nombre}
+                              </h3>
+                              <Badge
+                                variant={
+                                  materiaCurso.estado === EstadoMateriaCurso.ACTIVO
+                                    ? 'default'
+                                    : 'secondary'
+                                }
+                                className={
+                                  materiaCurso.estado === EstadoMateriaCurso.ACTIVO
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }
+                              >
+                                {materiaCurso.estado === EstadoMateriaCurso.ACTIVO ? (
+                                  <>
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Activo
+                                  </>
+                                ) : (
+                                  <>
+                                    <XCircle className="w-3 h-3 mr-1" />
+                                    Inactivo
+                                  </>
+                                )}
+                              </Badge>
+                            </div>
+
+                            <div className="space-y-1 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <User className="w-4 h-4" />
+                                {materiaCurso.docente ? (
+                                  <span>
+                                    {materiaCurso.docente.nombres}{' '}
+                                    {materiaCurso.docente.apellidos}
+                                  </span>
+                                ) : (
+                                  <span className="text-orange-600 font-medium">
+                                    Sin docente asignado
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {materiaCurso.docente_id && (
+                          <Button
+                            onClick={() => handleVerCalificaciones(materiaCurso)}
+                            className="ml-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                          >
+                            Ver Calificaciones
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           )}
         </div>
@@ -199,7 +262,8 @@ export default function MateriasDelCursoModal({
         {/* Footer */}
         <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
           <p className="text-sm text-gray-600">
-            Total: <span className="font-semibold">{materias.length}</span> materia(s)
+            <span className="font-semibold">{materiasCuantitativas.length}</span> materia(s) cuantitativa(s)
+            {tieneCualitativas && <span className="ml-2">+ Componentes Cualitativos</span>}
           </p>
           <Button variant="outline" onClick={onClose}>
             Cerrar

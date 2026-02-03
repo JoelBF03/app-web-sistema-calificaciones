@@ -23,13 +23,6 @@ export function EstadisticasEstudiantes({ estadisticas }: EstadisticasEstudiante
       colorIcono: 'text-orange-500'
     },
     {
-      titulo: 'ESTUDIANTES INACTIVOS',
-      valor: estadisticas?.inactivosTemporales ?? 0,
-      icon: PauseCircle,
-      colorBorde: 'border-gray-500',
-      colorIcono: 'text-gray-500'
-    },
-    {
       titulo: 'DATOS COMPLETOS',
       valor: estadisticas?.completos ?? 0,
       icon: CheckCircle,
@@ -50,17 +43,10 @@ export function EstadisticasEstudiantes({ estadisticas }: EstadisticasEstudiante
       colorBorde: 'border-blue-500',
       colorIcono: 'text-blue-500'
     },
-    {
-      titulo: 'RETIRADOS',
-      valor: estadisticas?.retirados ?? 0,
-      icon: UserMinus,
-      colorBorde: 'border-red-500',
-      colorIcono: 'text-red-500'
-    }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
       {cards.map((card, index) => {
         const Icon = card.icon;
         return (

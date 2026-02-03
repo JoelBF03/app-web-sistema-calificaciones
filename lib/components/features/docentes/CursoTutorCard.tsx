@@ -1,5 +1,7 @@
+'use client';
+
 import { useRouter } from 'next/navigation';
-import { GraduationCap, Users, Star, Calendar } from 'lucide-react';
+import { GraduationCap, Users, Star, ArrowRight } from 'lucide-react';
 import { Card } from '@/lib/components/ui/card';
 import { Badge } from '@/lib/components/ui/badge';
 import { Button } from '@/lib/components/ui/button';
@@ -16,7 +18,12 @@ export function CursoTutorCard({ curso }: CursoTutorCardProps) {
     if (nivel.includes('BACHILLERATO')) {
       return nivel.split(' ').map(p => p.charAt(0) + p.slice(1).toLowerCase()).join(' ');
     }
-    return nivel.charAt(0) + nivel.slice(1).toLowerCase();
+    const niveles: any = {
+      'OCTAVO': '8vo',
+      'NOVENO': '9no', 
+      'DECIMO': '10mo'
+    };
+    return niveles[nivel] || nivel;
   };
 
   const handleNavegar = () => {
@@ -24,50 +31,38 @@ export function CursoTutorCard({ curso }: CursoTutorCardProps) {
   };
 
   return (
-    <Card className="overflow-hidden border-2 border-yellow-400 shadow-2xl">
-      {/* Header destacado para tutor */}
-      <div className="h-32 bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 relative">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-gray-900">
-            <Star className="w-12 h-12 mx-auto mb-2 fill-current" />
-            <p className="text-sm font-bold uppercase tracking-wide">Mi Tutoría</p>
-          </div>
-        </div>
+    <Card className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden ring-4 ring-yellow-400 ring-offset-2 relative">
+      
+      {/* Badge de tutor igual al de CursoCard */}
+      <div className="absolute top-4 right-4 z-10">
+        <Badge className="bg-yellow-400 text-gray-900 hover:bg-yellow-500 font-bold shadow-lg">
+          <Star className="w-3 h-3 mr-1 fill-current" />
+          MI TUTORÍA
+        </Badge>
       </div>
 
-      {/* Contenido */}
-      <div className="p-6 space-y-4 bg-gradient-to-br from-yellow-50 to-white">
-        {/* Título */}
-        <div>
-          <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <GraduationCap className="w-6 h-6 text-yellow-600" />
-            {formatNivel(curso.nivel)} - Paralelo {curso.paralelo}
-          </h3>
-          <p className="text-sm text-gray-600 mt-2 flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            {curso.periodo_lectivo.nombre}
-          </p>
-        </div>
-
-        {/* Especialidad Badge */}
-        <div>
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-            {curso.especialidad}
-          </Badge>
-        </div>
-
-        {/* Estadísticas */}
-        <div className="flex items-center gap-2 pt-2 border-t border-yellow-200">
-          <Users className="w-5 h-5 text-yellow-700" />
-          <span className="text-lg font-semibold text-gray-900">
-            {curso.estudiantes_matriculados} estudiantes
+      {/* Header con el formato de color, pero manteniendo tu degradado original */}
+      <div className="h-24 bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 flex items-center justify-center">
+         <Star className="w-8 h-8 text-gray-900/20 fill-current" />
+      </div>
+      
+      {/* Contenido con el mismo padding y espaciado que CursoCard */}
+      <div className="p-5">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+          {formatNivel(curso.nivel)} {curso.especialidad} - {curso.paralelo}/ {curso.periodo_lectivo.nombre}
+        </h3>
+        
+        <div className="flex items-center gap-2 mb-4">
+          <Users className="w-4 h-4 text-gray-400" />
+          <span className="text-xs font-medium text-gray-500">
+            {curso.estudiantes_matriculados} Estudiantes matriculados
           </span>
         </div>
-
-        {/* Acciones */}
-        <div className="pt-2">
+        
+        {/* Acciones idénticas en tamaño al CursoCard */}
+        <div className="flex justify-between items-center pt-4 border-t border-gray-100">
           <Button 
-            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold"
+            className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-4 py-2 rounded-lg text-sm font-bold cursor-pointer w-full transition-colors"
             onClick={handleNavegar}
           >
             Gestionar mi tutoría

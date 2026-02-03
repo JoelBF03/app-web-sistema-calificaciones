@@ -33,9 +33,10 @@ interface TrimestreCardProps {
   trimestre: Trimestre;
   onUpdate: (trimestreId: string, data: any) => void;
   onReload?: () => void;
+  isPeriodoFinalizado?: boolean;
 }
 
-export default function TrimestreCard({ trimestre, onUpdate, onReload }: TrimestreCardProps) {
+export default function TrimestreCard({ trimestre, onUpdate, onReload, isPeriodoFinalizado = false }: TrimestreCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [editData, setEditData] = useState({
@@ -217,7 +218,7 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload }: Trimest
 
             <div className="flex items-center gap-2">
               {getEstadoBadge(isEditing ? editData.estado : trimestre.estado)}
-              {!isEditing && (
+              {!isEditing && !isPeriodoFinalizado &&(
                 <Button
                   variant="ghost"
                   size="sm"

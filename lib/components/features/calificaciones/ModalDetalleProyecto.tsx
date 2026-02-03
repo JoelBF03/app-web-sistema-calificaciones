@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from '@/lib/components/ui/alert';
 import { Loader2, Info, Edit, Trash2, X, Save, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { calificacionProyectoService } from '@/lib/services/calificacion-proyecto';
-import { TrimestreEstado } from '@/lib/types';
+import { Role, TrimestreEstado } from '@/lib/types';
 
 interface ModalDetalleProyectoProps {
   calificacion_id: string;
@@ -35,9 +35,18 @@ export function ModalDetalleProyecto({
   const [observaciones, setObservaciones] = useState('');
   const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [mostrarConfirmacionEditar, setMostrarConfirmacionEditar] = useState(false);
-  
+
   // ✅ Validación similar a ModalDetalleCalificacion
-  const puedeEditar = isTutor && trimestreEstado !== TrimestreEstado.FINALIZADO;
+  const [isAdmin, setIsAdmin] = useState(false);
+  const puedeEditar = isTutor && trimestreEstado !== TrimestreEstado.FINALIZADO && !isAdmin;
+
+  useEffect(() => {
+    const user = localStorage.getItem('usuario');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setIsAdmin(parsedUser.rol === Role.ADMIN);
+    }
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -88,7 +97,7 @@ export function ModalDetalleProyecto({
     try {
       setIsSaving(true);
       setMostrarConfirmacionEditar(false);
-      
+
       const nota = parseFloat(nuevaNota);
       await calificacionProyectoService.update(calificacion_id, {
         calificacion_proyecto: nota,
@@ -114,7 +123,7 @@ export function ModalDetalleProyecto({
     try {
       setIsDeleting(true);
       setMostrarConfirmacionEliminar(false);
-      
+
       await calificacionProyectoService.remove(calificacion_id);
       toast.success('Calificación eliminada. Registro guardado.');
       onSuccess();
@@ -158,11 +167,11 @@ export function ModalDetalleProyecto({
               <Alert className="bg-yellow-50 border-yellow-200">
                 <Info className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="text-yellow-800">
-                  {!isTutor 
+                  {!isTutor
                     ? 'Solo el tutor del curso puede modificar o eliminar esta calificación.'
                     : trimestreEstado === TrimestreEstado.FINALIZADO
-                    ? 'El trimestre está finalizado. No se pueden realizar cambios.'
-                    : 'No se puede editar esta calificación.'}
+                      ? 'El trimestre está finalizado. No se pueden realizar cambios.'
+                      : 'No se puede editar esta calificación.'}
                 </AlertDescription>
               </Alert>
             )}
@@ -322,6 +331,6 @@ export function ModalDetalleProyecto({
           </div>
         ) : null}
       </DialogContent>
-    </Dialog> 
+    </Dialog>
   );
 }

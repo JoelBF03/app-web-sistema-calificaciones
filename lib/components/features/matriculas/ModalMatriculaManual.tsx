@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { CreateMatriculaDto, OrigenMatricula } from '@/lib/types/matricula.types';
 import { usePeriodos } from '@/lib/hooks/usePeriodos';
 import { useCursos } from '@/lib/hooks/useCursos';
+import { toast } from 'sonner';
 
 interface ModalCrearManualProps {
   onClose: () => void;
@@ -37,19 +38,23 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
     }
   };
 
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.estudiante_cedula || formData.estudiante_cedula.length !== 10) {
-      newErrors.estudiante_cedula = 'La cédula debe tener 10 dígitos';
+    if (!formData.estudiante_cedula || formData.estudiante_cedula.length > 13 || formData.estudiante_cedula.length < 10) {
+      newErrors.estudiante_cedula = 'La cédula debe tener mínimo 10 y máximo 13 dígitos';
     }
 
     if (!formData.nombres_completos || formData.nombres_completos.length < 3) {
       newErrors.nombres_completos = 'Los nombres completos son requeridos';
     }
 
-    if (formData.estudiante_email && !formData.estudiante_email.includes('@')) {
-      newErrors.estudiante_email = 'El correo electrónico no es válido';
+    // ✅ Email es OPCIONAL, pero si se proporciona debe ser válido
+    if (formData.estudiante_email && formData.estudiante_email.trim() !== '') {
+      if (!formData.estudiante_email.includes('@')) {
+        newErrors.estudiante_email = 'El correo electrónico no es válido';
+      }
     }
 
     if (!formData.periodo_lectivo_id) {
@@ -71,10 +76,15 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
 
     setLoading(true);
     try {
-      await onSave(formData);
+      const dataToSend: CreateMatriculaDto = {
+        ...formData,
+        estudiante_email: formData.estudiante_email?.trim() || undefined
+      };
+      await onSave(dataToSend);
       onClose();
     } catch (error: any) {
-      alert(error.message || 'Error al crear matrícula');
+      const errorMessage = error.response?.data?.message || error.message || 'Error al crear matrícula';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -109,9 +119,8 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
             <select
               value={formData.periodo_lectivo_id}
               onChange={(e) => handleChange('periodo_lectivo_id', e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg ${
-                errors.periodo_lectivo_id ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg ${errors.periodo_lectivo_id ? 'border-red-500' : 'border-gray-300'
+                }`}
             >
               <option value="">Seleccione un período</option>
               {periodos.filter(p => p.estado === 'ACTIVO').map(periodo => (
@@ -133,9 +142,8 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
             <select
               value={formData.curso_id}
               onChange={(e) => handleChange('curso_id', e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg ${
-                errors.curso_id ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg ${errors.curso_id ? 'border-red-500' : 'border-gray-300'
+                }`}
             >
               <option value="">Seleccione un curso</option>
               {cursos.filter(c => c.estado === 'ACTIVO').map(curso => (
@@ -156,13 +164,12 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
             </label>
             <input
               type="text"
-              maxLength={10}
+              maxLength={13}
               value={formData.estudiante_cedula}
               onChange={(e) => handleChange('estudiante_cedula', e.target.value.replace(/\D/g, ''))}
               placeholder="1234567890"
-              className={`w-full px-4 py-2 border rounded-lg ${
-                errors.estudiante_cedula ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg ${errors.estudiante_cedula ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
             {errors.estudiante_cedula && (
               <p className="text-red-500 text-xs mt-1">{errors.estudiante_cedula}</p>
@@ -172,16 +179,15 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
           {/* Nombres Completos */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nombres Completos <span className="text-red-500">*</span>
+              Nombres Completos<span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              value={formData.nombres_completos}
-              onChange={(e) => handleChange('nombres_completos', e.target.value)}
-              placeholder="Juan Pérez García"
-              className={`w-full px-4 py-2 border rounded-lg ${
-                errors.nombres_completos ? 'border-red-500' : 'border-gray-300'
-              }`}
+              value={formData.nombres_completos.toUpperCase()}
+              onChange={(e) => handleChange('nombres_completos', e.target.value.toUpperCase())}
+              placeholder="Apellidos y Nombres"
+              className={`w-full px-4 py-2 border rounded-lg ${errors.nombres_completos ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
             {errors.nombres_completos && (
               <p className="text-red-500 text-xs mt-1">{errors.nombres_completos}</p>
@@ -198,9 +204,8 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
               value={formData.estudiante_email}
               onChange={(e) => handleChange('estudiante_email', e.target.value)}
               placeholder="estudiante@institucion.edu.ec"
-              className={`w-full px-4 py-2 border rounded-lg ${
-                errors.estudiante_email ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg ${errors.estudiante_email ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
             {errors.estudiante_email && (
               <p className="text-red-500 text-xs mt-1">{errors.estudiante_email}</p>

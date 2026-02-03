@@ -1,5 +1,3 @@
-// 📁 nextjs-frontend/lib/components/features/calificaciones/ModalDetalleCalificacion.tsx
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,6 +12,7 @@ import { calificacionInsumoService } from '@/lib/services/calificacion-insumo';
 import { recuperacionInsumoService } from '@/lib/services/recuperacion-insumo';
 import { EstadoInsumo } from '@/lib/types/calificaciones.types';
 import { ModalRecuperacion } from './ModalRecuperacion';
+import { Role } from '@/lib/types/usuario.types';
 
 interface ModalDetalleCalificacionProps {
   calificacion_id: string;
@@ -48,6 +47,15 @@ export function ModalDetalleCalificacion({
   const [observacionesRecuperacionEdit, setObservacionesRecuperacionEdit] = useState('');
   const [isUpdatingRecuperacion, setIsUpdatingRecuperacion] = useState(false);
   const [isDeletingRecuperacion, setIsDeletingRecuperacion] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem('usuario');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setIsAdmin(parsedUser.rol === Role.ADMIN);
+    }
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -197,7 +205,7 @@ export function ModalDetalleCalificacion({
     });
   };
 
-  const puedeEditar = insumo_estado === EstadoInsumo.ACTIVO;
+  const puedeEditar = insumo_estado === EstadoInsumo.ACTIVO && !isAdmin;
 
   const puedeRecuperar = () => {
     if (!calificacion) return false;
@@ -272,7 +280,7 @@ export function ModalDetalleCalificacion({
                                   <X className="w-4 h-4" />
                                 </Button>
                               </div>
-                              
+
                               <div>
                                 <label className="text-xs font-medium text-gray-600">Nota (0-10)</label>
                                 <Input
@@ -314,10 +322,9 @@ export function ModalDetalleCalificacion({
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm font-semibold">Intento {rec.intento}:</span>
-                                  <span className={`font-bold text-lg ${
-                                    Number(rec.nota_recuperacion) >= 7 ? 'text-green-600' :
+                                  <span className={`font-bold text-lg ${Number(rec.nota_recuperacion) >= 7 ? 'text-green-600' :
                                     Number(rec.nota_recuperacion) >= 4 ? 'text-yellow-600' : 'text-red-600'
-                                  }`}>
+                                    }`}>
                                     {Number(rec.nota_recuperacion).toFixed(2)}
                                   </span>
                                 </div>
@@ -372,10 +379,9 @@ export function ModalDetalleCalificacion({
                           <span>Actualizada: {formatearFecha(calificacion.updatedAt)}</span>
                         </div>
                       </div>
-                      <span className={`font-bold text-xl ${
-                        Number(calificacion.nota_final) >= 7 ? 'text-green-600' :
+                      <span className={`font-bold text-xl ${Number(calificacion.nota_final) >= 7 ? 'text-green-600' :
                         Number(calificacion.nota_final) >= 4 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
+                        }`}>
                         {Number(calificacion.nota_final).toFixed(2)}
                       </span>
                     </div>
@@ -394,7 +400,7 @@ export function ModalDetalleCalificacion({
                 {puedeEditar && (
                   <div className="space-y-2">
                     {/* Botón de Recuperación (si aplica) */}
-                    {puedeRecuperar() && (
+                    {puedeRecuperar() && !isAdmin && (
                       <Button
                         onClick={() => setAbrirRecuperacion(true)}
                         className="w-full bg-orange-600 hover:bg-orange-700 cursor-pointer"
@@ -406,13 +412,20 @@ export function ModalDetalleCalificacion({
 
                     {/* Botones de Editar y Eliminar */}
                     <div className="flex gap-2">
-                      <Button
-                        onClick={handleEditar}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                      >
+                      {/* VALIDACIÓN: Solo mostrar Editar si NO hay recuperaciones */}
+                      {recuperaciones.length === 0 && (
+
+                        <Button
+                          onClick={handleEditar}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 cursor-pointer"
+
+                        >
                         <Edit2 className="w-4 h-4 mr-2" />
-                        Editar Nota Original
-                      </Button>
+                          Editar Nota Original
+                        </Button>
+
+                      )}
+
                       <Button
                         onClick={handleEliminar}
                         disabled={isDeleting}

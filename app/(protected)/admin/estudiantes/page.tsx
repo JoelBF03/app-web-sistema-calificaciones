@@ -1,11 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+import { useState, useCallback, useEffect } from 'react';
 import { useEstudiantes } from '@/lib/hooks/useEstudiantes';
-import { Estudiante, EstadoEstudiante } from '@/lib/types/estudiante.types';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/lib/components/ui/card';
-import { ArrowLeft, UserCircle } from 'lucide-react';
+import type { Estudiante, EstadoEstudiante } from '@/lib/types/estudiante.types';
 
 // Componentes
 import { EstadisticasEstudiantes } from '@/lib/components/features/estudiantes/EstadisticasEstudiantes';
@@ -16,8 +13,22 @@ import { ModalEditarEstudiante } from '@/lib/components/features/estudiantes/Mod
 import { ModalHistorialEstudiante } from '@/lib/components/features/estudiantes/ModalHistorialEstudiante';
 import { ModalRetirarEstudiante } from '@/lib/components/features/estudiantes/ModalRetirarEstudiante';
 import { ModalReactivarEstudiante } from '@/lib/components/features/estudiantes/ModalReactivarEstudiante';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/lib/components/ui/card';
+import Link from 'next/link';
+import { ArrowLeft, GraduationCap } from 'lucide-react';
 
 export default function EstudiantesPage() {
+  // Estados para filtros
+  const [filtros, setFiltros] = useState({
+    search: '',
+    estado: 'ACTIVO' as EstadoEstudiante | 'ALL',
+    incompletos: 'ALL' as 'ALL' | 'true' | 'false',
+  });
+
+  const [page, setPage] = useState(1);
+  const [searchDebounce, setSearchDebounce] = useState('');
+
+  // ✅ Hook con TanStack Query - SE ACTUALIZA AUTOMÁTICAMENTE con los filtros
   const {
     estudiantes,
     estadisticas,
@@ -30,19 +41,13 @@ export default function EstudiantesPage() {
     actualizarEstudiante,
     retirarEstudiante,
     reactivarEstudiante,
-  } = useEstudiantes();
-
-  // Estados para filtros
-  const [filtros, setFiltros] = useState({
-    search: '',
-    estado: 'ACTIVO' as EstadoEstudiante | 'ALL',
-    incompletos: 'ALL',
-    nivelCurso: undefined as string | undefined,
-    periodoId: undefined as string | undefined,
+  } = useEstudiantes({
+    search: searchDebounce,
+    estado: filtros.estado === 'ALL' ? '' : filtros.estado,
+    incompletos: filtros.incompletos === 'ALL' ? undefined : filtros.incompletos === 'true',
+    page,
+    limit: 20,
   });
-
-  // Debounce para búsqueda
-  const [searchDebounce, setSearchDebounce] = useState('');
 
   // Estados para modales
   const [showModalDetalles, setShowModalDetalles] = useState(false);
@@ -52,49 +57,24 @@ export default function EstudiantesPage() {
   const [showModalReactivar, setShowModalReactivar] = useState(false);
   const [estudianteSeleccionado, setEstudianteSeleccionado] = useState<Estudiante | null>(null);
 
-  // Cargar estudiantes cuando cambian los filtros
+  // ✅ Debounce para búsqueda
   useEffect(() => {
-    const handler = setTimeout(() => {
+    const timer = setTimeout(() => {
       setSearchDebounce(filtros.search);
-    }, 300); // Debounce de 300ms
+      setPage(1); // Reset page on search
+    }, 500);
 
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(timer);
   }, [filtros.search]);
 
+  // ✅ Reset page cuando cambian otros filtros
   useEffect(() => {
-    const params: any = {
-      page: pagination.page,
-      limit: 20,
-    };
-    if (filtros.estado !== 'ALL') {
-      params.estado = filtros.estado;
-    }
-
-    if (searchDebounce) {
-      params.search = searchDebounce;
-    }
-
-    if (filtros.incompletos !== 'ALL') {
-      params.incompletos = filtros.incompletos === 'true';
-    }
-
-    if (filtros.nivelCurso) {
-      params.nivelCurso = filtros.nivelCurso;
-    }
-
-    if (filtros.periodoId) {
-      params.periodoId = filtros.periodoId;
-    }
-
-    fetchEstudiantes(params);
-  }, [searchDebounce, filtros.estado, filtros.incompletos, filtros.nivelCurso, filtros.periodoId, pagination.page, fetchEstudiantes]);
+    setPage(1);
+  }, [filtros.estado, filtros.incompletos]);
 
   // Handlers de modales
   const handleVerDetalles = useCallback(async (estudiante: Estudiante) => {
     try {
-      // Obtener datos completos del estudiante con relaciones
       const estudianteCompleto = await obtenerEstudiante(estudiante.id);
       setEstudianteSeleccionado(estudianteCompleto);
       setShowModalDetalles(true);
@@ -136,63 +116,27 @@ export default function EstudiantesPage() {
   // Handlers de acciones
   const handleSaveEditar = useCallback(async (id: string, data: any) => {
     await actualizarEstudiante(id, data);
-    await fetchEstadisticas();
     setShowModalEditar(false);
     setEstudianteSeleccionado(null);
-  }, [actualizarEstudiante, fetchEstadisticas]);
+  }, [actualizarEstudiante]);
 
   const handleConfirmRetirar = useCallback(async (id: string, motivo?: string) => {
     await retirarEstudiante(id, motivo);
-    await fetchEstadisticas();
     setShowModalRetirar(false);
     setEstudianteSeleccionado(null);
-  }, [retirarEstudiante, fetchEstadisticas]);
+  }, [retirarEstudiante]);
 
   const handleConfirmReactivar = useCallback(async (id: string) => {
     await reactivarEstudiante(id);
-    await fetchEstadisticas();
     setShowModalReactivar(false);
     setEstudianteSeleccionado(null);
-  }, [reactivarEstudiante, fetchEstadisticas]);
+  }, [reactivarEstudiante]);
 
-  // Handler de paginación
-  const handlePageChange = useCallback((page: number) => {
-    const params: any = {
-      page,
-      limit: 20,
-    };
-
-    if (filtros.estado !== 'ALL') {
-      params.estado = filtros.estado;
-    }
-
-    if (searchDebounce) {
-      params.search = searchDebounce;
-    }
-
-    if (filtros.incompletos !== 'ALL') {
-      params.incompletos = filtros.incompletos === 'true';
-    }
-
-    // ✅ AGREGAR LOS FILTROS DE CURSO Y PERIODO
-    if (filtros.nivelCurso) {
-      params.nivelCurso = filtros.nivelCurso;
-    }
-
-    if (filtros.periodoId) {
-      params.periodoId = filtros.periodoId;
-    }
-
-    fetchEstudiantes(params);
-  }, [filtros, searchDebounce, fetchEstudiantes]);
-
-  // Handler para abrir modal de editar desde modal de detalles
   const handleEditarDesdeDetalles = useCallback(() => {
     setShowModalDetalles(false);
     setShowModalEditar(true);
   }, []);
 
-  // Handler para abrir modal de retirar desde modal de detalles
   const handleRetirarDesdeDetalles = useCallback(() => {
     setShowModalDetalles(false);
     setShowModalRetirar(true);
@@ -200,7 +144,6 @@ export default function EstudiantesPage() {
 
   return (
     <div className="space-y-6">
-      {/* HEADER */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -212,94 +155,77 @@ export default function EstudiantesPage() {
                 <ArrowLeft className="w-6 h-6 text-gray-600" />
               </Link>
 
-              <UserCircle className="w-8 h-8 text-blue-600" />
+              <GraduationCap className="w-8 h-8 text-blue-600" />
 
               <div>
                 <CardTitle className="text-3xl">Gestión de Estudiantes</CardTitle>
                 <CardDescription>
-                  Administra la información personal y académica de los estudiantes
+                  Aquí encontrarás toda la información relacionada con los estudiantes registrados en el sistema
                 </CardDescription>
               </div>
             </div>
           </div>
         </CardHeader>
       </Card>
-
-      {/* ESTADÍSTICAS */}
+      {/* Estadísticas */}
       <EstadisticasEstudiantes estadisticas={estadisticas} />
 
-      {/* FILTROS */}
+      {/* Filtros */}
       <FiltrosEstudiantes
         filtros={filtros}
-        onChange={setFiltros}
+        onFiltrosChange={setFiltros}
       />
 
-      {/* TABLA */}
+      {/* Tabla */}
       <TablaEstudiantes
         estudiantes={estudiantes}
         loading={isLoading}
         pagination={pagination}
+        onPageChange={setPage}
         onVerDetalles={handleVerDetalles}
         onEditar={handleEditar}
         onVerHistorial={handleVerHistorial}
         onReactivar={handleReactivar}
-        onPageChange={handlePageChange}
       />
 
-      {/* MODALES */}
-      {showModalDetalles && estudianteSeleccionado && (
-        <ModalDetallesEstudiante
-          estudiante={estudianteSeleccionado}
-          onClose={() => {
-            setShowModalDetalles(false);
-            setEstudianteSeleccionado(null);
-          }}
-          onEditar={handleEditarDesdeDetalles}
-          onRetirar={handleRetirarDesdeDetalles}
-        />
-      )}
+      {/* Modales */}
+      {estudianteSeleccionado && (
+        <>
+          <ModalDetallesEstudiante
+            estudiante={estudianteSeleccionado}
+            isOpen={showModalDetalles}
+            onClose={() => setShowModalDetalles(false)}
+            onEditar={handleEditarDesdeDetalles}
+            onRetirar={handleRetirarDesdeDetalles}
+          />
 
-      {showModalEditar && estudianteSeleccionado && (
-        <ModalEditarEstudiante
-          estudiante={estudianteSeleccionado}
-          onClose={() => {
-            setShowModalEditar(false);
-            setEstudianteSeleccionado(null);
-          }}
-          onSave={handleSaveEditar}
-        />
-      )}
+          <ModalEditarEstudiante
+            estudiante={estudianteSeleccionado}
+            isOpen={showModalEditar}
+            onClose={() => setShowModalEditar(false)}
+            onSave={handleSaveEditar}
+          />
 
-      {showModalHistorial && estudianteSeleccionado && (
-        <ModalHistorialEstudiante
-          estudiante={estudianteSeleccionado}
-          onClose={() => {
-            setShowModalHistorial(false);
-            setEstudianteSeleccionado(null);
-          }}
-        />
-      )}
+          <ModalHistorialEstudiante
+            estudiante={estudianteSeleccionado}
+            isOpen={showModalHistorial}
+            onClose={() => setShowModalHistorial(false)}
+          />
 
-      {showModalRetirar && estudianteSeleccionado && (
-        <ModalRetirarEstudiante
-          estudiante={estudianteSeleccionado}
-          onClose={() => {
-            setShowModalRetirar(false);
-            setEstudianteSeleccionado(null);
-          }}
-          onConfirm={handleConfirmRetirar}
-        />
-      )}
+          <ModalRetirarEstudiante
+            estudiante={estudianteSeleccionado}
+            isOpen={showModalRetirar}
+            onClose={() => setShowModalRetirar(false)}
+            onConfirm={handleConfirmRetirar}
+          />
 
-      {showModalReactivar && estudianteSeleccionado && (
-        <ModalReactivarEstudiante
-          estudiante={estudianteSeleccionado}
-          onClose={() => {
-            setShowModalReactivar(false);
-            setEstudianteSeleccionado(null);
-          }}
-          onConfirm={handleConfirmReactivar}
-        />
+          <ModalReactivarEstudiante
+            estudiante={estudianteSeleccionado}
+            isOpen={showModalReactivar}
+            onClose={() => setShowModalReactivar(false)}
+            onConfirm={handleConfirmReactivar}
+          />
+        </>
       )}
     </div>
   );

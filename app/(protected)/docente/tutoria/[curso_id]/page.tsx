@@ -166,7 +166,7 @@ export default function TutoriaDashboard() {
         <div className="max-w-[98%] mx-auto px-6 py-6">
           <div className="flex items-center gap-4">
             <Button
-              onClick={() => router.push('/docente')}
+              onClick={() => router.back()}
               variant="ghost"
               size="icon"
               className="p-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all duration-200 text-white hover:scale-105 border-0 cursor-pointer"

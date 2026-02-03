@@ -1,227 +1,171 @@
-
-import { useState, useCallback, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { estudiantesService } from '../services/estudiantes';
+import { toast } from 'sonner';
 import type {
   Estudiante,
-  EstudiantesResponse,
   CreateEstudianteDto,
   UpdateEstudianteDto,
-  EstadoEstudiante,
-  EstadisticasEstudiantes
+  EstadoEstudiante
 } from '../types/estudiante.types';
-import { toast } from 'sonner';
 
-interface UseFiltrosEstudiantes {
-  estado: EstadoEstudiante | '';
-  incompletos: boolean | undefined;
-  search: string;
+interface FiltrosEstudiantes {
+  estado?: EstadoEstudiante | '';
+  incompletos?: boolean;
+  search?: string;
   nivelCurso?: string;
-  periodoId?: string;
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
 }
 
-export function useEstudiantes() {
-  const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
-  const [estadisticas, setEstadisticas] = useState<EstadisticasEstudiantes>({
-    activos: 0,
-    sinMatricula: 0,
-    completos: 0,
-    incompletos: 0,
-    graduados: 0,
-    retirados: 0,
+export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
+  const queryClient = useQueryClient();
+
+  // ===================================
+  // 📊 QUERIES
+  // ===================================
+
+  // Estadísticas (se actualiza cada 2 minutos)
+  const {
+    data: estadisticas,
+    isLoading: loadingEstadisticas,
+    refetch: refetchEstadisticas
+  } = useQuery({
+    queryKey: ['estudiantes', 'estadisticas'],
+    queryFn: estudiantesService.getEstadisticas,
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos
   });
-  const [pagination, setPagination] = useState({
-    total: 0,
-    page: 1,
-    lastPage: 1,
+
+  // Listar estudiantes con filtros
+  const {
+    data: estudiantesData,
+    isLoading: loadingEstudiantes,
+    error,
+    refetch: refetchEstudiantes
+  } = useQuery({
+    queryKey: ['estudiantes', 'list', filtrosIniciales],
+    queryFn: () => estudiantesService.getAll(filtrosIniciales || {}),
+    enabled: true,
+    staleTime: 30 * 1000, // 30 segundos
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Cargar estadísticas
-  const fetchEstadisticas = useCallback(async () => {
-    try {
-      const stats = await estudiantesService.getEstadisticas();
-      setEstadisticas(stats);
-    } catch (err: any) {
-      console.error('Error al cargar estadísticas:', err);
-    }
-  }, []);
-
-  // Cargar estudiantes con filtros
-  // Cargar estudiantes con filtros
-  const fetchEstudiantes = useCallback(async (filtros?: Partial<UseFiltrosEstudiantes>) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const params: any = {
-        estado: filtros?.estado !== undefined ? filtros.estado : 'ACTIVO' as EstadoEstudiante,
-        incompletos: filtros?.incompletos,
-        search: filtros?.search || '',
-        page: filtros?.page || 1,
-        limit: filtros?.limit || 20,
-      };
-
-      // ✅ AGREGAR: Pasar nivelCurso y periodoId si existen
-      if ((filtros as any)?.nivelCurso) {
-        params.nivelCurso = (filtros as any).nivelCurso;
-      }
-
-      if ((filtros as any)?.periodoId) {
-        params.periodoId = (filtros as any).periodoId;
-      }
-
-      console.log('🚀 Enviando params al servicio:', params);  // Debug temporal
-
-      const response = await estudiantesService.getAll(params);
-      setEstudiantes(response.data);
-      setPagination({
-        total: response.total,
-        page: response.page,
-        lastPage: response.lastPage,
-      });
-      return response;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Error al cargar estudiantes';
-      setError(errorMsg);
-      toast.error(errorMsg);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // Obtener estudiante por ID
-  const obtenerEstudiante = useCallback(async (id: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const estudiante = await estudiantesService.getById(id);
-      return estudiante;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Error al obtener estudiante';
-      setError(errorMsg);
-      toast.error(errorMsg);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // Crear estudiante
-  const crearEstudiante = useCallback(async (data: CreateEstudianteDto) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const estudiante = await estudiantesService.create(data);
-      toast.success('Estudiante creado exitosamente');
-      return estudiante;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Error al crear estudiante';
-      setError(errorMsg);
-      toast.error(errorMsg);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // ===================================
+  // 🔧 MUTATIONS
+  // ===================================
 
   // Actualizar estudiante
-  const actualizarEstudiante = useCallback(async (id: string, data: UpdateEstudianteDto) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const estudianteActualizado = await estudiantesService.update(id, data);
-      setEstudiantes(prev => prev.map(e => (e.id === id ? estudianteActualizado : e)));
+  const actualizarMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateEstudianteDto }) =>
+      estudiantesService.update(id, data),
+    onSuccess: (updatedEstudiante) => {
+      queryClient.invalidateQueries({ queryKey: ['estudiantes', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['estudiantes', 'estadisticas'] });
+      queryClient.setQueryData(['estudiantes', updatedEstudiante.id], updatedEstudiante);
       toast.success('Estudiante actualizado exitosamente');
-      return estudianteActualizado;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Error al actualizar estudiante';
-      setError(errorMsg);
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al actualizar estudiante';
       toast.error(errorMsg);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+  });
 
   // Retirar estudiante
-  const retirarEstudiante = useCallback(async (id: string, motivo?: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await estudiantesService.retirar(id, motivo);
-      setEstudiantes(prev => prev.map(e => (e.id === id ? response.estudiante : e)));
+  const retirarMutation = useMutation({
+    mutationFn: ({ id, motivo }: { id: string; motivo?: string }) =>
+      estudiantesService.retirar(id, motivo),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['estudiantes'] });
       toast.success(response.message);
-      return response.estudiante;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Error al retirar estudiante';
-      setError(errorMsg);
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al retirar estudiante';
       toast.error(errorMsg);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+  });
 
   // Graduar estudiante
-  const graduarEstudiante = useCallback(async (id: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await estudiantesService.graduar(id);
-      setEstudiantes(prev => prev.map(e => (e.id === id ? response.estudiante : e)));
+  const graduarMutation = useMutation({
+    mutationFn: (id: string) => estudiantesService.graduar(id),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['estudiantes'] });
       toast.success(response.message);
-      return response.estudiante;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Error al graduar estudiante';
-      setError(errorMsg);
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al graduar estudiante';
       toast.error(errorMsg);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+  });
 
   // Reactivar estudiante
-  const reactivarEstudiante = useCallback(async (id: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const estudianteReactivado = await estudiantesService.reactivar(id);
-      setEstudiantes(prev => prev.map(e => (e.id === id ? estudianteReactivado : e)));
+  const reactivarMutation = useMutation({
+    mutationFn: (id: string) => estudiantesService.reactivar(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['estudiantes'] });
       toast.success('Estudiante reactivado exitosamente');
-      return estudianteReactivado;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Error al reactivar estudiante';
-      setError(errorMsg);
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al reactivar estudiante';
       toast.error(errorMsg);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+  });
 
-  // Cargar estadísticas al montar
-  useEffect(() => {
-    fetchEstadisticas();
-  }, [fetchEstadisticas]);
+  // Crear estudiante
+  const crearMutation = useMutation({
+    mutationFn: (data: CreateEstudianteDto) => estudiantesService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['estudiantes'] });
+      toast.success('Estudiante creado exitosamente');
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al crear estudiante';
+      toast.error(errorMsg);
+    },
+  });
 
+  // ===================================
+  // 📤 RETURN (mantiene nombres compatibles)
+  // ===================================
   return {
-    estudiantes,
-    estadisticas,
-    pagination,
-    isLoading,
-    loading: isLoading,
-    error,
-    fetchEstudiantes,
-    fetchEstadisticas,
-    obtenerEstudiante,
-    crearEstudiante,
-    actualizarEstudiante,
-    retirarEstudiante,
-    graduarEstudiante,
-    reactivarEstudiante,
+    // Data
+    estudiantes: estudiantesData?.data || [],
+    estadisticas: estadisticas || {
+      activos: 0,
+      sinMatricula: 0,
+      completos: 0,
+      incompletos: 0,
+      graduados: 0,
+      retirados: 0,
+      inactivosTemporales: 0,
+    },
+    pagination: {
+      total: estudiantesData?.total || 0,
+      page: estudiantesData?.page || 1,
+      lastPage: estudiantesData?.lastPage || 1,
+    },
+
+    // Loading states
+    isLoading: loadingEstudiantes || loadingEstadisticas,
+    loading: loadingEstudiantes || loadingEstadisticas,
+    error: error?.message || null,
+
+    // Query functions (nombres mantenidos para compatibilidad)
+    fetchEstudiantes: refetchEstudiantes,
+    fetchEstadisticas: refetchEstadisticas,
+    obtenerEstudiante: async (id: string) => {
+      const data = await queryClient.fetchQuery({
+        queryKey: ['estudiantes', id],
+        queryFn: () => estudiantesService.getById(id),
+      });
+      return data;
+    },
+
+    // Mutation functions (nombres mantenidos)
+    actualizarEstudiante: (id: string, data: UpdateEstudianteDto) =>
+      actualizarMutation.mutateAsync({ id, data }),
+    retirarEstudiante: (id: string, motivo?: string) =>
+      retirarMutation.mutateAsync({ id, motivo }),
+    graduarEstudiante: graduarMutation.mutateAsync,
+    reactivarEstudiante: reactivarMutation.mutateAsync,
+    crearEstudiante: crearMutation.mutateAsync,
   };
 }

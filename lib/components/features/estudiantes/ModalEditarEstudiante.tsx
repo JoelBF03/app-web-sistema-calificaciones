@@ -13,12 +13,14 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 
 interface ModalEditarEstudianteProps {
   estudiante: Estudiante;
+  isOpen: boolean;
   onClose: () => void;
   onSave: (id: string, data: UpdateEstudianteDto) => Promise<void>;
 }
 
 export function ModalEditarEstudiante({
   estudiante,
+  isOpen,
   onClose,
   onSave,
 }: ModalEditarEstudianteProps) {
@@ -70,6 +72,8 @@ export function ModalEditarEstudiante({
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">

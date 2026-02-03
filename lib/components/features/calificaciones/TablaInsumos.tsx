@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, Save, Edit2, Check, X, Plus, Trash2, Lock, AlertTriangle, Info, BookOpen, Pencil, FileText } from 'lucide-react';
+import { Loader2, Save, Edit2, Check, X, Plus, Trash2, Lock, AlertTriangle, Info, BookOpen, Pencil, FileText, RotateCcw, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/lib/components/ui/card';
 import { Button } from '@/lib/components/ui/button';
 import { Input } from '@/lib/components/ui/input';
@@ -15,8 +15,9 @@ import { ModalRecuperacion } from './ModalRecuperacion';
 import { ModalDetalleCalificacion } from './ModalDetalleCalificacion';
 import { EstadoInsumo } from '@/lib/types/calificaciones.types';
 import { calcularCualitativo, getColorCualitativo } from '@/lib/utils/calificaciones.utils';
-import { EstadoEstudiante, TrimestreEstado } from '@/lib/types';
+import { EstadoEstudiante, Role, TrimestreEstado } from '@/lib/types';
 import { useReportes } from '@/lib/hooks/useReportes';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface TablaInsumosProps {
   materia_curso_id: string;
@@ -37,7 +38,9 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
     publicarInsumo,
     deleteInsumo,
     isCreating,
-    isPublicando
+    isPublicando,
+    isReactivando,
+    reactivarInsumo
   } = useInsumos(materia_curso_id, trimestre_id);
 
   const [notasTemp, setNotasTemp] = useState<Record<string, Record<string, string>>>({});
@@ -49,6 +52,9 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
   const [insumoAPublicar, setInsumoAPublicar] = useState<any | null>(null);
   const [inicializado, setInicializado] = useState(false);
   const { descargarReporteInsumos, descargando: descargandoReporte } = useReportes();
+  const [usuario, setUsuario] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const queryClient = useQueryClient();
 
   const [modalDetalle, setModalDetalle] = useState<{
     open: boolean;
@@ -74,6 +80,15 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
   }, [loadingInsumos, insumos.length, inicializado]);
 
   useEffect(() => {
+    const user = localStorage.getItem('usuario');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setUsuario(parsedUser);
+      setIsAdmin(parsedUser.rol === Role.ADMIN);
+    }
+  }, []);
+
+  useEffect(() => {
     const cargarCalificaciones = async () => {
       for (const insumo of insumos) {
         try {
@@ -94,12 +109,6 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
     const nuevoNumero = insumos.length + 1;
     if (nuevoNumero > 9) {
       toast.error('Máximo 9 insumos por trimestre');
-      return;
-    }
-
-    const insumosPublicados = insumos.filter(i => i.estado === EstadoInsumo.PUBLICADO).length;
-    if (insumosPublicados < 3) {
-      toast.error('Debes publicar los 3 primeros insumos antes de crear más');
       return;
     }
 
@@ -147,20 +156,22 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
       return;
     }
 
+    setGuardandoInsumo(insumoId);
     try {
-      setGuardandoInsumo(insumoId);
+      await calificacionInsumoService.createBatch({
+        insumo_id: insumoId,
+        calificaciones: estudiantesParaCrear,
+      });
 
-      await calificacionInsumoService.createBatch({ insumo_id: insumoId, calificaciones: estudiantesParaCrear });
+      queryClient.invalidateQueries({
+        queryKey: ['insumos', materia_curso_id, trimestre_id]
+      });
 
-      const cals = await calificacionInsumoService.getByInsumo(insumoId);
-      setCalificacionesPorInsumo(prev => ({ ...prev, [insumoId]: cals }));
-
+      await recargarCalificaciones();
       setNotasTemp(prev => ({ ...prev, [insumoId]: {} }));
-
-      toast.success(`${estudiantesParaCrear.length} calificaciones guardadas`);
+      toast.success('Calificaciones guardadas correctamente');
     } catch (error: any) {
-      console.error('Error completo:', error);
-      toast.error(error.response?.data?.message || 'Error al guardar');
+      toast.error(error.response?.data?.message || 'Error al guardar calificaciones');
     } finally {
       setGuardandoInsumo(null);
     }
@@ -337,13 +348,21 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
               </p>
             </div>
           </div>
+          {isAdmin && (
+            <Alert className="mb-4 bg-yellow-50 border-yellow-300">
+              <ShieldCheck className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800">
+                <strong>Modo Vista Admin:</strong> Puedes ver las calificaciones pero no modificarlas ni generar reportes.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="flex items-center gap-3">
             {/* 🆕 Botón de Reporte - Solo visible cuando trimestre FINALIZADO */}
             {trimestreEstado === TrimestreEstado.FINALIZADO && (
               <Button
                 onClick={handleDescargarReporteInsumos}
-                disabled={descargandoReporte}
+                disabled={descargandoReporte || isAdmin}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer"
               >
                 {descargandoReporte ? (
@@ -362,7 +381,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
 
             <Button
               onClick={handleCrearInsumo}
-              disabled={isCreating || insumos.length >= 9}
+              disabled={isCreating || insumos.length >= 9 || isAdmin || trimestreEstado === TrimestreEstado.FINALIZADO}
               className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-semibold cursor-pointer"
             >
               {isCreating ? (
@@ -383,17 +402,17 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
 
       <CardContent className="p-0">
         {/* Tabla principal con scroll */}
-        <div className="overflow-x-auto">
-          <Table className="border-collapse border-2 border-gray-400">
+        <div className="overflow-x-auto w-full border-b border-gray-300">
+          <Table className="border-collapse border-y-0 border-x-0 w-max min-w-full table-fixed">
             <TableHeader>
               <TableRow className="bg-gray-100 border-b-2 border-gray-400">
                 {/* Columna # - sticky con borde permanente */}
-                <TableHead className="sticky left-0 z-20 bg-gray-100 text-center w-[60px] min-w-[60px] font-semibold text-gray-900 px-3 border-r-2 border-gray-400">
+                <TableHead className="sticky left-0 z-30 bg-gray-100 text-center w-[60px] min-w-[60px] font-semibold text-gray-900 px-3 border-r-2 border-gray-400">
                   #
                 </TableHead>
 
                 {/* Columna Estudiante - sticky con más ancho y borde permanente */}
-                <TableHead className="sticky left-[60px] z-20 bg-gray-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.15)] w-[380px] min-w-[380px] max-w-[380px] font-semibold text-gray-900 px-4 border-r-2 border-gray-400">
+                <TableHead className="sticky left-[60px] z-30 bg-gray-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.15)] w-[380px] min-w-[380px] max-w-[380px] font-semibold text-gray-900 px-4 border-r-2 border-gray-400">
                   Estudiante
                 </TableHead>
 
@@ -423,7 +442,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                           </span>
                           {(insumo.estado === EstadoInsumo.BORRADOR || insumo.estado === EstadoInsumo.ACTIVO) && (
                             <>
-                              <Button size="sm" variant="ghost" onClick={() => handleRenombrar(insumo)} className="h-6 w-6 p-0 cursor-pointer">
+                              <Button size="sm" variant="ghost" disabled={isAdmin} onClick={() => handleRenombrar(insumo)} className="h-6 w-6 p-0 cursor-pointer">
                                 <Edit2 className="w-3 h-3" />
                               </Button>
                               {insumos.length > 3 && (
@@ -431,6 +450,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => setInsumoAEliminar(insumo)}
+                                  disabled={isAdmin}
                                   className="text-red-600 hover:text-red-700 h-6 w-6 p-0 cursor-pointer"
                                 >
                                   <Trash2 className="w-3 h-3" />
@@ -462,12 +482,12 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                         )}
                       </div>
 
-                      {(insumo.estado === EstadoInsumo.ACTIVO || insumo.estado === EstadoInsumo.BORRADOR) && (
+                      {(insumo.estado === EstadoInsumo.ACTIVO || insumo.estado === EstadoInsumo.BORRADOR) && !isAdmin && (
                         <div className="flex gap-1">
                           <Button
                             size="sm"
                             onClick={() => handleGuardarInsumo(insumo.id)}
-                            disabled={guardandoInsumo === insumo.id}
+                            disabled={guardandoInsumo === insumo.id || isAdmin}
                             className="flex-1 bg-blue-600 hover:bg-blue-700 text-xs h-7 cursor-pointer"
                           >
                             {guardandoInsumo === insumo.id ? (
@@ -490,20 +510,40 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                           </Button>
                         </div>
                       )}
+                      {isAdmin && insumo.estado === EstadoInsumo.PUBLICADO && (
+                        <Button
+                          onClick={() => reactivarInsumo(insumo.id)}
+                          disabled={isReactivando}
+                          size="sm"
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white cursor-pointer"
+                        >
+                          {isReactivando ? (
+                            <>
+                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                              Reactivando...
+                            </>
+                          ) : (
+                            <>
+                              <RotateCcw className="w-3 h-3 mr-1" />
+                              Reactivar
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </TableHead>
                 ))}
 
                 {/* Columna Promedio */}
-                <TableHead className="border-x-2 border-gray-400 px-4 py-3 text-center bg-blue-50 min-w-[120px] font-semibold text-gray-900">
+                <TableHead className="bg-blue-50 text-center w-[150px] min-w-[150px] border-l-4 border-gray-400 text-blue-900 font-bold">
                   <div>Promedio</div>
-                  <div className="text-xs text-gray-600 font-normal">Insumos</div>
+                  <div className="text-xs text-blue-600 font-normal">Insumos</div>
                 </TableHead>
 
-                {/* Columna Ponderado */}
-                <TableHead className="border-l-2 border-gray-400 px-4 py-3 text-center bg-blue-100 min-w-[100px] font-semibold text-gray-900">
+                {/* Columna Ponderado - Mismo ancho */}
+                <TableHead className="bg-blue-100 text-center w-[150px] min-w-[150px] border-l-2 border-gray-400 text-blue-900 font-bold">
                   <div>Ponderado</div>
-                  <div className="text-xs text-gray-600 font-normal">({porcentaje}%)</div>
+                  <div className="text-xs text-blue-600 font-normal">({porcentaje}%)</div>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -550,6 +590,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                                   <button
                                     onClick={() => abrirModalRecuperacion(cal.id, estudiante.nombres_completos, insumo.estado)}
                                     className="text-yellow-600 hover:text-yellow-700 transition-colors p-1 cursor-pointer"
+                                    disabled={isAdmin}
                                     title="Recuperación"
                                   >
                                     <AlertTriangle className="w-4 h-4" />
@@ -577,7 +618,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                               <Input
                                 type="text"
                                 inputMode="decimal"
-                                disabled={esInactivo}
+                                disabled={guardandoInsumo === insumo.id || esInactivo || isAdmin}
                                 value={notaTemp}
                                 onChange={(e) => handleNotaChange(insumo.id, estudiante.id, e.target.value)}
                                 placeholder="0.00"
@@ -603,21 +644,21 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                     })}
 
                     {/* Columna Promedio CON cualitativo */}
-                    <TableCell className="border-x border-gray-300 px-3 py-2 text-center bg-blue-50">
+                    <TableCell className="bg-blue-50/40 text-center border-l-4 border-gray-400 font-medium w-[150px]">
                       <div className="flex flex-col items-center gap-1">
                         <span className="text-sm font-bold text-blue-700">
                           {promedio > 0 ? promedio.toFixed(2) : '-'}
                         </span>
                         {cualitativoPromedio && (
-                          <span className={`text-xs font-bold px-2 py-1 rounded border ${getColorCualitativo(cualitativoPromedio)}`}>
+                          <span className={`text-[10px] uppercase font-black px-1.5 py-0.5 rounded ${getColorCualitativo(cualitativoPromedio)}`}>
                             {cualitativoPromedio}
                           </span>
                         )}
                       </div>
                     </TableCell>
 
-                    {/* Columna Ponderado */}
-                    <TableCell className="border-l-2 border-gray-400 px-3 py-2 text-center font-bold text-blue-800 bg-blue-100">
+                    {/* Celda Ponderado */}
+                    <TableCell className="bg-blue-100/40 text-center border-l-2 border-gray-400 font-bold text-blue-900 w-[150px]">
                       <span className="text-sm">{promedio > 0 ? ponderado : '-'}</span>
                     </TableCell>
                   </TableRow>
@@ -630,7 +671,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
 
       {/* Modal Confirmar Publicación */}
       <Dialog open={!!insumoAPublicar} onOpenChange={() => setInsumoAPublicar(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
             <DialogTitle>Publicar y Bloquear Insumo</DialogTitle>
             <DialogDescription>
@@ -660,7 +701,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
 
       {/* Modal Eliminar Insumo */}
       <Dialog open={!!insumoAEliminar} onOpenChange={() => setInsumoAEliminar(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
             <DialogTitle>Eliminar Insumo</DialogTitle>
             <DialogDescription>

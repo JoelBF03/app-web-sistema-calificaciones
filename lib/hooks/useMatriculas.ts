@@ -1,162 +1,153 @@
-import { useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { matriculasService } from '../services/matriculas';
+import { toast } from 'sonner';
 import type {
-  Matricula,
   CreateMatriculaDto,
+  UpdateMatriculaDto,
   ResumenImportacionDto,
   ResultadoImportacionDto,
-  RegistroImportacionDto,
-  UpdateMatriculaDto
 } from '../types/matricula.types';
 
 export function useMatriculas() {
-  const [matriculas, setMatriculas] = useState<Matricula[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchMatriculas = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await matriculasService.findAll();
-      setMatriculas(data);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar matrículas');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // ===================================
+  // 📊 QUERIES
+  // ===================================
 
-  const crearMatricula = useCallback(async (data: CreateMatriculaDto) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const nuevaMatricula = await matriculasService.create(data);
-      setMatriculas(prev => [...prev, nuevaMatricula]);
-      return nuevaMatricula;
-    } catch (err: any) {
-      setError(err.message || 'Error al crear matrícula');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const {
+    data: matriculas,
+    isLoading: loading,
+    error,
+    refetch: fetchMatriculas
+  } = useQuery({
+    queryKey: ['matriculas'],
+    queryFn: matriculasService.findAll,
+    staleTime: 2 * 60 * 1000, // 2 minutos
+  });
 
-  const actualizarMatricula = useCallback( async (id: string, data: UpdateMatriculaDto) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const actualizada = await matriculasService.update(id, data);
-      setMatriculas(prev =>
-        prev.map(m => (m.id === id ? actualizada : m))
-      );
-      return actualizada;
-    } catch (err: any) {
-      setError(err.message || 'Error al actualizar matrícula');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // ===================================
+  // 🔧 MUTATIONS
+  // ===================================
 
-  const descargarPlantilla = useCallback(async () => {
-    try {
-      const blob = await matriculasService.descargarPlantilla();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'plantilla-matriculas.xlsx';
-      link.click();
-      window.URL.revokeObjectURL(url);
-    } catch (err: any) {
-      setError(err.message || 'Error al descargar plantilla');
-      throw err;
-    }
-  }, []);
+  // Crear matrícula
+  const crearMutation = useMutation({
+    mutationFn: (data: CreateMatriculaDto) => matriculasService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matriculas'] });
+      queryClient.invalidateQueries({ queryKey: ['estudiantes'] });
+      toast.success('Matrícula creada exitosamente');
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al crear matrícula';
+      toast.error(errorMsg);
+    },
+  });
 
-  const procesarImportacion = useCallback(
-    async (file: File, periodoId: string): Promise<ResumenImportacionDto> => {
-      setLoading(true);
-      setError(null);
+  // Actualizar matrícula
+  const actualizarMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateMatriculaDto }) =>
+      matriculasService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matriculas'] });
+      queryClient.invalidateQueries({ queryKey: ['estudiantes'] });
+      toast.success('Matrícula actualizada exitosamente');
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al actualizar matrícula';
+      toast.error(errorMsg);
+    },
+  });
+
+  // Retirar estudiante (a través de matrícula)
+  const retirarMutation = useMutation({
+    mutationFn: ({ id, observaciones }: { id: string; observaciones?: string }) =>
+      matriculasService.remove(id, observaciones),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matriculas'] });
+      queryClient.invalidateQueries({ queryKey: ['estudiantes'] });
+      toast.success('Estudiante retirado exitosamente');
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al retirar estudiante';
+      toast.error(errorMsg);
+    },
+  });
+
+  // Reactivar estudiante
+  const reactivarMutation = useMutation({
+    mutationFn: (id: string) => matriculasService.reactivar(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matriculas'] });
+      queryClient.invalidateQueries({ queryKey: ['estudiantes'] });
+      toast.success('Estudiante reactivado exitosamente');
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al reactivar estudiante';
+      toast.error(errorMsg);
+    },
+  });
+
+  // Confirmar importación
+  const confirmarImportacionMutation = useMutation({
+    mutationFn: ({ previewId, periodoId }: { previewId: string; periodoId: string }) =>
+      matriculasService.confirmarImportacion(previewId, periodoId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matriculas'] });
+      queryClient.invalidateQueries({ queryKey: ['estudiantes'] });
+      toast.success('Importación completada exitosamente');
+    },
+    onError: (error: any) => {
+      const errorMsg = error.response?.data?.message || 'Error al confirmar importación';
+      toast.error(errorMsg);
+    },
+  });
+
+  // ===================================
+  // 📤 RETURN (mantiene nombres compatibles)
+  // ===================================
+  return {
+    // Data
+    matriculas: matriculas || [],
+    loading,
+    error: error?.message || null,
+
+    // Query functions
+    fetchMatriculas,
+
+    // Mutation functions (nombres mantenidos para compatibilidad)
+    crearMatricula: crearMutation.mutateAsync,
+    actualizarMatricula: (id: string, data: UpdateMatriculaDto) =>
+      actualizarMutation.mutateAsync({ id, data }),
+    retirarEstudiante: (id: string, observaciones?: string) =>
+      retirarMutation.mutateAsync({ id, observaciones }),
+    reactivarEstudiante: reactivarMutation.mutateAsync,
+    confirmarImportacion: (previewId: string, periodoId: string) =>
+      confirmarImportacionMutation.mutateAsync({ previewId, periodoId }),
+
+    // Utility functions
+    descargarPlantilla: async () => {
+      try {
+        const blob = await matriculasService.descargarPlantilla();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'plantilla-matriculas.xlsx';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      } catch (error: any) {
+        toast.error('Error al descargar plantilla');
+        throw error;
+      }
+    },
+
+    procesarImportacion: async (file: File, periodoId: string): Promise<ResumenImportacionDto> => {
       try {
         return await matriculasService.subirArchivoImportacion(file, periodoId);
-      } catch (err: any) {
-        setError(err.message || 'Error al procesar archivo');
-        throw err;
-      } finally {
-        setLoading(false);
+      } catch (error: any) {
+        toast.error('Error al procesar archivo');
+        throw error;
       }
     },
-    []
-  );
-
-  const confirmarImportacion = useCallback(
-    async (
-      previewId: string,
-      periodoId: string
-    ): Promise<ResultadoImportacionDto> => {
-      setLoading(true);
-      setError(null);
-      try {
-        const resultado = await matriculasService.confirmarImportacion(
-          previewId,
-          periodoId
-        );
-        await fetchMatriculas();
-        return resultado;
-      } catch (err: any) {
-        setError(err.message || 'Error al confirmar importación');
-        throw err;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [fetchMatriculas]
-  );
-
-  const retirarEstudiante = useCallback(
-    async (id: string, observaciones?: string) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const actualizada = await matriculasService.remove(id, observaciones ?? undefined);
-        setMatriculas(prev =>
-          prev.map(m => (m.id === id ? actualizada : m))
-        );
-        return actualizada;
-      } catch (err: any) {
-        setError(err.message || 'Error al retirar estudiante');
-        throw err;
-      } finally {
-        setLoading(false);
-      }
-    }, []
-  );
-
-  const reactivarEstudiante = useCallback(
-    async (id: string) => {
-      try {
-        const reactivada = await matriculasService.reactivar(id);
-        setMatriculas(prev => prev.map(m => m.id === id ? reactivada : m));
-        return reactivada;
-      } catch (err: any) {
-        const errorMsg = err.response?.data?.message || 'Error al reactivar estudiante';
-        setError(errorMsg);
-        throw new Error(errorMsg);
-      }
-    }, []
-  );
-  return {
-    matriculas,
-    loading,
-    error,
-    fetchMatriculas,
-    crearMatricula,
-    actualizarMatricula,
-    descargarPlantilla,
-    procesarImportacion,
-    confirmarImportacion,
-    retirarEstudiante,
-    reactivarEstudiante
   };
 }

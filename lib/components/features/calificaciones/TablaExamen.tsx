@@ -1,7 +1,7 @@
 // nextjs-frontend/lib/components/features/calificaciones/TablaExamen.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2, Save, Eye, AlertCircle } from 'lucide-react';
 import { useCalificacionExamen } from '@/lib/hooks/useCalificacionExamen';
 import { ModalDetalleExamen } from './ModalDetalleExamen';
@@ -10,9 +10,10 @@ import { Input } from '@/lib/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/lib/components/ui/table';
 import { toast } from 'sonner';
 import { calcularCualitativo, getColorCualitativo } from '@/lib/utils/calificaciones.utils';
-import { EstadoEstudiante, TrimestreEstado } from '@/lib/types';
+import { EstadoEstudiante, Role, TrimestreEstado } from '@/lib/types';
 import { Alert, AlertDescription } from '../../ui/alert';
 import { calificacionExamenService } from '@/lib/services/calificacion-examen';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface TablaExamenProps {
   materia_curso_id: string;
@@ -39,6 +40,16 @@ export function TablaExamen({ materia_curso_id, trimestre_id, estudiantes, porce
     estudiante_nombre: string;
     trimestreEstado?: TrimestreEstado;
   } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const user = localStorage.getItem('usuario');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setIsAdmin(parsedUser.rol === Role.ADMIN);
+    }
+  }, []);
 
   const handleGuardar = async () => {
     const calificacionesArray = estudiantes
@@ -165,7 +176,7 @@ export function TablaExamen({ materia_curso_id, trimestre_id, estudiantes, porce
                       <div className="flex flex-col items-center gap-1">
                         <Input
                           type="text"
-                          disabled={!!calExistente || estadoFinalizado || !trimestreActivo || esInactivo}
+                          disabled={!!calExistente || estadoFinalizado || !trimestreActivo || isAdmin}
                           inputMode="decimal"
                           value={notaActual}
                           onChange={(e) => handleNotaChange(estudiante.id, e.target.value)}
@@ -219,7 +230,7 @@ export function TablaExamen({ materia_curso_id, trimestre_id, estudiantes, porce
       <div className="flex justify-end">
         <Button
           onClick={handleGuardar}
-          disabled={isSaving || estadoFinalizado}
+          disabled={isSaving || estadoFinalizado || !trimestreActivo || isAdmin}
           className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 cursor-pointer"
         >
           {isSaving ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
@@ -232,9 +243,13 @@ export function TablaExamen({ materia_curso_id, trimestre_id, estudiantes, porce
           calificacion_id={modalDetalle.calificacion_id}
           estudiante_nombre={modalDetalle.estudiante_nombre}
           open={modalDetalle.open}
+          materia_curso_id={materia_curso_id}
+          trimestre_id={trimestre_id}
           onClose={() => setModalDetalle(null)}
           onSuccess={() => {
-            // ✅ Sin reload - El hook maneja el refetch automáticamente mediante invalidateQueries
+            queryClient.invalidateQueries({
+              queryKey: ['calificaciones-examen', materia_curso_id, trimestre_id]
+            });
             setModalDetalle(null);
           }}
           trimestreEstado={modalDetalle.trimestreEstado}
