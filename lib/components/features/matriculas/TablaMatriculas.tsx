@@ -10,9 +10,9 @@ interface TablaMatriculasProps {
   loading: boolean;
   error: string | null;
   cursoSeleccionado?: string;
-  onVerDetalles: (matricula: Matricula) => void;
-  onEditar: (matricula: Matricula) => void;
-  onRetirar: (matricula: Matricula) => void;
+  onVerDetalles?: (matricula: Matricula) => void;
+  onEditar?: (matricula: Matricula) => void;
+  onRetirar?: (matricula: Matricula) => void;
 }
 
 export function TablaMatriculas({
@@ -140,7 +140,7 @@ export function TablaMatriculas({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                     <button
-                      onClick={() => onVerDetalles(matricula)}
+                      onClick={() => onVerDetalles?.(matricula)}
                       className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600"
                       title="Ver detalles"
                     >
@@ -150,14 +150,14 @@ export function TablaMatriculas({
                     {matricula.estado === EstadoMatricula.ACTIVO && (
                       <>
                       <button
-                        onClick={() => onEditar(matricula)}
+                        onClick={() => onEditar?.(matricula)}
                         className="p-2 rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-600"
                         title="Editar"
                       >
                         <PencilSquareIcon className="h-5 w-5" />
                       </button>
                       <button
-                        onClick={() => onRetirar(matricula)}
+                        onClick={() => onRetirar?.(matricula)}
                         className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600"
                         title="Retirar estudiante"
                       >
