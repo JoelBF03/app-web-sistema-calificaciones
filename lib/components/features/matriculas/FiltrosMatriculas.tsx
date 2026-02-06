@@ -105,7 +105,7 @@ export function FiltrosMatriculas({
             Filtrar
           </label>
           <button
-            onClick={onFiltrar}
+            onClick={() => onFiltrar?.()}
             className="w-full cursor-pointer bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
           >
             <i className="fas fa-filter mr-2"></i>
@@ -132,7 +132,7 @@ export function FiltrosMatriculas({
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
               <button
                 onClick={() => {
-                  onMatricularManual();
+                  onMatricularManual?.();
                   setShowDropdown(false);
                 }}
                 className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100"
@@ -142,7 +142,7 @@ export function FiltrosMatriculas({
               </button>
               <button
                 onClick={() => {
-                  onImportarExcel();
+                  onImportarExcel?.();
                   setShowDropdown(false);
                 }}
                 className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3"
