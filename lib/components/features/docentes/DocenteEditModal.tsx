@@ -155,7 +155,7 @@ export default function DocenteEditModal({
   };
 
 const getNivelColor = (nivelAsignado: string) => {
-  switch (docente.nivelAsignado) {
+  switch (nivelAsignado) {
     case NivelAsignado.BASICA:
       return "from-slate-500 to-slate-600";
     case NivelAsignado.BACHILLERATO:
