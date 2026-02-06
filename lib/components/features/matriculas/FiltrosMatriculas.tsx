@@ -11,9 +11,9 @@ interface FiltrosMatriculasProps {
     busqueda: string;
   };
   onChange: (filtros: any) => void;
-  onFiltrar: () => void;
-  onMatricularManual: () => void;
-  onImportarExcel: () => void;
+  onFiltrar?: () => void;
+  onMatricularManual?: () => void;
+  onImportarExcel?: () => void;
 }
 
 export function FiltrosMatriculas({
