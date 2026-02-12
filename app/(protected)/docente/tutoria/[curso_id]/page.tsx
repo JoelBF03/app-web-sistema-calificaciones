@@ -144,7 +144,6 @@ export default function TutoriaDashboard() {
         return (
           <TablaReportes
             estudiantes={estudiantes}
-            promedios={promedios}
             trimestre_id={trimestreSeleccionado!}
             trimestre_nombre={trimestreActual?.nombre || ''}
             trimestre_estado={estadoTrimestre}
