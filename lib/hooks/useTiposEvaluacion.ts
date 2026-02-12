@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/hooks/useTiposEvaluacion.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tiposEvaluacionService } from '../services/tipos-evaluacion';
 import { toast } from 'sonner';
@@ -12,7 +11,6 @@ import type {
 export function useTiposEvaluacion(periodo_id?: string) {
   const queryClient = useQueryClient();
 
-  // 📋 Query: Tipos de evaluación por período o todos
   const {
     data: tiposEvaluacion,
     isLoading,
@@ -24,10 +22,9 @@ export function useTiposEvaluacion(periodo_id?: string) {
       ? tiposEvaluacionService.getByPeriodo(periodo_id)
       : tiposEvaluacionService.findAll(),
     enabled: !!periodo_id,
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 5 * 60 * 1000,
   });
 
-  // ➕ Mutation: Crear tipo individual
   const createMutation = useMutation({
     mutationFn: (data: CreateTipoEvaluacionData) => tiposEvaluacionService.create(data),
     onSuccess: () => {
@@ -39,7 +36,6 @@ export function useTiposEvaluacion(periodo_id?: string) {
     },
   });
 
-  // ➕ Mutation: Crear los 3 tipos de una vez
   const createBatchMutation = useMutation({
     mutationFn: ({ periodo_id, porcentajes }: { periodo_id: string; porcentajes: CreateBatchTiposEvaluacionData }) =>
       tiposEvaluacionService.createBatch(periodo_id, porcentajes),
@@ -52,7 +48,6 @@ export function useTiposEvaluacion(periodo_id?: string) {
     },
   });
 
-  // ✏️ Mutation: Actualizar tipo
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTipoEvaluacionData }) =>
       tiposEvaluacionService.update(id, data),
@@ -65,7 +60,6 @@ export function useTiposEvaluacion(periodo_id?: string) {
     },
   });
 
-  // ✏️ Mutation: Actualizar todos los porcentajes a la vez
   const updateBatchMutation = useMutation({
     mutationFn: ({ periodo_id, porcentajes }: {
       periodo_id: string;
@@ -80,7 +74,6 @@ export function useTiposEvaluacion(periodo_id?: string) {
     },
   });
 
-  // Helper: Obtener porcentajes en formato simple
   const porcentajes = {
     insumos: tiposEvaluacion?.find(t => t.nombre === 'INSUMOS')?.porcentaje || 0,
     proyecto: tiposEvaluacion?.find(t => t.nombre === 'PROYECTO')?.porcentaje || 0,
@@ -88,7 +81,6 @@ export function useTiposEvaluacion(periodo_id?: string) {
   };
 
   return {
-    // Data
     tiposEvaluacion: tiposEvaluacion || [],
     porcentajes,
     hayPorcentajes: tiposEvaluacion && tiposEvaluacion.length === 3,
@@ -96,14 +88,12 @@ export function useTiposEvaluacion(periodo_id?: string) {
     error: error?.message || null,
     refetch,
 
-    // Mutations
     createTipo: createMutation.mutateAsync,
     createBatch: createBatchMutation.mutateAsync,
     updateTipo: (id: string, data: UpdateTipoEvaluacionData) => updateMutation.mutateAsync({ id, data }),
     updateBatch: (periodo_id: string, porcentajes: any) => 
       updateBatchMutation.mutateAsync({ periodo_id, porcentajes }),
 
-    // Loading states
     isCreating: createMutation.isPending,
     isCreatingBatch: createBatchMutation.isPending,
     isUpdating: updateMutation.isPending,

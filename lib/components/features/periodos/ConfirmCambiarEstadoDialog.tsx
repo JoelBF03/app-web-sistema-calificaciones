@@ -101,7 +101,6 @@ export default function ConfirmCambiarEstadoDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Estado actual */}
           <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -120,7 +119,6 @@ export default function ConfirmCambiarEstadoDialog({
             </div>
           </div>
 
-          {/* Validación de trimestres */} 
           {!canFinalizar && (
             <Alert className="border-2 border-red-200 bg-red-50">
               <XCircle className="h-4 w-4 text-red-600" />
@@ -137,7 +135,6 @@ export default function ConfirmCambiarEstadoDialog({
             </Alert>
           )}
 
-          {/* Información de finalización */}
           {canFinalizar && (
             <>
               <Alert className="border-2 border-orange-200 bg-orange-50">

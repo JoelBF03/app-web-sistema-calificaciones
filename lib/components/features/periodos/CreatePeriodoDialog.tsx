@@ -100,7 +100,6 @@ export default function CreatePeriodoDialog({ isOpen, onClose, onSuccess }: Crea
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Fechas */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fechaInicio" className="flex items-center gap-1">
@@ -135,7 +134,6 @@ export default function CreatePeriodoDialog({ isOpen, onClose, onSuccess }: Crea
             </div>
           </div>
 
-          {/* Nombre del período */}
           <div className="space-y-2">
             <Label htmlFor="nombre">Nombre del Período *</Label>
             <div className="flex gap-2">
@@ -165,7 +163,6 @@ export default function CreatePeriodoDialog({ isOpen, onClose, onSuccess }: Crea
             </p>
           </div>
 
-          {/* Vista previa */}
           {formData.nombre && formData.fechaInicio && formData.fechaFin && duration && duration > 0 && (
             <Alert className="border-green-200 bg-green-50">
               <AlertCircle className="h-4 w-4 text-green-600" />
@@ -180,7 +177,6 @@ export default function CreatePeriodoDialog({ isOpen, onClose, onSuccess }: Crea
             </Alert>
           )}
 
-          {/* Información */}
           <Alert className="border-blue-200 bg-blue-50">
             <Info className="h-4 w-4 text-blue-600" />
             <AlertDescription>

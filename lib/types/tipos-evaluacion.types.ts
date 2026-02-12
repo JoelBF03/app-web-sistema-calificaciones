@@ -4,10 +4,6 @@ export enum NombreTipoEvaluacion {
   EXAMEN = 'EXAMEN'
 }
 
-// ============================================
-// INTERFACES DE ENTIDADES
-// ============================================
-
 export interface TipoEvaluacion {
   id: string;
   periodo_lectivo_id: string;
@@ -16,10 +12,6 @@ export interface TipoEvaluacion {
   createdAt: string;
   updatedAt: string;
 }
-
-// ============================================
-// DTOs DE CREACIÓN
-// ============================================
 
 export interface CreateTipoEvaluacionData {
   periodo_lectivo_id: string;
@@ -33,17 +25,9 @@ export interface CreateBatchTiposEvaluacionData {
   examen: number;
 }
 
-// ============================================
-// DTOs DE ACTUALIZACIÓN
-// ============================================
-
 export interface UpdateTipoEvaluacionData {
   porcentaje?: number;
 }
-
-// ============================================
-// RESPUESTAS DE ENDPOINTS
-// ============================================
 
 export interface CreateBatchTiposResponse {
   tipos: TipoEvaluacion[];

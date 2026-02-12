@@ -118,7 +118,6 @@ export default function PeriodoCard({
             const data = await trimestresService.getTrimestresByPeriodo(periodo.id);
             setTrimestres(data);
         } catch (error) {
-            console.error('Error loading trimestres:', error);
             toast.error('Error al cargar los trimestres');
         } finally {
             setLoadingTrimestres(false);
@@ -131,7 +130,6 @@ export default function PeriodoCard({
             const data = await tiposEvaluacionService.getByPeriodo(periodo.id);
             setTiposEvaluacion(data);
         } catch (error) {
-            console.error('Error loading tipos evaluacion:', error);
             toast.error('Error al cargar los tipos de evaluación');
         } finally {
             setLoadingTipos(false);
@@ -193,7 +191,6 @@ export default function PeriodoCard({
                 setTimeout(() => loadTrimestres(), 500);
             }
         } catch (error: any) {
-            console.error('Error updating periodo:', error);
             toast.error(error.response?.data?.message || 'Error al actualizar el período');
             setShowConfirmDialog(false);
         }
@@ -241,10 +238,8 @@ export default function PeriodoCard({
 
             setShowConfirmSupletoriosDialog(false);
             setNuevoEstadoSupletorio(null);
-            // Recargar datos
             window.location.reload();
         } catch (error: any) {
-            console.error('Error changing supletorio state:', error);
             toast.error(error.response?.data?.message || 'Error al cambiar el estado de supletorios');
         }
     };

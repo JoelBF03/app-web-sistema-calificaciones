@@ -1,4 +1,3 @@
-// lib/hooks/useCursos.ts
 import { useState, useCallback, useEffect } from 'react';
 import { cursosService } from '../services/cursos';
 import { Curso, CursoStats, UpdateCursoDto } from '../types/curso.types';
@@ -36,7 +35,7 @@ export function useCursos() {
       const data = await cursosService.getStats();
       setStats(data);
     } catch (err: any) {
-      console.error('Error al cargar stats:', err);
+      toast.error('Error al cargar stats');
     }
   }, []);
 

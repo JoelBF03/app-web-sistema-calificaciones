@@ -1,5 +1,3 @@
-// nextjs-frontend/lib/components/features/estudiantes/badges/EstadoBadge.tsx
-
 import { EstadoEstudiante } from '@/lib/types/estudiante.types';
 
 interface EstadoBadgeProps {

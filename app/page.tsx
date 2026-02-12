@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../lib/store/auth-store';
+import { Role } from '@/lib/types';
 
 export default function Home() {
   const { usuario, isAuthenticated, isLoading, initFromStorage } = useAuthStore();
@@ -16,9 +17,9 @@ export default function Home() {
     if (!isLoading) {
       if (!isAuthenticated) {
         router.replace('/login');
-      } else if (usuario?.rol === 'ADMIN') {
+      } else if (usuario?.rol === Role.ADMIN) {
         router.replace('/admin');
-      } else if (usuario?.rol === 'DOCENTE') {
+      } else if (usuario?.rol === Role.DOCENTE) {
         router.replace('/docente');
       }
     }

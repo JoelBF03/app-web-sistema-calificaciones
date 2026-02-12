@@ -46,16 +46,13 @@ export default function EditCursoModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Cargar docentes cuando se abre el modal
   useEffect(() => {
     if (isOpen) {
       cargarDocentes();
     }
   }, [isOpen]);
 
-  // Cargar datos del curso
   useEffect(() => {
-    // Quitamos la dependencia de 'isOpen' aquí para que sea más directo
     if (curso) {
       setFormData({
         nivel: curso.nivel || '',
@@ -74,7 +71,6 @@ export default function EditCursoModal({
       const docentesActivos = data.filter(d => d.usuario_id?.estado === Estado.ACTIVO);
       setDocentes(docentesActivos);
     } catch (error) {
-      console.error('Error al cargar docentes:', error);
       toast.error('Error al cargar lista de docentes');
     } finally {
       setLoadingDocentes(false);
@@ -92,7 +88,6 @@ export default function EditCursoModal({
   ];
 
   const isNivelBasico = nivelesBasicos.includes(formData.nivel as NivelCurso);
-  // 🔥 Filtrar docentes según el nivel del curso
   const getDocentesDisponibles = () => {
     if (!formData.nivel) return [];
 
@@ -122,7 +117,6 @@ export default function EditCursoModal({
       newErrors.especialidad = 'La especialidad es requerida';
     }
 
-    // Validar especialidad según nivel
     if (isNivelBasico && formData.especialidad !== EspecialidadCurso.BASICA) {
       newErrors.especialidad = 'Los niveles de Básica solo pueden tener especialidad BÁSICA';
     }
@@ -142,26 +136,22 @@ export default function EditCursoModal({
 
     setIsSubmitting(true);
     try {
-      // 🔥 Construir objeto de actualización
       const updateData: any = {
         nivel: formData.nivel as NivelCurso,
         paralelo: formData.paralelo.toUpperCase(),
         especialidad: formData.especialidad as EspecialidadCurso,
       };
 
-      // 🔥 Manejo del docente_id
       if (formData.docente_id === 'none') {
-        // Si es 'none', enviar null para remover el tutor
         updateData.docente_id = null;
       } else {
-        // Si tiene un valor, convertir a string y enviar
         updateData.docente_id = formData.docente_id;
       }
 
       await onSave(curso.id, updateData);
       onClose();
     } catch (error: any) {
-      console.error('Error al actualizar curso:', error);
+      toast.error('Error al actualizar curso');
     } finally {
       setIsSubmitting(false);
     }
@@ -185,7 +175,6 @@ export default function EditCursoModal({
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
 
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 relative">
           <button
             onClick={onClose}
@@ -201,10 +190,8 @@ export default function EditCursoModal({
           </p>
         </div>
 
-        {/* Formulario */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[calc(90vh-200px)] overflow-y-auto">
 
-          {/* Advertencia si el período está activo */}
           {curso.periodo_lectivo.estado === EstadoPeriodo.ACTIVO && (
             <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
@@ -219,7 +206,6 @@ export default function EditCursoModal({
             </div>
           )}
 
-          {/* Nivel */}
           <div className="space-y-2">
             <Label htmlFor="nivel">
               Nivel <span className="text-red-500">*</span>
@@ -261,7 +247,6 @@ export default function EditCursoModal({
             )}
           </div>
 
-          {/* Paralelo */}
           <div className="space-y-2">
             <Label htmlFor="paralelo">
               Paralelo <span className="text-red-500">*</span>
@@ -284,7 +269,6 @@ export default function EditCursoModal({
             )}
           </div>
 
-          {/* Especialidad */}
           <div className="space-y-2">
             <Label htmlFor="especialidad">
               Especialidad <span className="text-red-500">*</span>
@@ -322,7 +306,6 @@ export default function EditCursoModal({
             )}
           </div>
 
-          {/* 🔥 TUTOR DEL CURSO */}
           <div className="space-y-2">
             <Label htmlFor="docente_id" className="flex items-center gap-2">
               <UserCircle className="w-4 h-4 text-gray-500" />
@@ -364,7 +347,6 @@ export default function EditCursoModal({
             )}
           </div>
 
-          {/* Info del curso original */}
           <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
             <p className="text-xs font-medium text-gray-500 mb-2">Curso Original</p>
             <p className="text-sm text-gray-900">
@@ -373,7 +355,6 @@ export default function EditCursoModal({
           </div>
         </form>
 
-        {/* Footer */}
         <div className="p-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
           <Button
             type="button"

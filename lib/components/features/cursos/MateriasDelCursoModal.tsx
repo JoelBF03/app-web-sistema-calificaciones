@@ -57,25 +57,21 @@ export default function MateriasDelCursoModal({
       return;
     }
     
-    // Redirigir al módulo de calificaciones del docente
     router.push(`/docente/materias/${materiaCurso.id}/calificaciones`);
     onClose();
   };
 
   const handleVerComponentesCualitativos = () => {
-    // Redirigir al módulo de tutoría (componentes cualitativos)
     router.push(`/docente/tutoria/${curso!.id}`);
     onClose();
   };
 
   if (!isOpen || !curso) return null;
 
-  // ✅ Filtrar materias CUANTITATIVAS (las que tienen calificaciones numéricas)
   const materiasCuantitativas = materias.filter(
     m => m.materia.tipoCalificacion === TipoCalificacion.CUANTITATIVA
   );
 
-  // ✅ Detectar si hay materias CUALITATIVAS
   const tieneCualitativas = materias.some(
     m => m.materia.tipoCalificacion === TipoCalificacion.CUALITATIVA
   );
@@ -86,16 +82,13 @@ export default function MateriasDelCursoModal({
       role="dialog"
       aria-modal="true"
     >
-      {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/40"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Panel */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6">
           <div className="flex items-start justify-between">
             <div>
@@ -117,7 +110,6 @@ export default function MateriasDelCursoModal({
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
           {loading ? (
             <div className="flex items-center justify-center py-12">
@@ -135,7 +127,6 @@ export default function MateriasDelCursoModal({
             </div>
           ) : (
             <div className="grid gap-4">
-              {/* ✅ CARD ESPECIAL: Componentes Cualitativos */}
               {tieneCualitativas && (
                 <Card className="hover:shadow-md transition-shadow border-2 border-purple-300 bg-gradient-to-r from-purple-50 to-pink-50">
                   <CardContent className="p-4">
@@ -173,7 +164,6 @@ export default function MateriasDelCursoModal({
                 </Card>
               )}
 
-              {/* ✅ Materias CUANTITATIVAS */}
               {materiasCuantitativas.length === 0 ? (
                 <div className="text-center py-8">
                   <BookOpen className="w-10 h-10 text-gray-400 mx-auto mb-3" />
@@ -259,7 +249,6 @@ export default function MateriasDelCursoModal({
           )}
         </div>
 
-        {/* Footer */}
         <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
           <p className="text-sm text-gray-600">
             <span className="font-semibold">{materiasCuantitativas.length}</span> materia(s) cuantitativa(s)

@@ -1,4 +1,3 @@
-// lib/hooks/useMaterias.ts
 import { useState, useCallback, useEffect } from 'react';
 import { materiaService } from '../services/materias';
 import { Materia, CreateMateriaDto, UpdateMateriaDto } from '../types/materia.types';

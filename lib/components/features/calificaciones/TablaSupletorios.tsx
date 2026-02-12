@@ -6,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/lib/components/ui/ca
 import { Input } from '@/lib/components/ui/input';
 import { Button } from '@/lib/components/ui/button';
 import { Badge } from '@/lib/components/ui/badge';
-import { Alert, AlertDescription } from '@/lib/components/ui/alert';
-import { Loader2, BookCheck, Lock, CheckCircle2, Save, Eye, XCircle, AlertCircle, FileText } from 'lucide-react';
+import { Loader2, BookCheck, Save, Eye, FileText } from 'lucide-react';
 import { useEstudiantesSupletorio } from '@/lib/hooks/usePromediosPeriodo';
 import { EstadoSupletorio } from '@/lib/types/periodo.types';
 import { toast } from 'sonner';
 import { ModalDetalleSupletorio } from './ModalDetalleSupletorio';
 import { useReportes } from '@/lib/hooks/useReportes';
+import { BotonReporte } from '@/lib/components/features/reportes/BotonReporte';
 
 interface TablaSupletoriosProps {
   materia_curso_id: string;
@@ -37,8 +37,9 @@ export function TablaSupletorios({
     refetch
   } = useEstudiantesSupletorio(materia_curso_id, periodo_lectivo_id);
 
-  const supletoriosCerrados = estadoSupletorio === EstadoSupletorio.CERRADO;
   const supletoriosActivos = estadoSupletorio === EstadoSupletorio.ACTIVADO;
+  
+  // Hook de reportes con tus variables reales
   const { descargarRendimientoAnual, descargando: descargandoReporte } = useReportes();
 
   const [modalDetalle, setModalDetalle] = useState<{
@@ -47,7 +48,7 @@ export function TablaSupletorios({
     estudiante_nombre: string;
   } | null>(null);
 
-const [notasTemp, setNotasTemp] = useState<Record<string, string>>({});
+  const [notasTemp, setNotasTemp] = useState<Record<string, string>>({});
   const [estudianteEnEdicion, setEstudianteEnEdicion] = useState<string | null>(null);
 
   const handleNotaChange = (promedioId: string, value: string) => {
@@ -92,15 +93,6 @@ const [notasTemp, setNotasTemp] = useState<Record<string, string>>({});
     }
   };
 
-  const handleDescargarRendimientoAnual = async () => {
-    await descargarRendimientoAnual(
-      materia_curso_id,
-      materia_nombre,
-      periodo_lectivo_id,
-      periodo_nombre
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="flex justify-center p-12">
@@ -123,24 +115,16 @@ const [notasTemp, setNotasTemp] = useState<Record<string, string>>({});
             )}
           </CardTitle>
 
+          {/* BOTÓN DE REPORTE: Aparece solo si el estado es CERRADO */}
           {estadoSupletorio === EstadoSupletorio.CERRADO && (
-            <Button
-              onClick={handleDescargarRendimientoAnual}
-              disabled={descargandoReporte}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold shadow-md cursor-pointer"
-            >
-              {descargandoReporte ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generando...
-                </>
-              ) : (
-                <>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Reporte de Rendimiento Anual
-                </>
-              )}
-            </Button>
+            <BotonReporte
+              label="Reporte de Rendimiento Anual de la materia"
+              icon={FileText}
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold shadow-md"
+              onClick={() => descargarRendimientoAnual(materia_curso_id, periodo_lectivo_id)}
+              loading={descargandoReporte}
+              tooltip={`Descargar rendimiento anual de ${materia_nombre}`}
+            />
           )}
         </div>
       </CardHeader>
@@ -198,7 +182,6 @@ const [notasTemp, setNotasTemp] = useState<Record<string, string>>({});
                         ) : <span className="text-gray-400">-</span>}
                       </TableCell>
 
-                      {/* 🚫 AQUÍ SE QUITÓ EL RECALCULO TEMPORAL */}
                       <TableCell className="text-center bg-green-50 font-bold text-lg">
                         {promedioFinal !== null ? (
                           <span className={promedioFinal >= 7 ? 'text-green-700' : 'text-red-700'}>

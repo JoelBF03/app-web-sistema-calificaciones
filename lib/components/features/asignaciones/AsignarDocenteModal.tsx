@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/asignaciones/AsignarDocenteModal.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -46,7 +45,6 @@ export function AsignarDocenteModal({
     loading 
   } = useMateriaCurso();
 
-  // Filtrar docentes según nivel
   const nivelesBasicos = [NivelCurso.OCTAVO, NivelCurso.NOVENO, NivelCurso.DECIMO];
   const esBasica = cursos.length > 0 && nivelesBasicos.includes(cursos[0].nivel);
 
@@ -91,7 +89,7 @@ export function AsignarDocenteModal({
         })
       );
     } catch (error) {
-      console.error('Error al cargar asignaciones:', error);
+      toast.error('Error al cargar asignaciones');
       setAsignaciones(
         cursos.map((curso) => ({
           cursoId: curso.id,
@@ -132,12 +130,10 @@ export function AsignarDocenteModal({
     try {
       for (const asignacion of asignaciones) {
         if (asignacion.materiaCursoId) {
-          // ✅ UUID directo - sin conversiones
           await actualizarMateriaCurso(asignacion.materiaCursoId, {
             docente_id: asignacion.docenteId || null,
           });
         } else {
-          // ✅ UUID directo - sin conversiones
           await crearMateriaCurso({
             curso_id: asignacion.cursoId,
             materia_id: materia.id,
@@ -151,7 +147,7 @@ export function AsignarDocenteModal({
       onSave();
       onClose();
     } catch (error: any) {
-      console.error('Error al guardar:', error);
+      toast.error('Error al guardar asignaciones');
     } finally {
       setCargando(false);
     }

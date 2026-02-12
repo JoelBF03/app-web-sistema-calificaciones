@@ -36,7 +36,6 @@ export function useCalificacionExamen(materia_curso_id: string, trimestre_id: st
   const deleteMutation = useMutation({
     mutationFn: calificacionExamenService.remove,
     onSuccess: () => {
-      // ✅ Invalidar lista de calificaciones
       queryClient.invalidateQueries({ queryKey: ['calificaciones-examen', materia_curso_id, trimestre_id] });
       toast.success('Calificación eliminada');
     },

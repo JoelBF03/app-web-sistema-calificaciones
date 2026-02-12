@@ -1,4 +1,3 @@
-// app/lib/services/auth.ts
 import { api } from "./api";
 import { LoginData, LoginResponse } from "../types";
 

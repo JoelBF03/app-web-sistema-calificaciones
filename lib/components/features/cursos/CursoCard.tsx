@@ -79,7 +79,6 @@ export default function CursoCard({
         isActive ? config.borderColor : 'border-gray-200'
       } ${!isActive && 'opacity-60'}`}>
         
-        {/* Indicador de estado */}
         <div className="absolute top-2 right-2">
           <div className={`w-2.5 h-2.5 rounded-full ${
             isActive ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50'
@@ -88,7 +87,6 @@ export default function CursoCard({
 
         <CardContent className="p-3 space-y-2">
           
-          {/* Header compacto */}
           <div className="flex items-center gap-2">
             <div className={`${config.bgColor} p-1.5 rounded ${config.borderColor} border`}>
               <div className={config.textColor}>
@@ -102,18 +100,15 @@ export default function CursoCard({
               </h3>
             </div>
 
-            {/* Paralelo */}
             <div className={`${config.bgColor} border ${config.borderColor} rounded-lg px-3 py-1`}>
               <span className={`text-2xl font-black ${config.textColor}`}>{curso.paralelo}</span>
             </div>
           </div>
 
-          {/* Especialidad */}
           <Badge className={`${config.bgColor} ${config.textColor} border ${config.borderColor} w-full justify-center text-xs`} variant="outline">
             {curso.especialidad}
           </Badge>
 
-          {/* Acciones */}
           <div className="flex gap-1 pt-1">
             <Button
               variant="outline"
@@ -149,7 +144,6 @@ export default function CursoCard({
         </CardContent>
       </Card>
 
-      {/* Modal de Confirmación */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">

@@ -63,17 +63,14 @@ export default function CursosCompactView({ cursos, onToggleEstado, onViewDetail
                 !isActive && 'opacity-60'
               }`}
             >
-              {/* Indicador de estado */}
               <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
                 isActive ? 'bg-green-500' : 'bg-red-500'
               } ${isActive && 'animate-pulse'} shadow-md`}></div>
 
-              {/* Icono de especialidad */}
               <div className={`p-2 rounded-lg border ${config.color} flex-shrink-0`}>
                 {config.icon}
               </div>
 
-              {/* Nivel */}
               <div className="min-w-[160px]">
                 <div className="font-bold text-sm text-gray-900">
                   {NIVEL_DISPLAY_MAP[curso.nivel]}
@@ -83,12 +80,10 @@ export default function CursosCompactView({ cursos, onToggleEstado, onViewDetail
                 </div>
               </div>
 
-              {/* Paralelo */}
               <Badge variant="outline" className="font-black text-xl px-4 py-1 flex-shrink-0">
                 {curso.paralelo}
               </Badge>
 
-              {/* Especialidad */}
               <Badge variant="outline" className={`${config.color} text-sm font-medium px-3 py-1 flex-shrink-0`}>
                 {curso.especialidad}
               </Badge>
@@ -97,10 +92,8 @@ export default function CursosCompactView({ cursos, onToggleEstado, onViewDetail
                 {curso.docente ? `${curso.docente.nombres} ${curso.docente.apellidos}` : 'Sin tutor'}
               </Badge>
 
-              {/* Spacer */}
               <div className="flex-1"></div>
 
-              {/* Acciones */}
               <div className="flex gap-2 flex-shrink-0">
                 <Button
                   variant="outline"
@@ -145,7 +138,6 @@ export default function CursosCompactView({ cursos, onToggleEstado, onViewDetail
         })}
       </Card>
 
-      {/* Modal de Confirmación */}
       {cursoToToggle && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">

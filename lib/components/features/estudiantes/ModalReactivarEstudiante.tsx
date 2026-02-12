@@ -1,10 +1,9 @@
-// nextjs-frontend/lib/components/features/estudiantes/ModalReactivarEstudiante.tsx
-
 import { useState } from 'react';
 import { Estudiante } from '@/lib/types/estudiante.types';
 import { X, Undo, CheckCircle } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
 import { Card } from '@/lib/components/ui/card';
+import { toast } from 'sonner';
 
 interface ModalReactivarEstudianteProps {
   estudiante: Estudiante;
@@ -27,7 +26,7 @@ export function ModalReactivarEstudiante({
       await onConfirm(estudiante.id);
       onClose();
     } catch (error) {
-      console.error('Error al reactivar:', error);
+      toast.error('Error al reactivar el estudiante. Intente nuevamente.');
     } finally {
       setLoading(false);
     }
@@ -38,7 +37,6 @@ export function ModalReactivarEstudiante({
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
-        {/* Header */}
         <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Undo className="w-5 h-5" />
@@ -56,7 +54,6 @@ export function ModalReactivarEstudiante({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Información */}
           <Card className="p-4 bg-green-50 border-green-300">
             <div className="flex gap-3">
               <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
@@ -72,7 +69,6 @@ export function ModalReactivarEstudiante({
             </div>
           </Card>
 
-          {/* Información del estudiante */}
           <Card className="p-4 bg-gray-50">
             <div className="space-y-2">
               <div>
@@ -96,7 +92,6 @@ export function ModalReactivarEstudiante({
             </div>
           </Card>
 
-          {/* Botones */}
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
               type="button"

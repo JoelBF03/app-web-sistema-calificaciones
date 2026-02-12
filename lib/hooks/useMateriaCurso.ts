@@ -1,4 +1,3 @@
-// lib/hooks/useMateriaCurso.ts - Agregar toast
 import { useState } from 'react';
 import { materiaCursoService } from '../services/materia-curso';
 import {

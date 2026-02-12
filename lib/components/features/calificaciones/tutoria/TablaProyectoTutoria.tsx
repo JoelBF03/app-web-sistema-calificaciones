@@ -50,7 +50,6 @@ export function TablaProyectoTutoria({
         trimestreEstado?: TrimestreEstado;
     } | null>(null);
 
-    // ✅ Estado para modal de edición de datos
     const [modalEdicion, setModalEdicion] = useState<{
         open: boolean;
         estudiante: any;
@@ -79,7 +78,6 @@ export function TablaProyectoTutoria({
             const calExistente = calificaciones.find((c: any) => c.estudiante_id === est.id);
 
             if (calExistente) {
-                // ✅ CONVERTIR A NÚMERO ANTES DE COMPARAR
                 const notaExistente = Number(calExistente.calificacion_proyecto);
                 if (Math.abs(notaExistente - nota) > 0.001) {
                     estudiantesParaActualizar.push({
@@ -218,7 +216,6 @@ export function TablaProyectoTutoria({
                             const calExistente = calificaciones.find((c: any) => c.estudiante_id === estudiante.id);
                             const notaGuardada = calExistente?.calificacion_proyecto;
 
-                            // ✅ CONVERTIR A NÚMERO PARA CÁLCULOS
                             const notaGuardadaNum = notaGuardada ? Number(notaGuardada) : undefined;
 
                             const notaActual = notasTemp[estudiante.id] !== undefined
@@ -232,12 +229,10 @@ export function TablaProyectoTutoria({
 
                             return (
                                 <TableRow key={estudiante.id} className="border-b border-gray-300 hover:bg-yellow-50">
-                                    {/* Número */}
                                     <TableCell className="text-center text-gray-500 font-medium px-3 border-r-2 border-gray-400">
                                         {index + 1}
                                     </TableCell>
 
-                                    {/* Nombre del estudiante con hover para editar */}
                                     <TableCell className="font-medium px-4 border-r-2 border-gray-400">
                                         <div
                                             className="flex items-center gap-3 cursor-pointer hover:text-yellow-600 transition-colors group"
@@ -253,10 +248,8 @@ export function TablaProyectoTutoria({
                                         </div>
                                     </TableCell>
 
-                                    {/* Nota */}
                                     <TableCell className="border-x border-gray-300 text-center px-2 py-2">
                                         {calExistente ? (
-                                            // ✅ SI YA ESTÁ CALIFICADO: MOSTRAR NOTA (NO INPUT)
                                             <div className="flex flex-col items-center gap-1">
                                                 <span className={`font-semibold text-lg ${Number(notaGuardadaNum) >= 7 ? 'text-green-700' :
                                                     Number(notaGuardadaNum) >= 4 ? 'text-yellow-700' :
@@ -271,7 +264,6 @@ export function TablaProyectoTutoria({
                                                 )}
                                             </div>
                                         ) : (
-                                            // ✅ SI NO ESTÁ CALIFICADO: MOSTRAR INPUT (solo si no está finalizado)
                                             estadoFinalizado ? (
                                                 <span className="text-muted-foreground text-sm">Sin calificación</span>
                                             ) : (
@@ -287,19 +279,16 @@ export function TablaProyectoTutoria({
                                         )}
                                     </TableCell>
 
-                                    {/* Ponderado */}
                                     <TableCell className="border-x border-gray-300 text-center font-bold text-blue-600 px-2">
                                         {ponderado}
                                     </TableCell>
 
-                                    {/* Cualitativo */}
                                     <TableCell className="border-x border-gray-300 text-center px-2">
                                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${colorCualitativo}`}>
                                             {cualitativo}
                                         </span>
                                     </TableCell>
 
-                                    {/* Detalle */}
                                     <TableCell className="border-l-2 border-gray-400 text-center px-2">
                                         {calExistente ? (
                                             <Button
@@ -327,7 +316,6 @@ export function TablaProyectoTutoria({
                 </Table>
             </div>
 
-            {/* Modal Detalle Proyecto */}
             {modalDetalle && (
                 <ModalDetalleProyecto
                     calificacion_id={modalDetalle.calificacion_id}
@@ -337,12 +325,11 @@ export function TablaProyectoTutoria({
                     onClose={() => setModalDetalle(null)}
                     onSuccess={() => {
                         refetch?.();
-                    }}  // ✅ VACÍO - El hook maneja el refetch automáticamente
+                    }}
                     trimestreEstado={modalDetalle.trimestreEstado}
                 />
             )}
 
-            {/* Modal Editar Datos Personales */}
             {modalEdicion && (
                 <ModalEditarDatosPersonales
                     estudiante={modalEdicion.estudiante}

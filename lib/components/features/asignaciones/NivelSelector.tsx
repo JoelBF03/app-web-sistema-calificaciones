@@ -1,9 +1,9 @@
-// lib/components/features/asignaciones/NivelSelector.tsx
 'use client';
 
 import { Button } from '@/lib/components/ui/button';
 import { Card, CardContent } from '@/lib/components/ui/card';
 import { NivelCurso, EspecialidadCurso } from '@/lib/types/curso.types';
+import { Brain, Wrench } from 'lucide-react';
 
 interface NivelSelectorProps {
   nivelSeleccionado: {
@@ -33,7 +33,6 @@ export function NivelSelector({ nivelSeleccionado, onNivelChange }: NivelSelecto
   return (
     <Card className="bg-gray-50 border-2">
       <CardContent className="p-6 space-y-4">
-        {/* Primera fila: Todos los niveles */}
         <div className="flex flex-wrap gap-3">
           {todosLosNiveles.map(({ nivel, label, color }) => {
             const isBasica = color === 'purple';
@@ -67,7 +66,6 @@ export function NivelSelector({ nivelSeleccionado, onNivelChange }: NivelSelecto
           })}
         </div>
 
-        {/* Segunda fila: Especialidades de Bachillerato (solo si está en bachillerato) */}
         {esBachillerato && (
           <div className="flex gap-3 pt-2 border-t border-gray-200">
             <Button
@@ -80,7 +78,7 @@ export function NivelSelector({ nivelSeleccionado, onNivelChange }: NivelSelecto
                   : 'font-semibold flex-1'
               }
             >
-              🔧 Bachillerato Técnico
+              <Wrench className="inline-block mr-1" /> Bachillerato Técnico
             </Button>
             <Button
               size="lg"
@@ -92,7 +90,7 @@ export function NivelSelector({ nivelSeleccionado, onNivelChange }: NivelSelecto
                   : 'font-semibold flex-1'
               }
             >
-              🧬 Bachillerato en Ciencias
+              <Brain className="inline-block mr-1" /> Bachillerato en Ciencias
             </Button>
           </div>
         )}

@@ -17,7 +17,6 @@ interface TrimestreSelectorProps {
   estadoSupletorio?: EstadoSupletorio;
 }
 
-// 🆕 ID especial para identificar cuando se selecciona supletorios
 export const SUPLETORIO_ID = 'SUPLETORIOS';
 
 export function TrimestreSelector({ 
@@ -33,7 +32,6 @@ export function TrimestreSelector({
 
   return (
     <div className="space-y-3">
-      {/* Banner de estado de supletorios */}
       {enSupletorios && (
         <div className={`p-3 rounded-lg border-2 ${
           supletoriosCerrados 
@@ -58,7 +56,6 @@ export function TrimestreSelector({
       )}
 
       <div className="flex flex-wrap gap-3">
-        {/* Trimestres normales */}
         {trimestres.map((trimestre) => {
           const Icon = trimestre.estado === TrimestreEstado.FINALIZADO 
             ? CheckCircle2 
@@ -105,7 +102,6 @@ export function TrimestreSelector({
           );
         })}
 
-        {/* 🆕 BOTÓN DE SUPLETORIOS - Solo aparece cuando están activos o cerrados */}
         {enSupletorios && (
           <Button
             onClick={() => onSeleccionar(SUPLETORIO_ID)}

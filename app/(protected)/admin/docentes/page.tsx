@@ -30,13 +30,11 @@ export default function DocentesPage() {
   const { docentes, loading, error, fetchDocentes } = useDocentes();
   const { cambiarEstado } = useUsuarios();
 
-  // filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [nivelFilter, setNivelFilter] = useState<'TODOS' | NivelAsignado>('TODOS');
   const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS');
   const [rolFilter, setRolFilter] = useState<'TODOS' | Role>('TODOS');
 
-  // modales
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -194,7 +192,6 @@ export default function DocentesPage() {
         )}
       </div>
 
-      {/* Modales */}
       <CreateDocenteModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
@@ -220,7 +217,6 @@ export default function DocentesPage() {
         onSuccess={handleSuccess}
       />
 
-      {/* Modal de Confirmación Toggle */}
       <Dialog open={showConfirmToggle} onOpenChange={setShowConfirmToggle}>
         <DialogContent className="max-w-md">
           <DialogHeader>

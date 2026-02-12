@@ -1,5 +1,3 @@
-// nextjs-frontend/lib/components/features/estudiantes/TablaEstudiantes.tsx
-
 import { Estudiante } from '@/lib/types/estudiante.types';
 import { Eye, Edit, History, Undo } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
@@ -61,7 +59,6 @@ export function TablaEstudiantes({
       return '';
     }
 
-    // 🆕 Color gris para inactivos temporales
     if (estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL) {
       return 'bg-gray-100 opacity-75';
     }
@@ -107,12 +104,10 @@ export function TablaEstudiantes({
                 key={estudiante.id}
                 className={`hover:bg-gray-50 transition-colors ${getRowClassName(estudiante)}`}
               >
-                {/* Estado */}
                 <td className="px-6 py-4">
                   <EstadoBadge estado={estudiante.estado} />
                 </td>
 
-                {/* Nombre completo */}
                 <td className="px-6 py-4">
                   <div>
                     <p className="font-semibold text-gray-900">
@@ -121,17 +116,14 @@ export function TablaEstudiantes({
                   </div>
                 </td>
 
-                {/* Curso actual */}
                 <td className="px-6 py-4">
                   <CursoActualBadge estudiante={estudiante} />
                 </td>
 
-                {/* Datos completos */}
                 <td className="px-6 py-4 text-center">
                   <DatosCompletosBadge completos={estudiante.datos_completos} />
                 </td>
 
-                {/* Acciones */}
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-center gap-1">
                     <Button
@@ -182,7 +174,6 @@ export function TablaEstudiantes({
         </table>
       </div>
 
-      {/* Paginación */}
       <div className="bg-gray-50 px-6 py-4 border-t flex items-center justify-between">
         <div className="text-sm text-gray-600">
           Mostrando{' '}
@@ -202,7 +193,6 @@ export function TablaEstudiantes({
             Anterior
           </Button>
 
-          {/* Páginas */}
           {Array.from({ length: Math.min(5, pagination.lastPage) }, (_, i) => {
             let pageNum;
             if (pagination.lastPage <= 5) {

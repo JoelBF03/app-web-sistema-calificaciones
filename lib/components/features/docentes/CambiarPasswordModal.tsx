@@ -1,5 +1,3 @@
-// nextjs-frontend/lib/components/features/docentes/CambiarPasswordModal.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -32,7 +30,6 @@ export function CambiarPasswordModal({ open, onOpenChange }: CambiarPasswordModa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validaciones
     if (!formData.oldPassword || !formData.newPassword || !formData.confirmPassword) {
       toast.error('Todos los campos son obligatorios');
       return;
@@ -56,7 +53,6 @@ export function CambiarPasswordModal({ open, onOpenChange }: CambiarPasswordModa
       
       toast.success('Contraseña actualizada exitosamente');
       
-      // Limpiar formulario y cerrar modal
       setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
       onOpenChange(false);
     } catch (error: any) {
@@ -83,7 +79,6 @@ export function CambiarPasswordModal({ open, onOpenChange }: CambiarPasswordModa
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Contraseña actual */}
           <div>
             <Label htmlFor="oldPassword">Contraseña Actual</Label>
             <div className="relative">
@@ -105,7 +100,6 @@ export function CambiarPasswordModal({ open, onOpenChange }: CambiarPasswordModa
             </div>
           </div>
 
-          {/* Nueva contraseña */}
           <div>
             <Label htmlFor="newPassword">Nueva Contraseña</Label>
             <div className="relative">
@@ -128,7 +122,6 @@ export function CambiarPasswordModal({ open, onOpenChange }: CambiarPasswordModa
             <p className="text-xs text-gray-500 mt-1">Mínimo 8 caracteres</p>
           </div>
 
-          {/* Confirmar contraseña */}
           <div>
             <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
             <div className="relative">
@@ -150,7 +143,6 @@ export function CambiarPasswordModal({ open, onOpenChange }: CambiarPasswordModa
             </div>
           </div>
 
-          {/* Botones */}
           <div className="flex gap-3 pt-4">
             <Button
               type="button"

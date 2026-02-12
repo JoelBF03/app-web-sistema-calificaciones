@@ -67,7 +67,6 @@ export function TablaComponentesTutoria({
     }
   }, []);
 
-  // Cargar calificaciones iniciales
   useEffect(() => {
     if (calificaciones.length > 0) {
       const notasIniciales: Record<string, Record<string, CalificacionComponente | null>> = {};
@@ -89,7 +88,6 @@ export function TablaComponentesTutoria({
     const nuevaCalificacion = value === SIN_CALIFICAR ? null : (value as CalificacionComponente);
     const calificacionOriginal = notasOriginales[estudianteId]?.[materiaId] ?? null;
 
-    // Actualizar notas temporales
     setNotasTemp((prev) => ({
       ...prev,
       [estudianteId]: {
@@ -98,16 +96,13 @@ export function TablaComponentesTutoria({
       },
     }));
 
-    // Trackear cambios
     const key = `${estudianteId}:${materiaId}`;
     setCambiosPendientes((prev) => {
       const newSet = new Set(prev);
 
-      // Si la nueva calificación es diferente a la original, marcar como cambio
       if (nuevaCalificacion !== calificacionOriginal) {
         newSet.add(key);
       } else {
-        // Si volvió al valor original, remover del tracking
         newSet.delete(key);
       }
 
@@ -121,7 +116,6 @@ export function TablaComponentesTutoria({
       return;
     }
 
-    // Construir array solo con las calificaciones modificadas
     const calificacionesArray: CalificarMasivoDto['calificaciones'] = [];
 
     cambiosPendientes.forEach((key) => {
@@ -143,7 +137,6 @@ export function TablaComponentesTutoria({
 
     await guardarCalificaciones(dto);
 
-    // Actualizar estado después de guardar exitosamente
     setNotasOriginales(notasTemp);
     setCambiosPendientes(new Set());
   };
@@ -168,7 +161,6 @@ export function TablaComponentesTutoria({
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border-2 border-purple-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -209,7 +201,6 @@ export function TablaComponentesTutoria({
         </div>
       </div>
 
-      {/* Tabla */}
       <div className="overflow-x-auto rounded-lg border-2 border-gray-400 bg-card">
         <Table className="border-collapse">
           <TableHeader>

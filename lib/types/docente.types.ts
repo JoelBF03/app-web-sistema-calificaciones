@@ -7,7 +7,6 @@ export enum NivelAsignado {
 }
 
 
-// Interface del docente
 export interface Docente {
   id: string;
   nombres: string;
@@ -29,7 +28,6 @@ export interface Docente {
   };
 }
 
-// Para el registro (RegisterDto)
 export interface CreateDocenteData {
   email: string;
   password: string;
@@ -41,7 +39,6 @@ export interface CreateDocenteData {
   nivel_asignado: NivelAsignado;
 }
 
-// Para actualizar docente (UpdateDocenteDto)
 export interface UpdateDocenteData {
   nombres?: string;
   apellidos?: string;
@@ -52,14 +49,12 @@ export interface UpdateDocenteData {
   foto_titulo_url?: string;
 }
 
-// Para completar perfil (CompletarPerfilDto)
 export interface CompletarPerfilData {
   foto_perfil_url?: string;
   telefono?: string;
   foto_titulo_url?: string;
 }
 
-// Respuesta del registro
 export interface RegisterResponse {
   message: string;
   usuario: {

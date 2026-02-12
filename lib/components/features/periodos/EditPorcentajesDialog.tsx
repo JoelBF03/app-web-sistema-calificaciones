@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/periodos/EditPorcentajesDialog.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -53,7 +52,6 @@ export default function EditPorcentajesDialog({
 
   useEffect(() => {
     if (isOpen && tiposEvaluacion.length > 0) {
-      // Cargar porcentajes actuales
       const insumos = tiposEvaluacion.find(t => t.nombre.includes('INSUMO'));
       const proyecto = tiposEvaluacion.find(t => t.nombre.includes('PROYECTO'));
       const examen = tiposEvaluacion.find(t => t.nombre.includes('EXAMEN'));
@@ -64,7 +62,6 @@ export default function EditPorcentajesDialog({
         examen: examen ? Number(examen.porcentaje) : 0
       });
 
-      // Verificar si hay promedios generados
       checkPromedios();
     }
   }, [isOpen, tiposEvaluacion]);
@@ -75,7 +72,6 @@ export default function EditPorcentajesDialog({
       const response = await tiposEvaluacionService.verificarPromediosGenerados(periodoId);
       setHayPromedios(response.hayPromedios);
     } catch (error) {
-      console.error('Error verificando promedios:', error);
       setHayPromedios(false);
     } finally {
       setCheckingPromedios(false);
@@ -120,8 +116,7 @@ export default function EditPorcentajesDialog({
       onSuccess();
       onClose();
     } catch (error) {
-      // El error ya se maneja en el hook
-      console.error('Error updating porcentajes:', error);
+      toast.error('Error al actualizar los porcentajes');
     }
   };
 
@@ -148,7 +143,6 @@ export default function EditPorcentajesDialog({
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Advertencia si hay promedios generados */}
             {hayPromedios && (
               <Alert className="border-2 border-orange-200 bg-orange-50">
                 <AlertTriangle className="h-4 w-4 text-orange-600" />
@@ -168,7 +162,6 @@ export default function EditPorcentajesDialog({
               </Alert>
             )}
 
-            {/* Información sin promedios */}
             {!hayPromedios && (
               <Alert className="border-2 border-blue-200 bg-blue-50">
                 <Info className="h-4 w-4 text-blue-600" />
@@ -180,7 +173,6 @@ export default function EditPorcentajesDialog({
               </Alert>
             )}
 
-            {/* Inputs de porcentajes */}
             <div className="space-y-4">
               {/* Insumos */}
               <div className="space-y-2">
@@ -283,7 +275,6 @@ export default function EditPorcentajesDialog({
               )}
             </div>
 
-            {/* Validación */}
             {isValid() && hasChanges() && (
               <Alert className="border-2 border-green-200 bg-green-50">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />

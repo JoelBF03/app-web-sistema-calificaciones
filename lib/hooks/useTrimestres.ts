@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/hooks/useTrimestres.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { trimestresService } from '../services/periodos';
 import { toast } from 'sonner';
@@ -7,7 +6,6 @@ import type { Trimestre, UpdateTrimestreData, UpdateTrimestreResponse } from '..
 export function useTrimestres(periodoId?: string) {
   const queryClient = useQueryClient();
 
-  // 📋 Query: Trimestres por período
   const {
     data: trimestres,
     isLoading: loading,
@@ -22,7 +20,6 @@ export function useTrimestres(periodoId?: string) {
     staleTime: 2 * 60 * 1000,
   });
 
-  // 📋 Query: Trimestre activo
   const {
     data: trimestreActivo,
     refetch: refetchActivo
@@ -32,7 +29,6 @@ export function useTrimestres(periodoId?: string) {
     staleTime: 5 * 60 * 1000,
   });
 
-  // ✏️ Mutation: Actualizar trimestre
   const actualizarTrimestreMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTrimestreData }) =>
       trimestresService.update(id, data),
@@ -41,10 +37,8 @@ export function useTrimestres(periodoId?: string) {
       queryClient.invalidateQueries({ queryKey: ['trimestre-activo'] });
       queryClient.invalidateQueries({ queryKey: ['periodos'] });
 
-      // 🔥 Mostrar mensaje principal
       toast.success(response.message);
 
-      // 🔥 Mostrar información de rollback si existe
       if (response.rollback) {
         const { insumos_reabiertos, promedios_trimestre_eliminados, promedios_anuales_eliminados } = response.rollback;
 
@@ -61,7 +55,6 @@ export function useTrimestres(periodoId?: string) {
         }
       }
 
-      // 🔥 Mostrar advertencia si existe
       if (response.advertencia) {
         toast.warning(response.advertencia, {
           duration: 10000,
@@ -69,7 +62,6 @@ export function useTrimestres(periodoId?: string) {
         });
       }
 
-      // 🔥 Mostrar información de promedios generados
       if (response.promedios_trimestre) {
         const { generados, fallidos } = response.promedios_trimestre;
 
@@ -98,10 +90,8 @@ export function useTrimestres(periodoId?: string) {
       const errorData = error.response?.data;
 
       if (errorData?.errores && Array.isArray(errorData.errores)) {
-        // Mostrar mensaje principal
         toast.error(errorData.message || 'No se puede finalizar el trimestre', { duration: 8000 });
 
-        // Mostrar cada error específico
         errorData.errores.forEach((err: any, index: number) => {
           let mensaje = '';
 
@@ -125,7 +115,6 @@ export function useTrimestres(periodoId?: string) {
           });
         });
 
-        // Mostrar estadísticas si existen
         if (errorData.estadisticas) {
           const stats = errorData.estadisticas;
           toast.info(
@@ -134,26 +123,22 @@ export function useTrimestres(periodoId?: string) {
           );
         }
       } else {
-        // Error genérico
         const errorMsg = errorData?.message || 'Error al actualizar trimestre';
         toast.error(errorMsg);
       }
     },
   });
 
-  // ✅ Mutation: Validar cierre
   const validarCierreMutation = useMutation({
     mutationFn: (id: string) => trimestresService.validarCierre(id),
   });
 
   return {
-    // Data
     trimestres: trimestres || [],
     trimestreActivo: trimestreActivo || null,
     loading,
     error: error?.message || null,
 
-    // Queries
     obtenerTrimestresActivos: async () => {
       const data = await queryClient.fetchQuery({
         queryKey: ['trimestres-activos'],
@@ -185,12 +170,10 @@ export function useTrimestres(periodoId?: string) {
     refetch,
     refetchActivo,
 
-    // Mutations
     actualizarTrimestre: (id: string, data: UpdateTrimestreData) =>
       actualizarTrimestreMutation.mutateAsync({ id, data }),
     validarCierre: validarCierreMutation.mutateAsync,
 
-    // Loading states
     isUpdating: actualizarTrimestreMutation.isPending,
     isValidating: validarCierreMutation.isPending,
   };

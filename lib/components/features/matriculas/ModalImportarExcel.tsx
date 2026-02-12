@@ -8,6 +8,7 @@ import type {
   RegistroImportacionDto,
   ResultadoImportacionDto,
 } from '@/lib/types/matricula.types';
+import { EstadoPeriodo } from '@/lib/types';
 
 interface ModalImportarExcelProps {
   onClose: () => void;
@@ -22,7 +23,7 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
     descargarPlantilla,
     procesarImportacion,
     confirmarImportacion
-  } = useMatriculas(); // ✅ USAR HOOK
+  } = useMatriculas();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,12 +35,10 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // ✅ Cargar períodos al montar
   useEffect(() => {
     fetchPeriodos();
   }, [fetchPeriodos]);
 
-  // ✅ FUNCIÓN PARA DESCARGAR PLANTILLA
   const handleDescargarPlantilla = async () => {
     try {
       await descargarPlantilla();
@@ -52,14 +51,12 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar extensión
     const extension = file.name.split('.').pop()?.toLowerCase();
     if (!['xls', 'xlsx'].includes(extension || '')) {
       setError('Solo se permiten archivos Excel (.xls, .xlsx)');
       return;
     }
 
-    // Validar tamaño (máximo 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError('El archivo no debe superar los 5MB');
       return;
@@ -79,7 +76,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
     setError('');
 
     try {
-      // ✅ USAR HOOK EN VEZ DE SERVICE DIRECTO
       const resumenData = await procesarImportacion(archivo, periodoSeleccionado);
 
       setResumen(resumenData);
@@ -94,7 +90,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
   const handleConfirmarImportacion = async () => {
     if (!resumen || !periodoSeleccionado) return;
 
-    // ✅ PERMITIR IMPORTAR AUNQUE HAYA INVÁLIDOS
     const registrosParaImportar = resumen.registros.filter(r => r.valido);
 
     if (!resumen.preview_id) {
@@ -106,7 +101,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
     setLoading(true);
 
     try {
-      // ✅ SOLO ENVIAR REGISTROS VÁLIDOS
       const resultadoData = await confirmarImportacion(
         resumen.preview_id,
         periodoSeleccionado
@@ -115,7 +109,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
       setResultado(resultadoData);
       setPaso('resultado');
 
-      // Si hubo importaciones exitosas, notificar al padre
       if (resultadoData.exitosas > 0) {
         setTimeout(() => {
           onSuccess();
@@ -143,7 +136,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
         <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -167,7 +159,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
             </button>
           </div>
 
-          {/* Stepper */}
           <div className="flex items-center justify-center gap-4 mt-6">
             <div className="flex items-center gap-2">
               <div
@@ -215,12 +206,10 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
           </div>
         </div>
 
-        {/* Body */}
         <div className="flex-1 overflow-y-auto p-6">
           {/* PASO 1: SELECCIONAR ARCHIVO */}
           {paso === 'seleccionar' && (
             <div className="space-y-6">
-              {/* Instrucciones + Descarga de plantilla */}
               <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -229,16 +218,15 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
                       Formato del archivo Excel
                     </h4>
                     <ul className="text-sm text-blue-800 space-y-1 ml-6 list-disc">
-                      <li>Columna A: Número (opcional)</li>
+                      <li>Columna A: Número secuencial</li>
                       <li>Columna B: Año/Nivel (ej: 8vo, OCTAVO, 8)</li>
                       <li>Columna C: Paralelo (ej: A, B, C)</li>
-                      <li>Columna D: Especialidad (ej: BÁSICA, CONTABILIDAD)</li>
-                      <li>Columna E: Cédula del estudiante (10 dígitos)</li>
+                      <li>Columna D: Especialidad (ej: BÁSICA, CIENCIAS)</li>
+                      <li>Columna E: Cédula del estudiante</li>
                       <li>Columna F: Nombres completos</li>
                       <li>Columna G: Correo institucional (opcional)</li>
                     </ul>
                   </div>
-                  {/* ✅ BOTÓN DE DESCARGA */}
                   <button
                     onClick={handleDescargarPlantilla}
                     className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 whitespace-nowrap"
@@ -249,7 +237,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
                 </div>
               </div>
 
-              {/* Selector de período */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Período Lectivo <span className="text-red-500">*</span>
@@ -261,7 +248,7 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
                 >
                   <option value="">Seleccione un período</option>
                   {periodos
-                    .filter((p) => p.estado === 'ACTIVO')
+                    .filter((p) => p.estado === EstadoPeriodo.ACTIVO)
                     .map((periodo) => (
                       <option key={periodo.id} value={periodo.id}>
                         {periodo.nombre}
@@ -270,7 +257,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
                 </select>
               </div>
 
-              {/* Selector de archivo */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Archivo Excel <span className="text-red-500">*</span>
@@ -402,7 +388,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
                 Volver
               </button>
               <div className="flex items-center gap-4">
-                {/* ✅ MOSTRAR ADVERTENCIA SI HAY INVÁLIDOS */}
                 {resumen.invalidos > 0 && (
                   <p className="text-sm text-yellow-700">
                     <i className="fas fa-exclamation-triangle mr-1"></i>
@@ -453,10 +438,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
   );
 }
 
-
-
-
-// 🔧 COMPONENTE: Vista Previa
 function VistaPrevia({ resumen }: { resumen: ResumenImportacionDto }) {
   const [filtro, setFiltro] = useState<'todos' | 'validos' | 'invalidos' | 'existentes'>('todos');
 
@@ -469,7 +450,6 @@ function VistaPrevia({ resumen }: { resumen: ResumenImportacionDto }) {
 
   return (
     <div className="space-y-4">
-      {/* Estadísticas */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
@@ -507,7 +487,6 @@ function VistaPrevia({ resumen }: { resumen: ResumenImportacionDto }) {
         </div>
       </div>
 
-      {/* Filtros */}
       <div className="flex gap-2">
         <button
           onClick={() => setFiltro('todos')}
@@ -551,7 +530,6 @@ function VistaPrevia({ resumen }: { resumen: ResumenImportacionDto }) {
         </button>
       </div>
 
-      {/* Tabla */}
       <div className="border rounded-lg overflow-hidden">
         <div className="overflow-x-auto max-h-96">
           <table className="w-full">
@@ -605,11 +583,9 @@ function VistaPrevia({ resumen }: { resumen: ResumenImportacionDto }) {
   );
 }
 
-// 🔧 COMPONENTE: Resultado
 function Resultado({ resultado }: { resultado: ResultadoImportacionDto }) {
   return (
     <div className="space-y-6">
-      {/* Resumen final */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-green-50 p-6 rounded-lg border-2 border-green-200">
           <p className="text-sm text-green-600 font-medium mb-1">Exitosas</p>
@@ -619,14 +595,12 @@ function Resultado({ resultado }: { resultado: ResultadoImportacionDto }) {
           <p className="text-sm text-red-600 font-medium mb-1">Fallidas</p>
           <p className="text-3xl font-bold text-red-700">{resultado.fallidas}</p>
         </div>
-        {/* ✅ NUEVO: Card de Duplicados */}
         <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-200">
           <p className="text-sm text-yellow-600 font-medium mb-1">Duplicados</p>
           <p className="text-3xl font-bold text-yellow-700">{resultado.duplicados}</p>
         </div>
       </div>
 
-      {/* Detalle */}
       <div className="border rounded-lg p-4 bg-gray-50">
         <h4 className="font-semibold text-gray-700 mb-3">Resumen Detallado</h4>
         <div className="grid grid-cols-2 gap-3 text-sm">
@@ -642,7 +616,6 @@ function Resultado({ resultado }: { resultado: ResultadoImportacionDto }) {
             <span className="text-gray-600">Registros inválidos:</span>
             <span className="font-medium text-red-600">{resultado.resumen.registros_invalidos}</span>
           </div>
-          {/* ✅ NUEVO: Mostrar existentes */}
           <div className="flex justify-between">
             <span className="text-gray-600">Ya matriculados:</span>
             <span className="font-medium text-yellow-600">{resultado.resumen.registros_existentes}</span>
@@ -658,7 +631,6 @@ function Resultado({ resultado }: { resultado: ResultadoImportacionDto }) {
         </div>
       </div>
 
-      {/* Tabla de detalles */}
       <div className="max-h-96 overflow-y-auto border rounded-lg">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 sticky top-0">
@@ -691,7 +663,6 @@ function Resultado({ resultado }: { resultado: ResultadoImportacionDto }) {
                       )}
                     </div>
                   )}
-                  {/* ✅ NUEVO: Badge de duplicado */}
                   {detalle.estado === 'DUPLICADO' && (
                     <div className="flex flex-col gap-1">
                       <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">

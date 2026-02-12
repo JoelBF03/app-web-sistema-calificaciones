@@ -15,7 +15,7 @@ export function TutoriaTabs({ tipoActivo, onCambiar }: TutoriaTabsProps) {
       value: 'proyecto' as const, 
       label: 'Proyecto Integrador', 
       icon: Target,
-      descripcion: 'Calificación del proyecto trimestral'
+      descripcion: 'Calificación del proyecto integrador trimestral'
     },
     { 
       value: 'componentes' as const, 

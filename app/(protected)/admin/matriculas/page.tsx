@@ -116,7 +116,6 @@ export default function MatriculasPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -141,10 +140,8 @@ export default function MatriculasPage() {
         </CardHeader>
       </Card>
 
-      {/* Estadísticas */}
       <EstadisticasMatriculas matriculas={matriculas} />
 
-      {/* Filtros */}
       <FiltrosMatriculas
         filtros={filtros}
         onChange={setFiltros}
@@ -153,7 +150,6 @@ export default function MatriculasPage() {
         onImportarExcel={handleImportarExcel}
       />
 
-      {/* Tabla */}
       <TablaMatriculas
         matriculas={matriculasFiltradas}
         loading={loading}
@@ -164,7 +160,6 @@ export default function MatriculasPage() {
         onRetirar={handleRetirar}
       />
 
-      {/* Modales */}
       {showModalManual && (
         <ModalCrearManual
           onClose={() => setShowModalManual(false)}

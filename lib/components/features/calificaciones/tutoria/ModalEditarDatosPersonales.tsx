@@ -52,7 +52,6 @@ export function ModalEditarDatosPersonales({
     setLoading(true);
 
     try {
-      // Limpiar campos vacíos
       const dataLimpia: any = {};
       Object.entries(formData).forEach(([key, value]) => {
         if (value !== '' && value !== null && value !== undefined) {
@@ -75,7 +74,6 @@ export function ModalEditarDatosPersonales({
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
         <div className="bg-gradient-to-r from-yellow-500 to-orange-500 px-6 py-4 flex items-center justify-between flex-shrink-0">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <User className="w-5 h-5" />
@@ -92,7 +90,6 @@ export function ModalEditarDatosPersonales({
           </Button>
         </div>
 
-        {/* Tabs */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto flex flex-col">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col">
             <div className="bg-gray-50 border-b px-6 sticky top-0 z-10">
@@ -112,10 +109,8 @@ export function ModalEditarDatosPersonales({
               </TabsList>
             </div>
 
-            {/* Tab: Datos Personales */}
             <TabsContent value="datos-personales" className="flex-1 p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* CAMPOS NO EDITABLES POR TUTOR */}
                 <div className="space-y-2">
                   <Label className="text-gray-500">Cédula (No editable)</Label>
                   <Input value={estudiante.estudiante_cedula} disabled className="bg-gray-100" />
@@ -129,7 +124,6 @@ export function ModalEditarDatosPersonales({
                   <Input value={estudiante.estudiante_email || 'Sin email'} disabled className="bg-gray-100" />
                 </div>
 
-                {/* CAMPOS EDITABLES */}
                 <div className="space-y-2">
                   <Label>Fecha de Nacimiento</Label>
                   <Input
@@ -163,7 +157,7 @@ export function ModalEditarDatosPersonales({
               </div>
             </TabsContent>
 
-            {/* Tab: Padres */}
+            {/* Información Padres */}
             <TabsContent value="padres" className="flex-1 p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Padre */}
@@ -234,7 +228,7 @@ export function ModalEditarDatosPersonales({
               </div>
             </TabsContent>
 
-            {/* Tab: Representante */}
+            {/* Representante */}
             <TabsContent value="representante" className="flex-1 p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -258,7 +252,7 @@ export function ModalEditarDatosPersonales({
                   <Input
                     value={formData.representante_telefono}
                     onChange={(e) => handleChange('representante_telefono', e.target.value)}
-                    placeholder="0999999999"
+                    placeholder="09XXXXXXXX"
                   />
                 </div>
                 <div className="space-y-2">
@@ -266,7 +260,7 @@ export function ModalEditarDatosPersonales({
                   <Input
                     value={formData.representante_telefono_auxiliar}
                     onChange={(e) => handleChange('representante_telefono_auxiliar', e.target.value)}
-                    placeholder="0999999999"
+                    placeholder="09XXXXXXXX"
                   />
                 </div>
                 <div className="space-y-2">
@@ -275,7 +269,7 @@ export function ModalEditarDatosPersonales({
                     type="email"
                     value={formData.representante_correo}
                     onChange={(e) => handleChange('representante_correo', e.target.value)}
-                    placeholder="representante@example.com"
+                    placeholder="representante@gmail.com"
                   />
                 </div>
                 <div className="space-y-2">
@@ -290,7 +284,6 @@ export function ModalEditarDatosPersonales({
             </TabsContent>
           </Tabs>
 
-          {/* Footer con botones */}
           <div className="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3 flex-shrink-0">
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancelar

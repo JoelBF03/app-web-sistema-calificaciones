@@ -83,10 +83,8 @@ export default function Step1PeriodoInfo({ initialData, onNext, onCancel }: Step
 
 return (
     <div className="flex flex-col h-full">
-      {/* Grid Principal: Aprovechamos el ancho del modal */}
       <div className="grid grid-cols-12 gap-8 items-start">
         
-        {/* COLUMNA IZQUIERDA: Formulario (7 de 12 columnas) */}
         <div className="col-span-12 lg:col-span-7 space-y-6">
           <div className="space-y-1">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -154,10 +152,8 @@ return (
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: Resumen e Info (5 de 12 columnas) */}
         <div className="col-span-12 lg:col-span-5 space-y-4">
           
-          {/* Tarjeta de Vista Previa */}
           {formData.nombre && formData.fechaInicio && duration && duration > 0 ? (
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
@@ -185,7 +181,6 @@ return (
             </div>
           )}
 
-          {/* Tips de Ayuda */}
           <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
             <h4 className="text-[11px] font-bold text-blue-800 uppercase mb-2">Ayuda Técnica</h4>
             <ul className="text-[11px] text-blue-700 space-y-2 leading-relaxed">
@@ -202,7 +197,6 @@ return (
         </div>
       </div>
 
-      {/* Botones de acción al fondo */}
       <div className="flex justify-end gap-3 pt-8 mt-8 border-t border-gray-100">
         <Button variant="ghost" onClick={onCancel} className="text-gray-500 hover:text-gray-700">
           Cancelar proceso

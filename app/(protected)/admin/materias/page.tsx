@@ -73,7 +73,6 @@ export default function MateriasPage() {
 
     return (
         <div className="container mx-auto p-6 space-y-6">
-            {/* Header */}
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
@@ -103,7 +102,6 @@ export default function MateriasPage() {
                 </CardHeader>
             </Card>
 
-            {/* Búsqueda y Estadísticas */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="md:col-span-3">
                     <CardContent className="p-4">
@@ -129,7 +127,6 @@ export default function MateriasPage() {
                 </Card>
             </div>
 
-            {/* Lista de Materias */}
             {filtradas.length === 0 ? (
                 <Card>
                     <CardContent className="p-12 text-center">
@@ -152,7 +149,6 @@ export default function MateriasPage() {
                 </div>
             )}
 
-            {/* Dialog */}
             <CrearMateriaDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}

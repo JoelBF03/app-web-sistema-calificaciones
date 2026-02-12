@@ -7,7 +7,6 @@ export const calificacionProyectoService = {
       const { data } = await api.get(`/calificacion-proyecto/curso/${curso_id}/trimestre/${trimestre_id}`);
       return data;
     } catch (error: any) {
-      // Si no hay calificaciones aún (404), devolver array vacío
       if (error.response?.status === 404) {
         return [];
       }

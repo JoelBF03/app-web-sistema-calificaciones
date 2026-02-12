@@ -6,7 +6,6 @@ import { CalificarMasivoDto } from '@/lib/types/calificaciones.types';
 export function useCalificacionCualitativa(curso_id?: string, trimestre_id?: string) {
   const queryClient = useQueryClient();
 
-  // Obtener calificaciones por curso y trimestre
   const {
     data: calificaciones,
     isLoading,
@@ -17,7 +16,6 @@ export function useCalificacionCualitativa(curso_id?: string, trimestre_id?: str
     enabled: !!curso_id && !!trimestre_id,
   });
 
-  // Mutación para calificar masivo
   const calificarMasivoMutation = useMutation({
     mutationFn: (dto: CalificarMasivoDto) => calificacionCualitativaService.calificarMasivo(dto),
     onSuccess: (data) => {
@@ -33,7 +31,6 @@ export function useCalificacionCualitativa(curso_id?: string, trimestre_id?: str
     },
   });
 
-  // Mutación para actualizar individual
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { calificacion?: string | null } }) =>
       calificacionCualitativaService.update(id, data),
@@ -59,9 +56,6 @@ export function useCalificacionCualitativa(curso_id?: string, trimestre_id?: str
   };
 }
 
-/**
- * Hook para obtener componentes por nivel educativo
- */
 export function useComponentesCualitativos(nivel?: string) {
   const {
     data: componentes,

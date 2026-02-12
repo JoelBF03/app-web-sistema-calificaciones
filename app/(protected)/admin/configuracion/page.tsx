@@ -130,7 +130,6 @@ export default function ConfiguracionPage() {
     }
 
     try {
-      // ✅ CORRECCIÓN: Usar usuario.id en lugar de usuario.usuario_id
       await actualizarEmail(usuario.id, { email: emailData.newEmail });
       
       const updatedUser = { ...usuario, email: emailData.newEmail };
@@ -145,7 +144,6 @@ export default function ConfiguracionPage() {
     }
   };
 
-  // ✅ Función para obtener el nombre del rol en español
   const getRolLabel = (rol: string) => {
     switch (rol) {
       case Role.ADMIN: return 'ADMINISTRADOR';
@@ -155,7 +153,6 @@ export default function ConfiguracionPage() {
     }
   };
 
-  // ✅ Función para obtener color del badge según rol
   const getRolColor = (rol: string) => {
     switch (rol) {
       case Role.ADMIN: return 'bg-blue-600';
@@ -298,7 +295,6 @@ export default function ConfiguracionPage() {
         </div>
       </div>
 
-      {/* MODAL PASSWORD */}
       <Dialog open={modalPasswordOpen} onOpenChange={setModalPasswordOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -411,7 +407,6 @@ export default function ConfiguracionPage() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL EMAIL */}
       <Dialog open={modalEmailOpen} onOpenChange={setModalEmailOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

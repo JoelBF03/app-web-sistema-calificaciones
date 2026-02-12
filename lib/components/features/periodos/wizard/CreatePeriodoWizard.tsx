@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/periodos/wizard/CreatePeriodoWizard.tsx
 'use client';
 
 import { useState } from 'react';
@@ -114,7 +113,7 @@ export default function CreatePeriodoWizard({ isOpen, onClose, onSuccess }: Crea
     setIsCreating(true);
 
     try {
-      // 1️⃣ Crear período lectivo (crea automáticamente 3 trimestres)
+      // Crear período lectivo (crea automáticamente 3 trimestres)
       const periodoResponse = await periodosService.create({
         nombre: wizardState.periodoData.nombre,
         fechaInicio: wizardState.periodoData.fechaInicio,
@@ -126,7 +125,7 @@ export default function CreatePeriodoWizard({ isOpen, onClose, onSuccess }: Crea
 
       toast.success(`${periodoResponse.message}`);
 
-      // 2️⃣ Actualizar fechas de trimestres (SOLO si fueron modificados)
+      // Actualizar fechas de trimestres (SOLO si fueron modificados)
       if (wizardState.trimestresData.modificados) {
         const trimestresMap = [
           { id: trimestresCreados[0].id, data: wizardState.trimestresData.trimestre1 },
@@ -146,7 +145,7 @@ export default function CreatePeriodoWizard({ isOpen, onClose, onSuccess }: Crea
         toast.success('Fechas de trimestres personalizadas aplicadas');
       }
 
-      // 3️⃣ Crear tipos de evaluación
+      // Crear tipos de evaluación
       await tiposEvaluacionService.createBatch(periodoId, {
         insumos: wizardState.tiposEvaluacionData.insumos,
         proyecto: wizardState.tiposEvaluacionData.proyecto,
@@ -155,7 +154,6 @@ export default function CreatePeriodoWizard({ isOpen, onClose, onSuccess }: Crea
 
       toast.success('Tipos de evaluación configurados correctamente');
 
-      // 🎉 Éxito total
       toast.success('Período lectivo creado completamente', {
         duration: 5000,
       });
@@ -163,7 +161,6 @@ export default function CreatePeriodoWizard({ isOpen, onClose, onSuccess }: Crea
       onSuccess();
       handleClose();
     } catch (error: any) {
-      console.error('Error al crear período:', error);
       toast.error(error.response?.data?.message || 'Error al crear el período lectivo', {
         duration: 7000,
       });
@@ -175,7 +172,6 @@ export default function CreatePeriodoWizard({ isOpen, onClose, onSuccess }: Crea
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-screen-xl w-[95vw] lg:w-[85vw] p-0 overflow-hidden border-none shadow-2xl bg-white rounded-2xl">
 
-        {/* Header con gradiente y padding adaptable */}
         <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-8 py-3 text-white">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl font-black flex items-center gap-2 uppercase tracking-tight">
@@ -185,7 +181,6 @@ export default function CreatePeriodoWizard({ isOpen, onClose, onSuccess }: Crea
           </DialogHeader>
         </div>
 
-        {/* Contenedor con scroll interno solo si es necesario (para móviles) */}
         <div className="px-4 sm:px-12 pt-4 pb-6 overflow-y-auto max-h-[85vh]">
 
           <div className="mb-8">

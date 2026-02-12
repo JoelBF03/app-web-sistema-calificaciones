@@ -36,7 +36,6 @@ export function ModalDetalleProyecto({
   const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [mostrarConfirmacionEditar, setMostrarConfirmacionEditar] = useState(false);
 
-  // ✅ Validación similar a ModalDetalleCalificacion
   const [isAdmin, setIsAdmin] = useState(false);
   const puedeEditar = isTutor && trimestreEstado !== TrimestreEstado.FINALIZADO && !isAdmin;
 
@@ -162,7 +161,6 @@ export function ModalDetalleProyecto({
           </div>
         ) : calificacion ? (
           <div className="space-y-6">
-            {/* ✅ Alerta de estado (similar a ModalDetalleCalificacion) */}
             {!puedeEditar && (
               <Alert className="bg-yellow-50 border-yellow-200">
                 <Info className="h-4 w-4 text-yellow-600" />
@@ -176,7 +174,6 @@ export function ModalDetalleProyecto({
               </Alert>
             )}
 
-            {/* Información de la calificación */}
             {!isEditing ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -199,7 +196,6 @@ export function ModalDetalleProyecto({
                   </div>
                 )}
 
-                {/* ✅ Solo mostrar botones si puede editar */}
                 {puedeEditar && (
                   <div className="flex gap-2 pt-4">
                     <button
@@ -221,7 +217,6 @@ export function ModalDetalleProyecto({
                 )}
               </div>
             ) : (
-              // Modo edición
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -271,7 +266,6 @@ export function ModalDetalleProyecto({
               </div>
             )}
 
-            {/* Modal de confirmación para editar */}
             {mostrarConfirmacionEditar && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg p-6 max-w-md mx-4">
@@ -300,7 +294,6 @@ export function ModalDetalleProyecto({
               </div>
             )}
 
-            {/* Modal de confirmación para eliminar */}
             {mostrarConfirmacionEliminar && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg p-6 max-w-md mx-4">

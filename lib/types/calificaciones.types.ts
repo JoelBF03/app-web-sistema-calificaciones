@@ -1,10 +1,10 @@
 import { TrimestreEstado } from "./periodo.types";
 
 export enum CalificacionCualitativa {
-  DA = 'DA', // Domina los aprendizajes (≥9.00)
-  AA = 'AA', // Alcanza los aprendizajes (≥7.00)
-  PA = 'PA', // Próximo a alcanzar (≥4.01)
-  NA = 'NA'  // No alcanza (≤4.00)
+  DA = 'DA', // Domina los aprendizajes (9.00 - 10.00)
+  AA = 'AA', // Alcanza los aprendizajes (7.00 - 8.99)
+  PA = 'PA', // Próximo a alcanzar (4.01 - 6.99)
+  NA = 'NA'  // No alcanza (<= 4.00)
 }
 
 export enum CalificacionComponente {
@@ -127,7 +127,6 @@ export interface CreateRecuperacionDto {
   observaciones?: string;
 }
 
-// DTOs para crear calificaciones
 export interface CreateCalificacionInsumoDto {
   insumo_id: string;
   estudiante_id?: string;
@@ -165,8 +164,6 @@ export interface CreateCalificacionExamenDto {
     observaciones?: string;
   }>;
 }
-
-// Agregar después de la interfaz RecuperacionInsumo (línea ~112)
 
 export interface RecuperacionExamen {
   id: string;

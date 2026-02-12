@@ -1,4 +1,3 @@
-// lib/components/features/asignaciones/MateriasCard.tsx
 'use client';
 
 import { BookOpen, Settings, AlertCircle, CheckCircle, X } from 'lucide-react';
@@ -68,7 +67,6 @@ export function MateriasCard({
   return (
     <Card className={`${colors.card} border-2 hover:shadow-md transition-all relative group`}>
       <CardContent className="p-4">
-        {/* Botón eliminar (solo bachillerato) */}
         {!esBasica && (
           <Button
             variant="ghost"
@@ -83,7 +81,6 @@ export function MateriasCard({
           </Button>
         )}
 
-        {/* Header */}
         <div className="flex items-start justify-between mb-3 pr-6">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <BookOpen className="h-4 w-4 text-gray-600 flex-shrink-0" />
@@ -92,7 +89,6 @@ export function MateriasCard({
           {getBadgeEstado()}
         </div>
 
-        {/* Summary */}
         <div className="space-y-1.5 mb-3 text-xs">
           <div className="flex justify-between">
             <span className="text-gray-600">Paralelos:</span>
@@ -112,7 +108,6 @@ export function MateriasCard({
           )}
         </div>
 
-        {/* Footer */}
         <div className="pt-2 border-t border-dashed flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs text-gray-600">
             {asignados === totalParalelos ? (

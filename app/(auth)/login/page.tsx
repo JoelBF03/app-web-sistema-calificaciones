@@ -8,6 +8,7 @@ import { LoginData } from '@/lib/types/auth.types';
 import { useAuthStore } from '@/lib/store/auth-store';
 import Image from 'next/image';
 import { Role } from '@/lib/types';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -32,8 +33,10 @@ export default function LoginPage() {
             }
 
         } catch (err: any) {
-            console.error('Error de login:', err);
-            setError('Email o contraseña incorrectos');
+            const mensajeError = err.response?.data?.message || 'Error al iniciar sesión. Intenta nuevamente.';
+
+            toast.error(mensajeError);
+            setError(mensajeError);
         } finally {
             setIsLoading(false);
         }
@@ -43,21 +46,17 @@ export default function LoginPage() {
         <div className="flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 font-sans">
             <div className="flex justify-center items-center w-full max-w-7xl p-5">
 
-                {/* LOGIN CARD */}
                 <div className="bg-white rounded-3xl shadow-2xl flex w-full max-w-5xl overflow-hidden 
                                 md:max-w-3xl lg:max-w-5xl 
                                 flex-col md:flex-row">
 
-                    {/* SECCIÓN DEL FORMULARIO (Izquierda) - flex: 0.9 */}
                     <div className="flex-[0.9] p-6 md:p-8 lg:p-10 flex flex-col justify-center gap-3 md:gap-4">
 
-                        {/* Nombre del sistema */}
                         <div className="text-center mb-2">
-                        <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-red-600 to-yellow-500 bg-clip-text text-transparent tracking-wide">
-                            Sistema Académico Institucional
-                        </h2>
+                            <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-red-600 to-yellow-500 bg-clip-text text-transparent tracking-wide">
+                                Sistema Académico Institucional
+                            </h2>
                         </div>
-                        {/* Logo */}
                         <div className="flex justify-center mb-4">
                             <Image
                                 src="/logo.png"
@@ -68,20 +67,16 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        {/* Título */}
                         <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold text-red-700 text-center mb-1">
                             Bienvenido
                         </h1>
 
-                        {/* Subtítulo */}
                         <p className="text-base text-gray-600 text-center -mt-1 mb-6">
                             Ingrese sus credenciales para acceder
                         </p>
 
-                        {/* Formulario */}
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-                            {/* Email Input Group */}
                             <div className="mb-4 relative">
                                 <label className="block text-sm font-medium text-gray-900 mb-1">
                                     Correo Institucional
@@ -99,7 +94,6 @@ export default function LoginPage() {
                                 )}
                             </div>
 
-                            {/* Password Input Group */}
                             <div className="mb-4 relative">
                                 <label className="block text-sm font-medium text-gray-900 mb-1">
                                     Contraseña
@@ -118,14 +112,12 @@ export default function LoginPage() {
                                 )}
                             </div>
 
-                            {/* Error de login */}
                             {error && (
                                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
                                     {error}
                                 </div>
                             )}
 
-                            {/* Submit Button */}
                             <button
                                 type="submit"
                                 disabled={isLoading}
@@ -146,7 +138,6 @@ export default function LoginPage() {
                         </form>
                     </div>
 
-                    {/* SECCIÓN DE LA IMAGEN (Derecha) - flex: 1.1 */}
                     <div className="hidden sm:hidden md:flex flex-[1.1] bg-cover bg-center bg-no-repeat 
                                     rounded-b-3xl md:rounded-r-3xl md:rounded-bl-none 
                                     flex-col justify-end items-center p-5 md:p-8 
@@ -156,7 +147,6 @@ export default function LoginPage() {
                             textShadow: '0 2px 5px rgba(0,0,0,0.4)'
                         }}>
 
-                        {/* Image Decorations - Círculos en la esquina */}
                         <div className="absolute top-5 right-5 flex gap-3">
                             <div className="w-4 h-4 bg-yellow-400 rounded-full border border-white/70"></div>
                             <div className="w-4 h-4 bg-red-600 rounded-full border border-white/70"></div>

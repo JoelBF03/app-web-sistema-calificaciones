@@ -67,7 +67,6 @@ export default function DocentePerfilPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-blue-50 py-8">
       <div className="max-w-6xl mx-auto px-8">
-        {/* Header con fondo */}
         <div className="mb-8">
           <div className="flex items-center gap-4">
             <h1 className="text-4xl font-bold text-gray-900">
@@ -76,10 +75,8 @@ export default function DocentePerfilPage() {
           </div>
         </div>
 
-        {/* Contenedor principal con fondo */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Columna izquierda - Foto de perfil */}
             <Card className="md:col-span-1 border-2 border-gray-100">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -88,7 +85,6 @@ export default function DocentePerfilPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Avatar grande */}
                 <div className="flex justify-center">
                   <div className="relative">
                     {formData.foto_perfil_url ? (
@@ -105,7 +101,6 @@ export default function DocentePerfilPage() {
                   </div>
                 </div>
 
-                {/* URL de foto de perfil */}
                 {editando && (
                   <div>
                     <Label className="text-sm font-semibold">URL de foto de perfil</Label>
@@ -118,7 +113,6 @@ export default function DocentePerfilPage() {
                   </div>
                 )}
 
-                {/* Foto de título */}
                 <div className="pt-6 border-t-2 border-gray-100">
                   <Label className="flex items-center gap-2 text-sm font-semibold mb-3">
                     <Award className="w-4 h-4 text-yellow-600" />
@@ -147,9 +141,7 @@ export default function DocentePerfilPage() {
               </CardContent>
             </Card>
 
-            {/* Columna derecha - Información */}
             <div className="md:col-span-2 space-y-6">
-              {/* Información Personal */}
               <Card className="border-2 border-gray-100">
                 <CardHeader className="bg-gradient-to-r from-red-50 to-yellow-50 border-b-2 border-gray-100">
                   <div className="flex items-center justify-between">
@@ -170,7 +162,6 @@ export default function DocentePerfilPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-6 pt-6">
-                  {/* Email y Teléfono */}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <Label className="flex items-center gap-2 text-sm font-semibold mb-2">
@@ -198,12 +189,11 @@ export default function DocentePerfilPage() {
                         disabled={!editando}
                         className={!editando ? 'bg-gray-50 border-gray-200' : 'border-yellow-400 focus:ring-yellow-400'}
                         maxLength={10}
-                        placeholder="0999999999"
+                        placeholder="09XXXXXXXX"
                       />
                     </div>
                   </div>
 
-                  {/* Nombres y Apellidos */}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <Label className="flex items-center gap-2 text-sm font-semibold mb-2">
@@ -236,7 +226,6 @@ export default function DocentePerfilPage() {
                     </div>
                   </div>
 
-                  {/* Cédula y Nivel */}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <Label className="flex items-center gap-2 text-sm font-semibold mb-2">
@@ -269,7 +258,6 @@ export default function DocentePerfilPage() {
                     </div>
                   </div>
 
-                  {/* Botones de acción */}
                   {editando && (
                     <div className="flex gap-3 pt-4 border-t-2 border-gray-100">
                       <Button
@@ -292,7 +280,6 @@ export default function DocentePerfilPage() {
                 </CardContent>
               </Card>
 
-              {/* Cambiar Contraseña */}
               <Card className="border-2 border-gray-100">
                 <CardHeader className="bg-gradient-to-r from-red-50 to-yellow-50 border-b-2 border-gray-100">
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -318,7 +305,6 @@ export default function DocentePerfilPage() {
         </div>
       </div>
 
-      {/* Modal de cambiar contraseña */}
       <CambiarPasswordModal 
         open={modalPasswordOpen}
         onOpenChange={setModalPasswordOpen}

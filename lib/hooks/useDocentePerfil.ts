@@ -1,5 +1,3 @@
-// nextjs-frontend/lib/hooks/useDocentePerfil.ts
-
 import { useState, useEffect, useCallback } from 'react';
 import { docentesService } from '../services/docentes';
 import type { CompletarPerfilData, Docente } from '../types/docente.types';
@@ -14,7 +12,6 @@ export function useDocentePerfil() {
       const perfil = await docentesService.getMyProfile();
       setDocente(perfil);
     } catch (error) {
-      console.error('Error al cargar perfil:', error);
       toast.error('Error al cargar el perfil');
     } finally {
       setIsLoading(false);
@@ -24,7 +21,6 @@ export function useDocentePerfil() {
   const actualizarPerfil = useCallback(async (data: Partial<CompletarPerfilData>) => {
     if (!docente) return;
     
-    // Limpiar campos vacíos antes de enviar
     const datosLimpios = Object.entries(data).reduce((acc, [key, value]) => {
       if (value !== '' && value !== null && value !== undefined) {
         acc[key as keyof CompletarPerfilData] = value;
@@ -37,7 +33,7 @@ export function useDocentePerfil() {
       setDocente(perfilActualizado.docente);
       return perfilActualizado;
     } catch (error: any) {
-      console.error('Error al actualizar perfil:', error);
+      toast.error('Error al actualizar perfil');
       throw error;
     }
   }, [docente]);

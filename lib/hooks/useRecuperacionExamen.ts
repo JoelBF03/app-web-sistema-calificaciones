@@ -5,14 +5,12 @@ import { toast } from 'sonner';
 export function useRecuperacionExamen(calificacion_examen_id: string) {
   const queryClient = useQueryClient();
 
-  // Query para obtener historial de recuperación
   const { data: historial, isLoading, error, refetch } = useQuery({
     queryKey: ['recuperaciones-examen', calificacion_examen_id],
     queryFn: () => recuperacionExamenService.getByCalificacion(calificacion_examen_id),
     enabled: !!calificacion_examen_id,
   });
 
-  // Mutation para crear recuperación
   const createMutation = useMutation({
     mutationFn: recuperacionExamenService.create,
     onSuccess: () => {
@@ -25,7 +23,6 @@ export function useRecuperacionExamen(calificacion_examen_id: string) {
     },
   });
 
-  // Mutation para actualizar recuperación
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { segundo_examen?: number; trabajo_refuerzo?: number; observaciones?: string } }) =>
       recuperacionExamenService.update(id, data),
@@ -39,7 +36,6 @@ export function useRecuperacionExamen(calificacion_examen_id: string) {
     },
   });
 
-  // Mutation para eliminar recuperación
   const deleteMutation = useMutation({
     mutationFn: recuperacionExamenService.delete,
     onSuccess: () => {

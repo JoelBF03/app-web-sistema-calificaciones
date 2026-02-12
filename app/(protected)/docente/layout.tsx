@@ -1,5 +1,3 @@
-// nextjs-frontend/app/(protected)/docente/layout.tsx
-
 'use client';
 
 import { useEffect } from 'react';
@@ -19,14 +17,11 @@ export default function DocenteLayout({
   const pathname = usePathname();
 
   const handleVolverAdmin = () => {
-    // Si el admin está metido en calificaciones o tutoría de un docente
     const esRutaEspecifica = pathname.includes('/calificaciones') || pathname.includes('/tutoria');
 
     if (esRutaEspecifica) {
-      // Lo regresamos a la gestión de cursos de admin
       router.push('/admin/cursos');
     } else {
-      // Si está en el "index" de docente, lo mandamos al dashboard principal de admin
       router.push('/admin');
     }
   };
@@ -37,7 +32,6 @@ export default function DocenteLayout({
 
   useEffect(() => {
     if (!isLoading) {
-      // ✅ PERMITIR acceso a DOCENTE O ADMIN
       if (!isAuthenticated || (usuario?.rol !== Role.DOCENTE && usuario?.rol !== Role.ADMIN)) {
         router.replace('/login');
       }
@@ -49,7 +43,6 @@ export default function DocenteLayout({
     router.replace('/login');
   };
 
-  // Determinar la ruta activa
   const isCoursesActive = pathname === '/docente';
   const isProfileActive = pathname === '/docente/perfil';
 
@@ -57,7 +50,6 @@ export default function DocenteLayout({
     return null;
   }
 
-  // ✅ PERMITIR acceso a DOCENTE O ADMIN
   if (!isAuthenticated || (usuario?.rol !== Role.DOCENTE && usuario?.rol !== Role.ADMIN)) {
     return null;
   }
@@ -66,11 +58,8 @@ export default function DocenteLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* HEADER DE DOCENTE (o Admin viendo como docente) */}
       <header className="bg-gray-800 text-white px-8 py-4 flex justify-between items-center shadow-lg sticky top-0 z-50">
-        {/* Header Left */}
         <div className="flex items-center gap-8">
-          {/* ✅ Si es admin, mostrar botón de volver */}
           {esAdmin ? (
             <button
               onClick={handleVolverAdmin}
@@ -116,10 +105,8 @@ export default function DocenteLayout({
           )}
         </div>
 
-        {/* Header Right */}
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-3">
-            {/* ✅ Badge especial para admin */}
             {esAdmin && (
               <div className="flex items-center gap-2 bg-red-500/20 border border-red-400 rounded-lg px-3 py-1.5">
                 <ShieldCheck className="w-4 h-4 text-red-300" />
@@ -144,7 +131,6 @@ export default function DocenteLayout({
         </div>
       </header>
 
-      {/* CONTENIDO */}
       <main>
         {children}
       </main>

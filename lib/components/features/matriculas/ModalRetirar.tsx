@@ -38,7 +38,6 @@ export function ModalRetirar({ matricula, onClose, onConfirm }: ModalRetirarProp
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
-        {/* Header */}
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold flex items-center gap-2">
@@ -54,9 +53,7 @@ export function ModalRetirar({ matricula, onClose, onConfirm }: ModalRetirarProp
           </div>
         </div>
 
-        {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Alerta de consecuencias */}
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex gap-2 mb-2">
               <i className="fas fa-exclamation-triangle text-red-600 mt-1"></i>
@@ -71,7 +68,6 @@ export function ModalRetirar({ matricula, onClose, onConfirm }: ModalRetirarProp
             </div>
           </div>
 
-          {/* Datos del estudiante */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Estudiante:
@@ -100,7 +96,6 @@ export function ModalRetirar({ matricula, onClose, onConfirm }: ModalRetirarProp
             />
           </div>
 
-          {/* Motivo del retiro */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Motivo del retiro *
@@ -129,7 +124,6 @@ export function ModalRetirar({ matricula, onClose, onConfirm }: ModalRetirarProp
             </p>
           </div>
 
-          {/* Footer */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"

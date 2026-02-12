@@ -46,7 +46,6 @@ export default function CursosPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [showMateriasModal, setShowMateriasModal] = useState(false);
 
-  // 🆕 Estados para modales
   const [selectedCurso, setSelectedCurso] = useState<Curso | null>(null);
   const [selectedDocente, setSelectedDocente] = useState<Docente | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -117,7 +116,6 @@ export default function CursosPage() {
     setShowCreateDialog(false);
   };
 
-  // 🆕 Handlers de modales
   const handleViewDetails = (curso: Curso) => {
     setSelectedCurso(curso);
     setShowDetailsModal(true);
@@ -166,7 +164,6 @@ export default function CursosPage() {
   return (
     <div className="space-y-4">
 
-      {/* Header*/}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -196,7 +193,6 @@ export default function CursosPage() {
         </CardHeader>
       </Card>
 
-      {/* ESTADÍSTICAS OPTIMIZADAS */}
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center justify-between">
@@ -244,7 +240,6 @@ export default function CursosPage() {
         </div>
       </div>
 
-      {/* Filtros + Selector de Vista */}
       <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
         <div className="flex-1 w-full">
           <CursosFilters
@@ -273,7 +268,6 @@ export default function CursosPage() {
         </Tabs>
       </div>
 
-      {/* Contenido según vista */}
       {viewMode === 'cards' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {cursosOrdenados.map((curso) => (
@@ -297,7 +291,6 @@ export default function CursosPage() {
         />
       )}
 
-      {/* MODALES */}
       <CreateCursoDialog
         isOpen={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}

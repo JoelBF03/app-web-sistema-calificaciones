@@ -2,7 +2,6 @@ import { api } from './api';
 import { Curso, CreateCursoDto, UpdateCursoDto, CursoStats, NivelCurso, EstadoCurso } from '@/lib/types/curso.types';
 
 export const cursosService = {
-  // 📚 CRUD BÁSICO
   findAll: async (): Promise<Curso[]> => {
     const response = await api.get('/cursos');
     return response.data;
@@ -38,7 +37,6 @@ export const cursosService = {
     return response.data;
   },
 
-  // 📊 ESTADÍSTICAS (calculadas en el frontend)
   getStats: async (): Promise<CursoStats> => {
     const cursos = await cursosService.findAll();
     

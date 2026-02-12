@@ -45,6 +45,7 @@ export function ModalDetalleCalificacion({
   const [editandoRecuperacion, setEditandoRecuperacion] = useState<string | null>(null);
   const [notaRecuperacionEdit, setNotaRecuperacionEdit] = useState('');
   const [observacionesRecuperacionEdit, setObservacionesRecuperacionEdit] = useState('');
+  const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [isUpdatingRecuperacion, setIsUpdatingRecuperacion] = useState(false);
   const [isDeletingRecuperacion, setIsDeletingRecuperacion] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -71,7 +72,6 @@ export function ModalDetalleCalificacion({
       setNuevaNota(data.nota_original.toString());
       setObservaciones(data.observaciones || '');
 
-      // Cargar recuperaciones si existen
       try {
         const historial = await recuperacionInsumoService.getByCalificacion(calificacion_id);
         setRecuperaciones(historial.recuperaciones || []);
@@ -125,11 +125,14 @@ export function ModalDetalleCalificacion({
     }
   };
 
-  const handleEliminar = async () => {
-    if (!confirm('¿Eliminar esta calificación? Esta acción no se puede deshacer.')) return;
+  const abrirConfirmacion = () => {
+    setMostrarConfirmacionEliminar(true);
+  };
 
+  const handleEliminar = async () => {
     try {
       setIsDeleting(true);
+      setMostrarConfirmacionEliminar(false);
       await calificacionInsumoService.remove(calificacion_id);
       toast.success('Calificación eliminada');
       onSuccess();
@@ -141,7 +144,6 @@ export function ModalDetalleCalificacion({
     }
   };
 
-  // FUNCIONES PARA MANEJAR RECUPERACIONES
   const handleEditarRecuperacion = (rec: any) => {
     setEditandoRecuperacion(rec.id);
     setNotaRecuperacionEdit(rec.nota_recuperacion.toString());
@@ -230,7 +232,6 @@ export function ModalDetalleCalificacion({
           </div>
         ) : calificacion ? (
           <div className="space-y-6">
-            {/* Estado del insumo */}
             {!puedeEditar && (
               <Alert>
                 <Info className="h-4 w-4" />
@@ -244,11 +245,9 @@ export function ModalDetalleCalificacion({
               </Alert>
             )}
 
-            {/* Información de la calificación */}
             {!isEditing ? (
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                  {/* Nota Original con fecha de creación */}
                   <div className="flex justify-between items-center pb-2 border-b">
                     <div>
                       <div className="text-sm text-gray-600">Nota Original:</div>
@@ -260,14 +259,12 @@ export function ModalDetalleCalificacion({
                     <span className="font-bold text-xl">{Number(calificacion.nota_original).toFixed(2)}</span>
                   </div>
 
-                  {/* Mostrar intentos de recuperación con acciones */}
                   {recuperaciones.length > 0 && (
                     <div className="space-y-2 pt-2">
                       <div className="text-sm font-semibold text-gray-700">Intentos de Recuperación:</div>
                       {recuperaciones.map((rec) => (
                         <div key={rec.id} className="bg-white border rounded-lg p-3">
                           {editandoRecuperacion === rec.id ? (
-                            // MODO EDICIÓN DE RECUPERACIÓN
                             <div className="space-y-3">
                               <div className="flex justify-between items-center">
                                 <span className="text-sm font-semibold text-gray-700">Editar Intento {rec.intento}</span>
@@ -317,7 +314,6 @@ export function ModalDetalleCalificacion({
                               </Button>
                             </div>
                           ) : (
-                            // VISTA NORMAL DE RECUPERACIÓN
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
@@ -337,7 +333,6 @@ export function ModalDetalleCalificacion({
                                 )}
                               </div>
 
-                              {/* BOTONES DE ACCIÓN (solo si insumo está activo) */}
                               {puedeEditar && (
                                 <div className="flex gap-1 ml-2">
                                   <Button
@@ -369,7 +364,6 @@ export function ModalDetalleCalificacion({
                     </div>
                   )}
 
-                  {/* Mostrar Nota Final si es diferente a la original */}
                   {Number(calificacion.nota_final) !== Number(calificacion.nota_original) && (
                     <div className="flex justify-between items-center pt-2 border-t">
                       <div>
@@ -396,10 +390,8 @@ export function ModalDetalleCalificacion({
                   )}
                 </div>
 
-                {/* BOTONES DE ACCIÓN */}
                 {puedeEditar && (
                   <div className="space-y-2">
-                    {/* Botón de Recuperación (si aplica) */}
                     {puedeRecuperar() && !isAdmin && (
                       <Button
                         onClick={() => setAbrirRecuperacion(true)}
@@ -410,9 +402,7 @@ export function ModalDetalleCalificacion({
                       </Button>
                     )}
 
-                    {/* Botones de Editar y Eliminar */}
                     <div className="flex gap-2">
-                      {/* VALIDACIÓN: Solo mostrar Editar si NO hay recuperaciones */}
                       {recuperaciones.length === 0 && (
 
                         <Button
@@ -420,14 +410,14 @@ export function ModalDetalleCalificacion({
                           className="flex-1 bg-blue-600 hover:bg-blue-700 cursor-pointer"
 
                         >
-                        <Edit2 className="w-4 h-4 mr-2" />
+                          <Edit2 className="w-4 h-4 mr-2" />
                           Editar Nota Original
                         </Button>
 
                       )}
 
                       <Button
-                        onClick={handleEliminar}
+                        onClick={abrirConfirmacion}
                         disabled={isDeleting}
                         variant="destructive"
                         className="flex-1 cursor-pointer"
@@ -440,7 +430,6 @@ export function ModalDetalleCalificacion({
                 )}
               </div>
             ) : (
-              // Modo edición de nota original
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Nota Original (0-10)</label>
@@ -488,7 +477,6 @@ export function ModalDetalleCalificacion({
         ) : null}
       </DialogContent>
 
-      {/* MODAL DE RECUPERACIÓN ANIDADO */}
       {abrirRecuperacion && calificacion && (
         <ModalRecuperacion
           calificacion_insumo_id={calificacion_id}

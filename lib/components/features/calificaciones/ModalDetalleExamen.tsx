@@ -45,10 +45,8 @@ export function ModalDetalleExamen({
   const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [mostrarConfirmacionEditar, setMostrarConfirmacionEditar] = useState(false);
 
-  // ✅ NUEVO: Modal de confirmación para eliminar recuperación
   const [mostrarConfirmacionEliminarRecuperacion, setMostrarConfirmacionEliminarRecuperacion] = useState(false);
 
-  // Estados para recuperación
   const [abrirRecuperacion, setAbrirRecuperacion] = useState(false);
   const [segundoExamen, setSegundoExamen] = useState('');
   const [trabajoRefuerzo, setTrabajoRefuerzo] = useState('');
@@ -154,7 +152,6 @@ export function ModalDetalleExamen({
     setMostrarConfirmacionEliminar(false);
     try {
       eliminarCalificacion(calificacion_id);
-      // El hook ya invalida las queries automáticamente
       onSuccess();
       onClose();
     } catch (error: any) {
@@ -162,7 +159,6 @@ export function ModalDetalleExamen({
     }
   };
 
-  // FUNCIONES PARA RECUPERACIÓN
   const handleAbrirRecuperacion = () => {
     setAbrirRecuperacion(true);
     setEditandoRecuperacion(false);
@@ -204,7 +200,6 @@ export function ModalDetalleExamen({
 
     try {
       if (recuperacion) {
-        // Actualizar
         actualizarRecuperacion({
           id: recuperacion.id,
           data: {
@@ -214,7 +209,6 @@ export function ModalDetalleExamen({
           }
         });
       } else {
-        // Crear
         crearRecuperacion({
           calificacion_examen_id: calificacion_id,
           segundo_examen: segundoExamenNum,
@@ -228,16 +222,13 @@ export function ModalDetalleExamen({
       await cargarCalificacion();
       onSuccess();
     } catch (error: any) {
-      // El error ya se maneja en el hook
     }
   };
 
-  // ✅ NUEVA FUNCIÓN: Solicitar confirmación antes de eliminar
   const handleSolicitarEliminarRecuperacion = () => {
     setMostrarConfirmacionEliminarRecuperacion(true);
   };
 
-  // ✅ MODIFICADA: Eliminar con confirmación de modal
   const handleEliminarRecuperacion = async () => {
     if (!recuperacion) return;
 
@@ -247,7 +238,6 @@ export function ModalDetalleExamen({
       await cargarCalificacion();
       onSuccess();
     } catch (error: any) {
-      // El error ya se maneja en el hook
     }
   };
 
@@ -274,7 +264,6 @@ export function ModalDetalleExamen({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      {/* ✅ AGRANDADO EL MODAL */}
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Detalle de Calificación - Examen Trimestral</DialogTitle>
@@ -289,7 +278,6 @@ export function ModalDetalleExamen({
           </div>
         ) : calificacion ? (
           <div className="space-y-6">
-            {/* Alerta de estado */}
             {!puedeEditar && (
               <Alert className="bg-yellow-50 border-yellow-200">
                 <Info className="h-4 w-4 text-yellow-600" />
@@ -299,7 +287,6 @@ export function ModalDetalleExamen({
               </Alert>
             )}
 
-            {/* Información de la calificación */}
             {!isEditing ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -320,7 +307,6 @@ export function ModalDetalleExamen({
                   </div>
                 )}
 
-                {/* Mostrar información de recuperación si existe */}
                 {recuperacion && (
                   <div className="border-t pt-4 mt-4">
                     <div className="flex items-center justify-between mb-3">
@@ -396,10 +382,8 @@ export function ModalDetalleExamen({
                   </div>
                 )}
 
-                {/* ✅ OCULTAR BOTONES DE CALIFICACIÓN CUANDO SE EDITA RECUPERACIÓN */}
                 {puedeEditar && !abrirRecuperacion && (
                   <div className="flex gap-2 pt-4">
-                    {/* Botón de recuperación */}
                     {puedeRecuperar() && !recuperacion && (
                       <Button
                         onClick={handleAbrirRecuperacion}
@@ -430,7 +414,6 @@ export function ModalDetalleExamen({
                 )}
               </div>
             ) : (
-              // Modo edición de calificación
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="nota">Calificación (0-10)</Label>
@@ -474,7 +457,6 @@ export function ModalDetalleExamen({
               </div>
             )}
 
-            {/* Modal de recuperación */}
             {abrirRecuperacion && (
               <div className="border-t pt-4 mt-4 space-y-4">
                 <h3 className="font-semibold text-lg">
@@ -560,7 +542,6 @@ export function ModalDetalleExamen({
               </div>
             )}
 
-            {/* Modal de confirmación para editar */}
             {mostrarConfirmacionEditar && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg p-6 max-w-md shadow-xl">
@@ -586,7 +567,6 @@ export function ModalDetalleExamen({
               </div>
             )}
 
-            {/* Modal de confirmación para eliminar calificación */}
             {mostrarConfirmacionEliminar && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg p-6 max-w-md shadow-xl">
@@ -612,7 +592,6 @@ export function ModalDetalleExamen({
               </div>
             )}
 
-            {/* ✅ NUEVO: Modal de confirmación para eliminar recuperación */}
             {mostrarConfirmacionEliminarRecuperacion && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg p-6 max-w-md shadow-xl">

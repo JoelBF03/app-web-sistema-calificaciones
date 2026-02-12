@@ -39,7 +39,6 @@ export default function Step2TrimestresConfig({
   const [formData, setFormData] = useState<Step2Data>(initialData);
   const [errors, setErrors] = useState<string[]>([]);
 
-  // Calcular trimestres automáticamente si no están modificados
   useEffect(() => {
     if (!formData.modificados) {
       const fechaInicio = new Date(periodoFechaInicio);
@@ -125,7 +124,6 @@ export default function Step2TrimestresConfig({
 
   return (
     <div className="space-y-4">
-      {/* Header Compacto */}
       <div className="flex items-center justify-between border-b pb-2">
         <div>
           <h2 className="text-lg font-bold text-gray-900">Configuración de Tiempos</h2>
@@ -137,7 +135,6 @@ export default function Step2TrimestresConfig({
         </div>
       </div>
 
-      {/* Info Alert reducida */}
       <div className="bg-blue-50 border border-blue-100 rounded-lg p-2 flex items-center gap-2">
         <Info className="h-4 w-4 text-blue-500 shrink-0" />
         <p className="text-[11px] text-blue-700">
@@ -145,7 +142,6 @@ export default function Step2TrimestresConfig({
         </p>
       </div>
 
-      {/* GRID HORIZONTAL COMPACTO */}
       <div className="grid grid-cols-3 gap-3">
         {trimestreCards.map(({ key, nombre, color, text }) => (
           <Card key={key} className={`${color} border shadow-none`}>
@@ -192,7 +188,6 @@ export default function Step2TrimestresConfig({
         ))}
       </div>
 
-      {/* Feedback de validación compacto */}
       <div className="h-10">
         {errors.length > 0 ? (
           <div className="flex items-center gap-2 text-red-600 bg-red-50 p-2 rounded border border-red-100">
@@ -209,7 +204,6 @@ export default function Step2TrimestresConfig({
         )}
       </div>
 
-      {/* Footer de Botones */}
       <div className="flex justify-between pt-3 border-t">
         <Button 
           variant="outline" 

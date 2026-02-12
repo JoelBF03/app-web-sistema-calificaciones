@@ -8,7 +8,6 @@ export function useUsuarios() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔄 CAMBIAR ESTADO DE USUARIO (ACTIVO/INACTIVO)
   const cambiarEstado = useCallback(async (userId: string): Promise<CambiarEstadoResponse> => {
     setLoading(true);
     setError(null);
@@ -24,7 +23,6 @@ export function useUsuarios() {
     }
   }, []);
 
-  // 👑 CAMBIAR ROL DE USUARIO
   const cambiarRol = useCallback(async (userId: string, rol: Role) => {
     setLoading(true);
     setError(null);
@@ -40,7 +38,6 @@ export function useUsuarios() {
     }
   }, []);
 
-  // 🔐 RESETEAR CONTRASEÑA (ADMIN)
   const resetearPassword = useCallback(async (userId: string, data: ResetPasswordData) => {
     setLoading(true);
     setError(null);
@@ -56,7 +53,6 @@ export function useUsuarios() {
     }
   }, []);
 
-  // 🔑 CAMBIAR MI CONTRASEÑA (USUARIO)
   const cambiarMiPassword = useCallback(async (data: CambiarPasswordData) => {
     setLoading(true);
     setError(null);
@@ -72,7 +68,6 @@ export function useUsuarios() {
     }
   }, []);
 
-  // ✏️ ACTUALIZAR EMAIL
   const actualizarEmail = useCallback(async (userId: string, data: CambiarEmailData) => {
     setLoading(true);
     setError(null);

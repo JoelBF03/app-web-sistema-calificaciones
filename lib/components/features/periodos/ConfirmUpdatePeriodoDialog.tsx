@@ -48,11 +48,11 @@ export default function ConfirmUpdatePeriodoDialog({
   const getEstadoBadge = (estado: EstadoPeriodo) => {
     switch (estado) {
       case EstadoPeriodo.ACTIVO:
-        return <Badge className="bg-green-100 text-green-800">✅ Activo</Badge>;
+        return <Badge className="bg-green-100 text-green-800">Activo</Badge>;
       case EstadoPeriodo.FINALIZADO:
-        return <Badge variant="secondary">⏹️ Finalizado</Badge>;
+        return <Badge variant="secondary">Finalizado</Badge>;
       default:
-        return <Badge variant="outline">❓ Desconocido</Badge>;
+        return <Badge variant="outline">Desconocido</Badge>;
     }
   };
 
@@ -75,7 +75,6 @@ export default function ConfirmUpdatePeriodoDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Cambio de nombre */}
           {nombreCambio && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
@@ -87,7 +86,6 @@ export default function ConfirmUpdatePeriodoDialog({
             </div>
           )}
 
-          {/* Cambios en fechas */}
           {fechasCambiaron && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
@@ -111,7 +109,6 @@ export default function ConfirmUpdatePeriodoDialog({
             </div>
           )}
 
-          {/* Cambios en estado */}
           {estadoCambio && (
             <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
@@ -126,7 +123,6 @@ export default function ConfirmUpdatePeriodoDialog({
             </div>
           )}
 
-          {/* Advertencias especiales */}
           {fechasCambiaron && (
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-sm text-amber-800">

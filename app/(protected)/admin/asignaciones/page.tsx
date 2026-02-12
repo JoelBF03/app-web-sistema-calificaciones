@@ -1,4 +1,3 @@
-// nextjs-frontend/app/(protected)/admin/asignaciones/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -43,7 +42,6 @@ export default function AsignacionesPage() {
   const [modalAsignarDocente, setModalAsignarDocente] = useState(false);
   const [materiaSeleccionada, setMateriaSeleccionada] = useState<Materia | null>(null);
 
-  // 🆕 Estado para MateriaCurso
   const [materiasCurso, setMateriasCurso] = useState<MateriaCurso[]>([]);
   const [loadingMateriaCurso, setLoadingMateriaCurso] = useState(true);
 
@@ -64,7 +62,6 @@ export default function AsignacionesPage() {
   const paralelosCurso = cursosFiltrados.map((c) => c.paralelo).sort();
   const cursosIds = cursosFiltrados.map(c => c.id);
 
-  // 🆕 Cargar MateriaCurso al montar y cuando cambia el nivel
   useEffect(() => {
     cargarMateriaCurso();
   }, []);
@@ -82,42 +79,36 @@ export default function AsignacionesPage() {
     }
   };
 
-  // 🆕 Filtrar MateriaCurso por cursos actuales
   const materiasCursoFiltradas = materiasCurso.filter(mc =>
     cursosIds.includes(mc.curso_id)
   );
 
-  // 🆕 Obtener IDs de materias ya asignadas (para prevenir duplicados)
   const materiasYaAsignadas = new Set(
     materiasCursoFiltradas.map(mc => mc.materia_id)
   );
 
-  // 🆕 Para bachillerato: mostrar solo materias asignadas (Y NO CUALITATIVAS)
-  // Para básica: mostrar BASICA + GENERAL (Y NO CUALITATIVAS)
   const materiasFiltradas = esBasica
     ? materias.filter(
       (materia) =>
         materia.estado === EstadoMateria.ACTIVO &&
-        materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA && // 🆕 FILTRO CRÍTICO
+        materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA &&
         (materia.nivelEducativo === NivelEducativo.BASICA ||
           materia.nivelEducativo === NivelEducativo.GENERAL)
     )
     : materias.filter(
       (materia) =>
         materia.estado === EstadoMateria.ACTIVO &&
-        materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA && // 🆕 FILTRO CRÍTICO
-        materiasYaAsignadas.has(materia.id) // Solo las asignadas
+        materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA &&
+        materiasYaAsignadas.has(materia.id)
     );
 
   const handleNivelChange = (nivel: NivelCurso, especialidad?: EspecialidadCurso) => {
     setNivelSeleccionado({ nivel, especialidad });
   };
 
-  // 🆕 Calcular estadísticas reales
   const getEstadoAsignacion = (materia: Materia) => {
     const totalParalelos = cursosFiltrados.length;
 
-    // Contar cuántos cursos tienen esta materia asignada con docente
     const asignacionesMateria = materiasCursoFiltradas.filter(
       mc => mc.materia_id === materia.id
     );
@@ -199,7 +190,6 @@ export default function AsignacionesPage() {
     }
 
     try {
-      // Encontrar todos los MateriaCurso de esta materia en los cursos actuales
       const idsParaEliminar = materiasCursoFiltradas
         .filter(mc => mc.materia_id === materia.id)
         .map(mc => mc.id);
@@ -209,26 +199,23 @@ export default function AsignacionesPage() {
         return;
       }
 
-      // Eliminar todos (importar eliminarMateriaCurso del hook)
       const { eliminarMateriaCurso } = useMateriaCurso();
       await Promise.all(
         idsParaEliminar.map(id => eliminarMateriaCurso(id))
       );
 
       toast.success(`Materia "${materia.nombre}" eliminada de ${idsParaEliminar.length} paralelo(s)`);
-      await cargarMateriaCurso(); // Recargar datos
+      await cargarMateriaCurso();
     } catch (error: any) {
       toast.error(error.message || 'Error al eliminar materia');
     }
   };
 
   const handleSaveAsignaciones = async () => {
-    // Recargar datos sin refrescar página
     await cargarMateriaCurso();
   };
 
   const handleSaveMateria = async () => {
-    // Recargar datos sin refrescar página
     await cargarMateriaCurso();
   };
 
@@ -297,7 +284,7 @@ export default function AsignacionesPage() {
 
                 {esBasica && (
                   <p className="text-sm mt-3 opacity-80">
-                    💡 Las materias de básica ya están asignadas. Solo configura los docentes.
+                    Las materias de básica ya están definidas. Solo configura los docentes.
                   </p>
                 )}
               </div>
@@ -324,7 +311,7 @@ export default function AsignacionesPage() {
                 <div>
                   <p className="mb-2">No hay materias configuradas para básica.</p>
                   <p className="text-sm">
-                    Las materias deben crearse con nivelEducativo <strong>BASICA</strong> o{' '}
+                    Las materias deben crearse con nivelEducativo <strong>BÁSICA</strong> o{' '}
                     <strong>GENERAL</strong>.
                   </p>
                 </div>

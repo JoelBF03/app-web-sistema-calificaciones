@@ -14,7 +14,6 @@ export function useInsumos(materia_curso_id: string, trimestre_id: string) {
     enabled: !!materia_curso_id && !!trimestre_id,
   });
 
-  // Cargar calificaciones de todos los insumos
   useEffect(() => {
     const cargarCalificaciones = async () => {
       if (!insumos || insumos.length === 0) return;
@@ -66,7 +65,6 @@ export function useInsumos(materia_curso_id: string, trimestre_id: string) {
     },
   });
 
-  // ✅ NUEVO: Mutation para reactivar insumo
   const reactivarMutation = useMutation({
     mutationFn: insumosService.reactivar,
     onSuccess: () => {
@@ -97,12 +95,12 @@ export function useInsumos(materia_curso_id: string, trimestre_id: string) {
     createInsumo: createMutation.mutate,
     updateInsumo: updateMutation.mutate,
     publicarInsumo: publicarMutation.mutate,
-    reactivarInsumo: reactivarMutation.mutate, // ✅ NUEVO
+    reactivarInsumo: reactivarMutation.mutate,
     deleteInsumo: deleteMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isPublicando: publicarMutation.isPending,
-    isReactivando: reactivarMutation.isPending, // ✅ NUEVO
+    isReactivando: reactivarMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };
 }

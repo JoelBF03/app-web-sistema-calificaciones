@@ -1,5 +1,3 @@
-// nextjs-frontend/lib/components/features/estudiantes/ModalHistorialEstudiante.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -34,14 +32,13 @@ export function ModalHistorialEstudiante({
     }
   };
 
-  const handleDescargarLibreta = async (matriculaId: string, periodoNombre: string) => {
+  const handleDescargarLibreta = async (matriculaId: string) => {
     try {
       setDescargando(matriculaId);
       await reportesService.descargarLibretaHistorica(matriculaId);
-      toast.success(`Libreta de ${periodoNombre} descargada exitosamente`);
+      toast.success(`Archivo descargado con éxito`); // El nombre ya viene del back
     } catch (error) {
-      console.error('Error al descargar libreta:', error);
-      toast.error('Error al descargar la libreta. Intente nuevamente.');
+      toast.error('Error al descargar');
     } finally {
       setDescargando(null);
     }
@@ -56,7 +53,6 @@ export function ModalHistorialEstudiante({
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <History className="w-5 h-5" />
@@ -73,7 +69,6 @@ export function ModalHistorialEstudiante({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Información del estudiante */}
           <Card className="p-4 bg-purple-50 border-purple-200">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
@@ -90,7 +85,6 @@ export function ModalHistorialEstudiante({
             </div>
           </Card>
 
-          {/* Timeline de matrículas */}
           {matriculasOrdenadas && matriculasOrdenadas.length > 0 ? (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -99,37 +93,31 @@ export function ModalHistorialEstudiante({
               </h3>
 
               <div className="relative space-y-6">
-                {/* Línea vertical */}
                 <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-purple-200" />
 
                 {matriculasOrdenadas.map((matricula, index) => (
                   <div key={matricula.id} className="relative pl-12">
-                    {/* Punto en la línea */}
                     <div
-                      className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                        matricula.estado === EstadoMatricula.ACTIVO
+                      className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center ${matricula.estado === EstadoMatricula.ACTIVO
                           ? 'bg-green-500'
                           : matricula.estado === EstadoMatricula.RETIRADO
-                          ? 'bg-red-500'
-                          : 'bg-gray-400'
-                      }`}
+                            ? 'bg-red-500'
+                            : 'bg-gray-400'
+                        }`}
                     >
                       <span className="text-white text-xs font-bold">{index + 1}</span>
                     </div>
 
-                    {/* Card de matrícula */}
                     <Card
-                      className={`p-4 ${
-                        matricula.estado === EstadoMatricula.ACTIVO
+                      className={`p-4 ${matricula.estado === EstadoMatricula.ACTIVO
                           ? 'border-green-300 bg-green-50'
                           : matricula.estado === EstadoMatricula.RETIRADO
-                          ? 'border-red-300 bg-red-50'
-                          : 'border-gray-300'
-                      }`}
+                            ? 'border-red-300 bg-red-50'
+                            : 'border-gray-300'
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-2 flex-1">
-                          {/* Período y curso */}
                           <div>
                             <h4 className="font-bold text-gray-900 text-lg">
                               {matricula.periodo_lectivo?.nombre || 'Período no disponible'}
@@ -142,18 +130,15 @@ export function ModalHistorialEstudiante({
                             </p>
                           </div>
 
-                          {/* Número de matrícula */}
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Calendar className="w-4 h-4" />
                             <span>Matrícula N° {matricula.numero_de_matricula}</span>
                           </div>
 
-                          {/* Fecha de creación */}
                           <div className="text-xs text-gray-500">
                             Registrado el {formatearFecha(matricula.createdAt)}
                           </div>
 
-                          {/* Observaciones si las hay */}
                           {matricula.observaciones && (
                             <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
                               <span className="font-semibold text-yellow-800">Observaciones:</span>{' '}
@@ -162,29 +147,22 @@ export function ModalHistorialEstudiante({
                           )}
                         </div>
 
-                        {/* Columna derecha: Badge + Botón */}
                         <div className="flex flex-col items-end gap-2">
-                          {/* Badge de estado */}
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                              matricula.estado === EstadoMatricula.ACTIVO
+                            className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${matricula.estado === EstadoMatricula.ACTIVO
                                 ? 'bg-green-100 text-green-800'
                                 : matricula.estado === EstadoMatricula.RETIRADO
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}
                           >
                             {matricula.estado}
                           </span>
 
-                          {/* 🆕 Botón de descarga */}
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDescargarLibreta(
-                              matricula.id,
-                              matricula.periodo_lectivo?.nombre || 'Período'
-                            )}
+                            onClick={() => handleDescargarLibreta(matricula.id)}
                             disabled={descargando === matricula.id}
                             className="gap-2 hover:bg-purple-50 hover:border-purple-300"
                           >
@@ -219,7 +197,6 @@ export function ModalHistorialEstudiante({
             </div>
           )}
 
-          {/* Botón cerrar */}
           <div className="flex justify-end pt-4 border-t">
             <Button variant="outline" onClick={onClose}>
               Cerrar

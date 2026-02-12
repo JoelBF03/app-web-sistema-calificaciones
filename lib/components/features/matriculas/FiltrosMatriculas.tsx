@@ -28,9 +28,7 @@ export function FiltrosMatriculas({
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
-    // Cargar períodos
     periodosService.getAll().then(setPeriodos).catch(console.error);
-    // Cargar cursos
     cursosService.findAll().then(setCursos).catch(console.error);
   }, []);
 
@@ -41,7 +39,6 @@ export function FiltrosMatriculas({
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Período Lectivo */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             <i className="fas fa-calendar-alt text-blue-600 mr-2"></i>
@@ -61,7 +58,6 @@ export function FiltrosMatriculas({
           </select>
         </div>
 
-        {/* Curso */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             <i className="fas fa-chalkboard text-purple-600 mr-2"></i>
@@ -81,7 +77,6 @@ export function FiltrosMatriculas({
           </select>
         </div>
 
-        {/* Búsqueda */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             <i className="fas fa-search text-green-600 mr-2"></i>
@@ -99,7 +94,6 @@ export function FiltrosMatriculas({
           </div>
         </div>
 
-        {/* Botón Filtrar */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2 invisible">
             Filtrar
@@ -113,7 +107,6 @@ export function FiltrosMatriculas({
           </button>
         </div>
 
-        {/* Botón Matricular (Dropdown) */}
         <div className="relative">
           <label className="block text-sm font-semibold text-gray-700 mb-2 invisible">
             Matricular
@@ -127,7 +120,6 @@ export function FiltrosMatriculas({
             <i className={`fas fa-chevron-down text-xs transition-transform ${showDropdown ? 'rotate-180' : ''}`}></i>
           </button>
 
-          {/* Dropdown Menu */}
           {showDropdown && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
               <button

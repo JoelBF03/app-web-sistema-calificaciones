@@ -42,9 +42,7 @@ export default function MateriaCard({
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-4">
           
-          {/* INFO */}
           <div className="flex gap-4 min-w-0">
-            {/* Icon */}
             <div
               className={[
                 'h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0',
@@ -59,14 +57,12 @@ export default function MateriaCard({
               />
             </div>
 
-            {/* Text */}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-semibold truncate">
                   {materia.nombre}
                 </h3>
 
-                {/* Estado visual */}
                 <Badge
                   variant="outline"
                   className={[
@@ -98,7 +94,6 @@ export default function MateriaCard({
             </div>
           </div>
 
-          {/* ACTIONS */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <Button
               size="sm"

@@ -10,7 +10,6 @@ import type {
 export function usePeriodos() {
   const queryClient = useQueryClient();
 
-  // Query: Obtener todos los períodos
   const {
     data: periodos,
     isLoading: loading,
@@ -22,7 +21,6 @@ export function usePeriodos() {
     staleTime: 2 * 60 * 1000,
   });
 
-  // Query: Período activo
   const {
     data: periodoActivo,
     refetch: loadPeriodoActivo
@@ -32,7 +30,6 @@ export function usePeriodos() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Mutation: Crear período
   const crearPeriodoMutation = useMutation({
     mutationFn: (data: CreatePeriodoLectivoData) => periodosService.create(data),
     onSuccess: (response) => {
@@ -46,7 +43,6 @@ export function usePeriodos() {
     },
   });
 
-  // Mutation: Actualizar nombres y fechas del período
   const actualizarPeriodoMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdatePeriodoLectivoData }) =>
       periodosService.update(id, data),
@@ -69,7 +65,6 @@ export function usePeriodos() {
     },
   });
 
-  // Mutation: Cambiar estado ACTIVO → FINALIZADO
   const cambiarEstadoMutation = useMutation({
     mutationFn: (id: string) => periodosService.cambiarEstado(id),
     onSuccess: (response) => {
@@ -102,7 +97,6 @@ export function usePeriodos() {
     },
   });
 
-  // 🆕 Mutation: Activar supletorios
   const activarSupletoriosMutation = useMutation({
     mutationFn: (id: string) => periodosService.activarSupletorios(id),
     onSuccess: (response) => {
@@ -130,7 +124,6 @@ export function usePeriodos() {
     },
   });
 
-  // 🆕 Mutation: Cerrar supletorios
   const cerrarSupletoriosMutation = useMutation({
     mutationFn: (id: string) => periodosService.cerrarSupletorios(id),
     onSuccess: (response) => {
@@ -162,7 +155,6 @@ export function usePeriodos() {
     },
   });
 
-  // 🆕 Mutation: Reabrir supletorios
   const reabrirSupletoriosMutation = useMutation({
     mutationFn: (id: string) => periodosService.reabrirSupletorios(id),
     onSuccess: (response) => {
@@ -180,19 +172,16 @@ export function usePeriodos() {
     },
   });
 
-  // Mutation: Validar cierre
   const validarCierreMutation = useMutation({
     mutationFn: (id: string) => periodosService.validarCierre(id),
   });
 
   return {
-    // Data
     periodos: periodos || [],
     periodoActivo: periodoActivo || null,
     loading,
     error: error?.message || null,
 
-    // Queries
     fetchPeriodos,
     loadPeriodoActivo,
     obtenerPeriodoActivo: async () => {
@@ -210,23 +199,19 @@ export function usePeriodos() {
       return data;
     },
 
-    // Mutations
     crearPeriodo: crearPeriodoMutation.mutateAsync,
     actualizarPeriodo: (id: string, data: UpdatePeriodoLectivoData) =>
       actualizarPeriodoMutation.mutateAsync({ id, data }),
     cambiarEstadoPeriodo: cambiarEstadoMutation.mutateAsync,
     validarCierre: validarCierreMutation.mutateAsync,
-    // 🆕 Nuevas mutaciones
     activarSupletorios: activarSupletoriosMutation.mutateAsync,
     cerrarSupletorios: cerrarSupletoriosMutation.mutateAsync,
     reabrirSupletorios: reabrirSupletoriosMutation.mutateAsync,
 
-    // Loading states
     isCreating: crearPeriodoMutation.isPending,
     isUpdating: actualizarPeriodoMutation.isPending,
     isChangingState: cambiarEstadoMutation.isPending,
     isValidating: validarCierreMutation.isPending,
-    // 🆕 Nuevos loading states
     isActivatingSupletorios: activarSupletoriosMutation.isPending,
     isClosingSupletorios: cerrarSupletoriosMutation.isPending,
     isReopeningSupletorios: reabrirSupletoriosMutation.isPending,

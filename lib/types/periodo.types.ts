@@ -1,4 +1,3 @@
-
 export enum EstadoPeriodo {
   ACTIVO = 'ACTIVO',
   FINALIZADO = 'FINALIZADO'
@@ -22,7 +21,6 @@ export enum NombreTrimestre {
   TERCER_TRIMESTRE = 'TERCER TRIMESTRE'
 }
 
-// INTERFACES DE ENTIDADES
 export interface Trimestre {
   id: string;
   nombre: NombreTrimestre;
@@ -46,7 +44,6 @@ export interface PeriodoLectivo {
   trimestres?: Trimestre[];
 }
 
-// DTOs DE CREACIÓN
 export interface CreatePeriodoLectivoData {
   nombre: string;
   fechaInicio: string;
@@ -60,7 +57,6 @@ export interface CreateTrimestreData {
   periodo_lectivo_id: string;
 }
 
-// DTOs DE ACTUALIZACIÓN
 export interface UpdatePeriodoLectivoData {
   nombre?: string;
   fechaInicio?: string;
@@ -74,7 +70,6 @@ export interface UpdateTrimestreData {
   estado?: TrimestreEstado;
 }
 
-// RESPUESTAS DE ENDPOINTS
 export interface CreatePeriodoResponse {
   message: string;
   periodo: PeriodoLectivo;

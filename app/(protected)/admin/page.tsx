@@ -1,4 +1,3 @@
-// app/(protected)/admin/page.tsx
 'use client';
 
 import Link from 'next/link';
@@ -93,7 +92,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="text-center space-y-3">
         <h1 className="text-4xl font-bold text-gray-900">
           Panel de Administración
@@ -103,7 +101,6 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      {/* Módulos Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {adminModules.map((module) => {
           const IconComponent = module.icon;
@@ -118,12 +115,10 @@ export default function AdminDashboard() {
                 <div className={`h-2 bg-gradient-to-r ${module.gradient}`} />
                 
                 <CardContent className="p-6">
-                  {/* Icon */}
                   <div className={`mb-4 p-4 rounded-xl bg-gradient-to-br ${module.bgGradient} w-fit group-hover:scale-110 transition-transform`}>
                     <IconComponent className={`h-8 w-8 ${module.color}`} strokeWidth={2} />
                   </div>
 
-                  {/* Title & Description */}
                   <div className="space-y-2">
                     <h3 className="text-xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors">
                       {module.title}
@@ -133,7 +128,6 @@ export default function AdminDashboard() {
                     </p>
                   </div>
 
-                  {/* Action Indicator */}
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <span className="text-sm font-medium text-gray-500 group-hover:text-gray-700 flex items-center gap-2 transition-colors">
                       Acceder

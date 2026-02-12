@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/calificaciones/ModalRecuperacion.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -131,12 +130,10 @@ export function ModalRecuperacion({
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Nota Original:</span>
-                {/* ✅ CORREGIDO: Convertir a Number antes de .toFixed() */}
                 <span className="font-bold text-lg">{Number(historial.calificacion.nota_original).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Nota Final:</span>
-                {/* ✅ CORREGIDO: Convertir a Number antes de .toFixed() */}
                 <span className={`font-bold text-lg ${Number(historial.calificacion.nota_final) >= 7 ? 'text-green-600' :
                   Number(historial.calificacion.nota_final) >= 4 ? 'text-yellow-600' : 'text-red-600'
                   }`}>
@@ -149,7 +146,6 @@ export function ModalRecuperacion({
               </div>
             </div>
 
-            {/* Alerta de nota máxima */}
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
@@ -167,7 +163,6 @@ export function ModalRecuperacion({
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold">Intento {rec.intento}:</span>
-                          {/* ✅ CORREGIDO: Convertir a Number antes de .toFixed() */}
                           <span className={`font-bold ${Number(rec.nota_recuperacion) >= 7 ? 'text-green-600' :
                             Number(rec.nota_recuperacion) >= 4 ? 'text-yellow-600' : 'text-red-600'
                             }`}>

@@ -23,7 +23,7 @@ export function ModalDetalles({ matricula, onClose, onReactivar }: ModalDetalles
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className={`${
-          matricula.estado === 'RETIRADO' 
+          matricula.estado === EstadoMatricula.RETIRADO 
             ? 'bg-gradient-to-r from-red-500 to-red-600' 
             : 'bg-gradient-to-r from-blue-500 to-blue-600'
         } text-white p-6 rounded-t-2xl`}>
@@ -46,9 +46,7 @@ export function ModalDetalles({ matricula, onClose, onReactivar }: ModalDetalles
           </div>
         </div>
 
-        {/* Body */}
         <div className="p-6 space-y-6">
-          {/* Información del Estudiante */}
           <div>
             <h6 className="text-sm font-semibold text-gray-500 uppercase mb-4 flex items-center gap-2">
               <i className="fas fa-user text-blue-600"></i>
@@ -84,7 +82,6 @@ export function ModalDetalles({ matricula, onClose, onReactivar }: ModalDetalles
 
           <hr className="border-gray-200" />
 
-          {/* Información de Matrícula */}
           <div>
             <h6 className="text-sm font-semibold text-gray-500 uppercase mb-4 flex items-center gap-2">
               <i className="fas fa-info-circle text-blue-600"></i>
@@ -101,7 +98,7 @@ export function ModalDetalles({ matricula, onClose, onReactivar }: ModalDetalles
                 <label className="text-xs text-gray-500 mb-1 block">Origen</label>
                 <span
                   className={`px-2 py-1 text-xs font-semibold rounded ${
-                    matricula.origen === 'DISTRITO'
+                    matricula.origen === OrigenMatricula.DISTRITO
                       ? 'bg-blue-100 text-blue-800'
                       : 'bg-green-100 text-green-800'
                   }`}
@@ -132,7 +129,6 @@ export function ModalDetalles({ matricula, onClose, onReactivar }: ModalDetalles
             </div>
           </div>
 
-          {/* Si está retirado, mostrar info del retiro + botón reactivar */}
           {matricula.estado === EstadoMatricula.RETIRADO && (
             <>
               <hr className="border-gray-200" />
@@ -157,7 +153,6 @@ export function ModalDetalles({ matricula, onClose, onReactivar }: ModalDetalles
                 </div>
               </div>
 
-              {/* Botón de Reactivación */}
               {onReactivar && !showConfirmReactivar && (
                 <button
                   onClick={() => setShowConfirmReactivar(true)}
@@ -168,7 +163,6 @@ export function ModalDetalles({ matricula, onClose, onReactivar }: ModalDetalles
                 </button>
               )}
 
-              {/* Confirmación de reactivación */}
               {showConfirmReactivar && (
                 <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
                   <h6 className="text-sm font-bold text-yellow-800 mb-2 flex items-center gap-2">
@@ -197,7 +191,6 @@ export function ModalDetalles({ matricula, onClose, onReactivar }: ModalDetalles
             </>
           )}
 
-          {/* Observaciones (si no es retiro) */}
           {matricula.observaciones && matricula.estado !== EstadoMatricula.RETIRADO && (
             <>
               <hr className="border-gray-200" />
@@ -209,7 +202,6 @@ export function ModalDetalles({ matricula, onClose, onReactivar }: ModalDetalles
           )}
         </div>
 
-        {/* Footer */}
         <div className="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end">
           <button
             onClick={onClose}

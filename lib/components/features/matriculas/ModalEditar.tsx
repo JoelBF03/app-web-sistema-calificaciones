@@ -12,7 +12,7 @@ interface ModalEditarProps {
 }
 
 export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
-  const { cursos, loading: loadingCursos, fetchCursos } = useCursos(); // 🔧 Obtener fetchCursos
+  const { cursos, loading: loadingCursos, fetchCursos } = useCursos();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     estudiante_cedula: matricula.estudiante_cedula,
@@ -24,7 +24,6 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
 
   const [cambiarCurso, setCambiarCurso] = useState(false);
 
-  // 🔧 Cargar cursos cuando se monta el componente
   useEffect(() => {
     fetchCursos();
   }, [fetchCursos]);
@@ -54,17 +53,10 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
         ? `${matricula.curso.nivel} ${matricula.curso.paralelo} - ${matricula.curso.especialidad}`
         : 'Curso anterior';
       
-      // ✅ CORREGIR: Buscar con comparación segura
       const cursoNuevo = cursos.find(c => c.id === formData.curso_id);
       const cursoNuevoNombre = cursoNuevo
         ? `${cursoNuevo.nivel} ${cursoNuevo.paralelo} - ${cursoNuevo.especialidad}`
         : 'Curso nuevo';
-
-      console.log('🔍 Buscando curso:', {
-        curso_id_buscado: formData.curso_id,
-        cursos_disponibles: cursos.map(c => ({ id: c.id, nombre: `${c.nivel} ${c.paralelo}` })),
-        curso_encontrado: cursoNuevo
-      });
 
       const motivoCambio = formData.motivo_cambio 
         ? `Cambio de curso de "${cursoAnterior}" a "${cursoNuevoNombre}". Motivo: ${formData.motivo_cambio}` 
@@ -89,14 +81,9 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
       return;
     }
 
-    console.log('📤 Datos a enviar:', dataToSend);
-    console.log('🆔 ID de matrícula:', matricula.id);
-
     await onSave(matricula.id, dataToSend);
     onClose();
   } catch (error: any) {
-    console.error('❌ Error completo:', error);
-    console.error('📋 Respuesta del servidor:', error.response?.data);
     alert(error.response?.data?.message || 'Error al actualizar la matrícula');
   } finally {
     setLoading(false);
@@ -106,7 +93,6 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold flex items-center gap-2">
@@ -122,9 +108,7 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
           </div>
         </div>
 
-        {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Alerta */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex gap-2">
               <i className="fas fa-exclamation-triangle text-yellow-600 mt-1"></i>
@@ -134,7 +118,6 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
             </div>
           </div>
 
-          {/* Cédula */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Cédula *
@@ -149,7 +132,6 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
             />
           </div>
 
-          {/* Nombres Completos */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Nombres Completos *
@@ -163,7 +145,6 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
             />
           </div>
 
-          {/* Correo */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Correo Institucional *
@@ -179,7 +160,6 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
 
           <hr className="border-gray-200" />
 
-          {/* Cambiar de Paralelo */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h6 className="text-sm font-semibold text-blue-900 flex items-center gap-2">
@@ -213,7 +193,6 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
                   />
                 </div>
 
-                {/* 🔧 Mostrar loading mientras carga cursos */}
                 {loadingCursos ? (
                   <div className="text-center py-4">
                     <i className="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
@@ -238,7 +217,6 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
                             </option>
                           ))}
                       </select>
-                      {/* 🔧 Mostrar mensaje si no hay cursos disponibles */}
                       {cursos.filter((c) => c.id !== matricula.curso_id && c.estado === EstadoCurso.ACTIVO).length === 0 && (
                         <p className="text-xs text-red-600 mt-1">
                           <i className="fas fa-exclamation-circle mr-1"></i>
@@ -264,7 +242,6 @@ export function ModalEditar({ matricula, onClose, onSave }: ModalEditarProps) {
             )}
           </div>
 
-          {/* Footer */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"

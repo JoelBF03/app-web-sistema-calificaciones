@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/calificaciones/TablaRendimiento.tsx
 'use client';
 
 import { useMemo } from 'react';

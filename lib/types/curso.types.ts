@@ -74,7 +74,6 @@ export const isBasicaCurso = (nivel: NivelCurso): boolean => {
   return [NivelCurso.OCTAVO, NivelCurso.NOVENO, NivelCurso.DECIMO].includes(nivel);
 };
 
-// Helper para determinar si un curso es de bachillerato
 export const isBachilleratoCurso = (nivel: NivelCurso): boolean => {
   return [
     NivelCurso.PRIMERO_BACHILLERATO, 

@@ -1,5 +1,3 @@
-// nextjs-frontend/lib/components/features/estudiantes/badges/CursoActualBadge.tsx
-
 import { EspecialidadCurso, EstadoMatricula } from '@/lib/types';
 import { Estudiante, EstadoEstudiante } from '@/lib/types/estudiante.types';
 import { GraduationCap, PauseCircle, UserX } from 'lucide-react';
@@ -19,7 +17,6 @@ export function CursoActualBadge({ estudiante }: CursoActualBadgeProps) {
     );
   }
 
-  // Si está retirado
   if (estudiante.estado === EstadoEstudiante.RETIRADO) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-800">
@@ -29,7 +26,6 @@ export function CursoActualBadge({ estudiante }: CursoActualBadgeProps) {
     );
   }
 
-  // Si está graduado
   if (estudiante.estado === EstadoEstudiante.GRADUADO) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800">
@@ -39,7 +35,6 @@ export function CursoActualBadge({ estudiante }: CursoActualBadgeProps) {
     );
   }
 
-  // Si está activo, buscar matrícula activa
   const matriculaActiva = estudiante.matriculas?.find(m => m.estado === EstadoMatricula.ACTIVO);
 
   if (matriculaActiva && matriculaActiva.curso) {
@@ -55,7 +50,6 @@ export function CursoActualBadge({ estudiante }: CursoActualBadgeProps) {
     );
   }
 
-  // Sin matrícula activa
   return (
     <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600">
       Sin matrícula

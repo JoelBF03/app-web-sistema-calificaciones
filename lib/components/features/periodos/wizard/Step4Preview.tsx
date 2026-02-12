@@ -55,7 +55,6 @@ export default function Step4Preview({
 
   return (
     <div className="space-y-6">
-      {/* Título de Sección */}
       <div className="text-center space-y-1">
         <h2 className="text-2xl font-black text-gray-900 flex items-center justify-center gap-2">
           <CheckCircle2 className="h-6 w-6 text-blue-600" />
@@ -64,7 +63,6 @@ export default function Step4Preview({
         <p className="text-sm text-gray-500 font-medium">Confirma los detalles de los tres pasos anteriores</p>
       </div>
 
-      {/* Grid de 3 Columnas - Los 3 Pasos */}
       <div className="grid grid-cols-3 gap-4">
         
         {/* PASO 1: PERIODO */}
@@ -155,7 +153,6 @@ export default function Step4Preview({
         </Card>
       </div>
 
-      {/* Alerta Única y Compacta */}
       <div className="bg-slate-900 rounded-xl p-3 flex items-center gap-4 text-white">
         <div className="bg-amber-500 p-2 rounded-lg">
           <AlertTriangle className="h-5 w-5 text-slate-900" />
@@ -168,7 +165,6 @@ export default function Step4Preview({
         </div>
       </div>
 
-      {/* Botones de Acción */}
       <div className="flex justify-between items-center pt-2">
         <Button 
           variant="ghost" 

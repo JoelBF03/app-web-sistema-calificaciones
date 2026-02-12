@@ -71,7 +71,6 @@ export default function ConfirmUpdateSupletoriosDialog({
   };
 
   const getTransicionInfo = (from: EstadoSupletorio, to: EstadoSupletorio) => {
-    // ❌ TRANSICIONES NO PERMITIDAS
     if (from === EstadoSupletorio.CERRADO && to === EstadoSupletorio.PENDIENTE) {
       return {
         allowed: false,
@@ -98,9 +97,6 @@ export default function ConfirmUpdateSupletoriosDialog({
       };
     }
 
-    // ✅ TRANSICIONES PERMITIDAS
-
-    // PENDIENTE → ACTIVADO
     if (from === EstadoSupletorio.PENDIENTE && to === EstadoSupletorio.ACTIVADO) {
       return {
         allowed: true,
@@ -117,7 +113,6 @@ export default function ConfirmUpdateSupletoriosDialog({
       };
     }
 
-    // ACTIVADO → CERRADO
     if (from === EstadoSupletorio.ACTIVADO && to === EstadoSupletorio.CERRADO) {
       return {
         allowed: true,
@@ -134,7 +129,6 @@ export default function ConfirmUpdateSupletoriosDialog({
       };
     }
 
-    // ACTIVADO → PENDIENTE
     if (from === EstadoSupletorio.ACTIVADO && to === EstadoSupletorio.PENDIENTE) {
       return {
         allowed: true,
@@ -150,7 +144,6 @@ export default function ConfirmUpdateSupletoriosDialog({
       };
     }
 
-    // CERRADO → ACTIVADO
     if (from === EstadoSupletorio.CERRADO && to === EstadoSupletorio.ACTIVADO) {
       return {
         allowed: true,
@@ -167,7 +160,6 @@ export default function ConfirmUpdateSupletoriosDialog({
       };
     }
 
-    // Default
     return {
       allowed: true,
       icon: Info,
@@ -193,7 +185,6 @@ export default function ConfirmUpdateSupletoriosDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Cambio de estado */}
           <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="h-4 w-4 text-gray-600" />
@@ -212,7 +203,6 @@ export default function ConfirmUpdateSupletoriosDialog({
             </div>
           </div>
 
-          {/* Mensaje de acción */}
           <Alert className={`border-2 ${
             transicionInfo.color === 'red' ? 'border-red-200 bg-red-50' :
             transicionInfo.color === 'orange' ? 'border-orange-200 bg-orange-50' :
@@ -254,7 +244,6 @@ export default function ConfirmUpdateSupletoriosDialog({
             </AlertDescription>
           </Alert>
 
-          {/* Advertencias adicionales según transición */}
           {nuevoEstado === EstadoSupletorio.ACTIVADO && estadoActual === EstadoSupletorio.PENDIENTE && (
             <Alert className="border-2 border-green-200 bg-green-50">
               <Users className="h-4 w-4 text-green-600" />

@@ -20,11 +20,6 @@ interface FiltrosEstudiantes {
 export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
   const queryClient = useQueryClient();
 
-  // ===================================
-  // 📊 QUERIES
-  // ===================================
-
-  // Estadísticas (se actualiza cada 2 minutos)
   const {
     data: estadisticas,
     isLoading: loadingEstadisticas,
@@ -32,11 +27,10 @@ export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
   } = useQuery({
     queryKey: ['estudiantes', 'estadisticas'],
     queryFn: estudiantesService.getEstadisticas,
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 
-  // Listar estudiantes con filtros
   const {
     data: estudiantesData,
     isLoading: loadingEstudiantes,
@@ -46,14 +40,9 @@ export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
     queryKey: ['estudiantes', 'list', filtrosIniciales],
     queryFn: () => estudiantesService.getAll(filtrosIniciales || {}),
     enabled: true,
-    staleTime: 30 * 1000, // 30 segundos
+    staleTime: 30 * 1000,
   });
 
-  // ===================================
-  // 🔧 MUTATIONS
-  // ===================================
-
-  // Actualizar estudiante
   const actualizarMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateEstudianteDto }) =>
       estudiantesService.update(id, data),
@@ -69,7 +58,6 @@ export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
     },
   });
 
-  // Retirar estudiante
   const retirarMutation = useMutation({
     mutationFn: ({ id, motivo }: { id: string; motivo?: string }) =>
       estudiantesService.retirar(id, motivo),
@@ -83,7 +71,6 @@ export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
     },
   });
 
-  // Graduar estudiante
   const graduarMutation = useMutation({
     mutationFn: (id: string) => estudiantesService.graduar(id),
     onSuccess: (response) => {
@@ -96,7 +83,6 @@ export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
     },
   });
 
-  // Reactivar estudiante
   const reactivarMutation = useMutation({
     mutationFn: (id: string) => estudiantesService.reactivar(id),
     onSuccess: () => {
@@ -109,7 +95,6 @@ export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
     },
   });
 
-  // Crear estudiante
   const crearMutation = useMutation({
     mutationFn: (data: CreateEstudianteDto) => estudiantesService.create(data),
     onSuccess: () => {
@@ -122,11 +107,7 @@ export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
     },
   });
 
-  // ===================================
-  // 📤 RETURN (mantiene nombres compatibles)
-  // ===================================
   return {
-    // Data
     estudiantes: estudiantesData?.data || [],
     estadisticas: estadisticas || {
       activos: 0,
@@ -143,12 +124,10 @@ export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
       lastPage: estudiantesData?.lastPage || 1,
     },
 
-    // Loading states
     isLoading: loadingEstudiantes || loadingEstadisticas,
     loading: loadingEstudiantes || loadingEstadisticas,
     error: error?.message || null,
 
-    // Query functions (nombres mantenidos para compatibilidad)
     fetchEstudiantes: refetchEstudiantes,
     fetchEstadisticas: refetchEstadisticas,
     obtenerEstudiante: async (id: string) => {
@@ -159,7 +138,6 @@ export function useEstudiantes(filtrosIniciales?: FiltrosEstudiantes) {
       return data;
     },
 
-    // Mutation functions (nombres mantenidos)
     actualizarEstudiante: (id: string, data: UpdateEstudianteDto) =>
       actualizarMutation.mutateAsync({ id, data }),
     retirarEstudiante: (id: string, motivo?: string) =>

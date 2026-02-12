@@ -32,7 +32,6 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
 
   const handleChange = (field: keyof CreateMatriculaDto, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Limpiar error del campo
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -50,7 +49,6 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
       newErrors.nombres_completos = 'Los nombres completos son requeridos';
     }
 
-    // ✅ Email es OPCIONAL, pero si se proporciona debe ser válido
     if (formData.estudiante_email && formData.estudiante_email.trim() !== '') {
       if (!formData.estudiante_email.includes('@')) {
         newErrors.estudiante_email = 'El correo electrónico no es válido';
@@ -93,7 +91,6 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold flex items-center gap-2">
@@ -109,9 +106,7 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Período Lectivo */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Período Lectivo <span className="text-red-500">*</span>
@@ -134,7 +129,6 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
             )}
           </div>
 
-          {/* Curso */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Curso <span className="text-red-500">*</span>
@@ -157,7 +151,6 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
             )}
           </div>
 
-          {/* Cédula */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Cédula del Estudiante <span className="text-red-500">*</span>
@@ -176,7 +169,6 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
             )}
           </div>
 
-          {/* Nombres Completos */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nombres Completos<span className="text-red-500">*</span>
@@ -194,7 +186,6 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
             )}
           </div>
 
-          {/* Correo Institucional (opcional) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Correo Institucional (Opcional)
@@ -212,7 +203,6 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
             )}
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"

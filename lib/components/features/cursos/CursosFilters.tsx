@@ -17,7 +17,7 @@ interface CursosFiltersProps {
     totalCursos: number;
     cursosBasica: number;
     cursosTecnico: number;
-    cursosCiencias: number; // 🔥 CAMBIADO
+    cursosCiencias: number;
   };
 }
 
@@ -37,7 +37,6 @@ export default function CursosFilters({
   return (
     <div className="space-y-3">
       
-      {/* Búsqueda */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
         <Input
@@ -56,10 +55,8 @@ export default function CursosFilters({
         )}
       </div>
 
-      {/* Filtros con estadísticas */}
       <div className="flex items-center gap-3 flex-wrap">
         
-        {/* Todas */}
         <Badge
           variant={especialidadFilter === 'all' ? 'default' : 'outline'}
           className="cursor-pointer px-4 py-2 text-sm font-medium flex items-center gap-2"
@@ -75,7 +72,6 @@ export default function CursosFilters({
 
         <div className="h-6 w-px bg-gray-300"></div>
         
-        {/* Básica */}
         <Badge
           variant={especialidadFilter === EspecialidadCurso.BASICA ? 'default' : 'outline'}
           className={`cursor-pointer px-4 py-2 text-sm font-medium flex items-center gap-2 ${
@@ -93,7 +89,6 @@ export default function CursosFilters({
           )}
         </Badge>
         
-        {/* Técnico */}
         <Badge
           variant={especialidadFilter === EspecialidadCurso.TECNICO ? 'default' : 'outline'}
           className={`cursor-pointer px-4 py-2 text-sm font-medium flex items-center gap-2 ${
@@ -111,7 +106,6 @@ export default function CursosFilters({
           )}
         </Badge>
         
-        {/* Ciencias - 🔥 CAMBIADO */}
         <Badge
           variant={especialidadFilter === EspecialidadCurso.CIENCIAS ? 'default' : 'outline'}
           className={`cursor-pointer px-4 py-2 text-sm font-medium flex items-center gap-2 ${
@@ -131,7 +125,6 @@ export default function CursosFilters({
 
         <div className="h-6 w-px bg-gray-300"></div>
 
-        {/* Estado */}
         <div className="flex gap-2">
           <Badge
             variant={estadoFilter === 'all' ? 'default' : 'outline'}

@@ -184,11 +184,10 @@ const getNivelColor = (nivelAsignado: string) => {
           </div>
         ) : docente ? (
           <>
-            {/* Header */}
             <div className={`bg-gradient-to-r ${getNivelColor(docente.nivelAsignado)} text-white p-6 rounded-t-lg`}>
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full border-4 border-white overflow-hidden bg-white flex-shrink-0">
-                  <Image
+                  <img
                     width={64}
                     height={64}
                     src={formData.foto_perfil_url || docente.foto_perfil_url || "/vercel.svg"}
@@ -208,7 +207,6 @@ const getNivelColor = (nivelAsignado: string) => {
               </div>
             </div>
 
-            {/* Content */}
             <form onSubmit={handleSave} className="p-6">
               {error && (
                 <Alert variant="destructive" className="mb-4">
@@ -293,7 +291,7 @@ const getNivelColor = (nivelAsignado: string) => {
                         <SelectContent>
                           <SelectItem value={NivelAsignado.BASICA}>Educación Básica</SelectItem>
                           <SelectItem value={NivelAsignado.BACHILLERATO}>Bachillerato</SelectItem>
-                          <SelectItem value={NivelAsignado.GLOBAL}>Global</SelectItem>
+                          {/*<SelectItem value={NivelAsignado.GLOBAL}>Global</SelectItem>*/}
                         </SelectContent>
                       </Select>
                     </div>
@@ -314,26 +312,6 @@ const getNivelColor = (nivelAsignado: string) => {
                         onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
                         required
                       />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="rol">
-                        <UserCircle className="w-4 h-4 inline mr-1" />
-                        Rol *
-                      </Label>
-                      <Select
-                        value={userFormData.rol}
-                        onValueChange={(value: Role) => setUserFormData({ ...userFormData, rol: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={Role.DOCENTE}>Docente</SelectItem>
-                          <SelectItem value={Role.ADMIN}>Administrador</SelectItem>
-                          <SelectItem value={Role.SECRETARIA}>Secretaria</SelectItem>
-                        </SelectContent>
-                      </Select>
                     </div>
 
                     <div className="space-y-2">
@@ -385,7 +363,6 @@ const getNivelColor = (nivelAsignado: string) => {
                 </TabsContent>
               </Tabs>
 
-              {/* Footer */}
               <div className="flex justify-end gap-3 pt-6 border-t mt-6">
                 <Button type="button" variant="outline" onClick={handleClose}>
                   Cancelar

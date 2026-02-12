@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { useEstudiantes } from '@/lib/hooks/useEstudiantes';
 import type { Estudiante, EstadoEstudiante } from '@/lib/types/estudiante.types';
 
-// Componentes
 import { EstadisticasEstudiantes } from '@/lib/components/features/estudiantes/EstadisticasEstudiantes';
 import { FiltrosEstudiantes } from '@/lib/components/features/estudiantes/FiltrosEstudiantes';
 import { TablaEstudiantes } from '@/lib/components/features/estudiantes/TablaEstudiantes';
@@ -16,6 +15,7 @@ import { ModalReactivarEstudiante } from '@/lib/components/features/estudiantes/
 import { Card, CardDescription, CardHeader, CardTitle } from '@/lib/components/ui/card';
 import Link from 'next/link';
 import { ArrowLeft, GraduationCap } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function EstudiantesPage() {
   // Estados para filtros
@@ -28,7 +28,6 @@ export default function EstudiantesPage() {
   const [page, setPage] = useState(1);
   const [searchDebounce, setSearchDebounce] = useState('');
 
-  // ✅ Hook con TanStack Query - SE ACTUALIZA AUTOMÁTICAMENTE con los filtros
   const {
     estudiantes,
     estadisticas,
@@ -49,7 +48,6 @@ export default function EstudiantesPage() {
     limit: 20,
   });
 
-  // Estados para modales
   const [showModalDetalles, setShowModalDetalles] = useState(false);
   const [showModalEditar, setShowModalEditar] = useState(false);
   const [showModalHistorial, setShowModalHistorial] = useState(false);
@@ -57,29 +55,26 @@ export default function EstudiantesPage() {
   const [showModalReactivar, setShowModalReactivar] = useState(false);
   const [estudianteSeleccionado, setEstudianteSeleccionado] = useState<Estudiante | null>(null);
 
-  // ✅ Debounce para búsqueda
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchDebounce(filtros.search);
-      setPage(1); // Reset page on search
+      setPage(1);
     }, 500);
 
     return () => clearTimeout(timer);
   }, [filtros.search]);
 
-  // ✅ Reset page cuando cambian otros filtros
   useEffect(() => {
     setPage(1);
   }, [filtros.estado, filtros.incompletos]);
 
-  // Handlers de modales
   const handleVerDetalles = useCallback(async (estudiante: Estudiante) => {
     try {
       const estudianteCompleto = await obtenerEstudiante(estudiante.id);
       setEstudianteSeleccionado(estudianteCompleto);
       setShowModalDetalles(true);
     } catch (error) {
-      console.error('Error al obtener estudiante:', error);
+      toast.error('Error al obtener estudiante');
     }
   }, [obtenerEstudiante]);
 
@@ -89,7 +84,7 @@ export default function EstudiantesPage() {
       setEstudianteSeleccionado(estudianteCompleto);
       setShowModalEditar(true);
     } catch (error) {
-      console.error('Error al obtener estudiante:', error);
+      toast.error('Error al obtener estudiante');
     }
   }, [obtenerEstudiante]);
 
@@ -99,7 +94,7 @@ export default function EstudiantesPage() {
       setEstudianteSeleccionado(estudianteCompleto);
       setShowModalHistorial(true);
     } catch (error) {
-      console.error('Error al obtener estudiante:', error);
+      toast.error('Error al obtener estudiante');
     }
   }, [obtenerEstudiante]);
 
@@ -113,7 +108,6 @@ export default function EstudiantesPage() {
     setShowModalReactivar(true);
   }, []);
 
-  // Handlers de acciones
   const handleSaveEditar = useCallback(async (id: string, data: any) => {
     await actualizarEstudiante(id, data);
     setShowModalEditar(false);
@@ -167,16 +161,13 @@ export default function EstudiantesPage() {
           </div>
         </CardHeader>
       </Card>
-      {/* Estadísticas */}
       <EstadisticasEstudiantes estadisticas={estadisticas} />
 
-      {/* Filtros */}
       <FiltrosEstudiantes
         filtros={filtros}
         onFiltrosChange={setFiltros}
       />
 
-      {/* Tabla */}
       <TablaEstudiantes
         estudiantes={estudiantes}
         loading={isLoading}
@@ -188,7 +179,6 @@ export default function EstudiantesPage() {
         onReactivar={handleReactivar}
       />
 
-      {/* Modales */}
       {estudianteSeleccionado && (
         <>
           <ModalDetallesEstudiante

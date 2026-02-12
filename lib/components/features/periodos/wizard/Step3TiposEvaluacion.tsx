@@ -80,7 +80,6 @@ export default function Step3TiposEvaluacion({
 
   return (
     <div className="space-y-4">
-      {/* Header Compacto */}
       <div className="flex items-center justify-between border-b pb-3">
         <div>
           <h2 className="text-xl font-bold text-gray-900">Porcentajes de Evaluación</h2>
@@ -103,7 +102,6 @@ export default function Step3TiposEvaluacion({
         </div>
       </div>
 
-      {/* Alerta de validación */}
       <div className={`p-2.5 rounded-lg border flex items-center gap-3 transition-colors ${
         isValid ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'
       }`}>
@@ -119,7 +117,6 @@ export default function Step3TiposEvaluacion({
         </p>
       </div>
 
-      {/* Grid de 3 Columnas */}
       <div className="grid grid-cols-3 gap-4">
         {tiposEvaluacion.map(({ key, nombre, icon, color, barColor }) => (
           <Card key={key} className={`${color} border shadow-none relative overflow-hidden`}>
@@ -135,7 +132,6 @@ export default function Step3TiposEvaluacion({
             </CardHeader>
             
             <CardContent className="p-4 pt-2 space-y-4">
-              {/* Badge de Porcentaje Grande */}
               <div className="flex justify-center">
                 <div className="bg-white/90 border-2 border-white px-4 py-2 rounded-2xl shadow-sm text-center min-w-[80px]">
                   <span className="text-2xl font-black text-gray-900">{formData[key]}%</span>
@@ -158,7 +154,6 @@ export default function Step3TiposEvaluacion({
                 </div>
               </div>
               
-              {/* Barra de progreso visual */}
               <div className="h-2 w-full bg-gray-200/50 rounded-full overflow-hidden">
                 <div 
                   className={`${barColor} h-full transition-all duration-300`}
@@ -170,7 +165,6 @@ export default function Step3TiposEvaluacion({
         ))}
       </div>
 
-      {/* Footer de Botones */}
       <div className="flex justify-between pt-4 border-t items-center">
         <Button variant="ghost" onClick={onBack} className="text-gray-500 font-bold">
           ← ATRÁS

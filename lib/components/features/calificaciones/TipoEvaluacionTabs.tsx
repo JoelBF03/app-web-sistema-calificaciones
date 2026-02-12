@@ -1,9 +1,7 @@
-// nextjs-frontend/lib/components/features/calificaciones/TipoEvaluacionTabs.tsx
 'use client';
 
 import { BookOpen, Calculator, FileText, GraduationCap } from 'lucide-react';
 
-// ✅ SOLO los tipos de evaluación reales del backend + promedio
 export type TipoEvaluacion = 'insumos' | 'proyecto' | 'examen' | 'promedios';
 
 interface TipoEvaluacionTabsProps {

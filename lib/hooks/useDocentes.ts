@@ -1,4 +1,3 @@
-// lib/hooks/useDocentes.ts
 import { useState, useCallback, useEffect } from 'react';
 import { docentesService } from '../services/docentes';
 import type { Docente } from '../types/docente.types';

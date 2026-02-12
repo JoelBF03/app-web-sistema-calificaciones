@@ -106,7 +106,6 @@ export default function CrearEditarMateriaDialog({
           </DialogHeader>
 
           <div className="py-6 space-y-6">
-            {/* Nombre */}
             <div className="space-y-2">
               <Label htmlFor="nombre">
                 Nombre de la materia <span className="text-red-500">*</span>
@@ -125,7 +124,6 @@ export default function CrearEditarMateriaDialog({
               />
             </div>
 
-            {/* Datos académicos */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>

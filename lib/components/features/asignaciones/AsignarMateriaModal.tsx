@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/asignaciones/AsignarMateriaModal.tsx
 'use client';
 
 import { useState } from 'react';
@@ -17,7 +16,7 @@ interface Props {
   onClose: () => void;
   cursos: Curso[];
   nivelEducativo: NivelEducativo[];
-  materiasYaAsignadas: Set<string>; // 🆕 Prevenir duplicados
+  materiasYaAsignadas: Set<string>;
   onSave: () => void;
 }
 
@@ -34,13 +33,12 @@ export function AsignarMateriaModal({
 
   const [materiaSeleccionada, setMateriaSeleccionada] = useState<string>('');
 
-  // 🆕 Filtrar materias disponibles (NO CUALITATIVAS, NO YA ASIGNADAS)
   const materiasDisponibles = materias.filter(
     (materia) =>
       nivelEducativo.includes(materia.nivelEducativo) &&
       materia.estado === EstadoMateria.ACTIVO &&
-      materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA && // 🆕 FILTRO CRÍTICO
-      !materiasYaAsignadas.has(materia.id) // Excluir ya asignadas
+      materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA &&
+      !materiasYaAsignadas.has(materia.id)
   );
 
   const handleSave = async () => {
@@ -67,7 +65,6 @@ export function AsignarMateriaModal({
     }
 
     try {
-      // ✅ Sin conversiones - UUID puro
       const promesas = cursos.map(curso =>
         crearMateriaCurso({
           curso_id: curso.id,
@@ -83,7 +80,7 @@ export function AsignarMateriaModal({
       onSave();
       onClose();
     } catch (error: any) {
-      console.error('Error al agregar materia:', error);
+      toast.error('Error al agregar materia');
     }
   };
 

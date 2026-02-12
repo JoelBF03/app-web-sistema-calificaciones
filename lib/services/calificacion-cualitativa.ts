@@ -6,7 +6,7 @@ import {
 } from '@/lib/types/calificaciones.types';
 
 export const calificacionCualitativaService = {
-  // CALIFICACIÓN MASIVA (Tutor guarda toda la tabla)
+
   async calificarMasivo(dto: CalificarMasivoDto): Promise<{
     message: string;
     resultados: {
@@ -19,7 +19,6 @@ export const calificacionCualitativaService = {
     return data;
   },
 
-  // ✅ CORREGIR: Retorna CalificacionComponenteCualitativo[], NO CalificacionComponente[]
   async getByCursoYTrimestre(
     curso_id: string,
     trimestre_id: string
@@ -30,7 +29,6 @@ export const calificacionCualitativaService = {
     return data;
   },
 
-  // ✅ CORREGIR: Retorna CalificacionComponenteCualitativo[], NO CalificacionCualitativa[]
   async getByEstudiantePeriodo(
     estudiante_id: string,
     periodo_id: string
@@ -41,13 +39,11 @@ export const calificacionCualitativaService = {
     return data;
   },
 
-  // Obtener componentes según nivel educativo (BASICA o BACHILLERATO)
   async getComponentesPorNivel(nivel: string): Promise<ComponenteCualitativo[]> {
     const { data } = await api.get(`/calificacion-cualitativa/componentes/${nivel}`);
     return data;
   },
 
-  // ✅ CORREGIR: CRUD Individual retorna CalificacionComponenteCualitativo
   async findOne(id: string): Promise<CalificacionComponenteCualitativo> {
     const { data } = await api.get(`/calificacion-cualitativa/${id}`);
     return data;

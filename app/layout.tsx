@@ -1,4 +1,3 @@
-// nextjs-frontend/app/layout.tsx
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -45,7 +44,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           </div>
 
-          {/* Línea inferior */}
           <div className="mt-12 border-t border-gray-300 pt-4 text-xs text-gray-500 text-center">
             © {new Date().getFullYear()} Unidad Educativa 5 de Junio. Todos los derechos reservados.
           </div>

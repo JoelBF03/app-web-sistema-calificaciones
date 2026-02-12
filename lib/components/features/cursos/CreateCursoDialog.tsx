@@ -24,7 +24,7 @@ import {
 import { useCursos } from '@/lib/hooks/useCursos';
 import { usePeriodos } from '@/lib/hooks/usePeriodos';
 import { useDocentes } from '@/lib/hooks/useDocentes';
-import { Docente } from '@/lib/types/docente.types';
+import { Docente, NivelAsignado } from '@/lib/types/docente.types';
 import { toast } from 'sonner';
 import { Estado } from '@/lib/types/usuario.types';
 
@@ -97,7 +97,6 @@ export default function CreateCursoDialog({
       const docentesActivos = data.filter(d => d.usuario_id?.estado === Estado.ACTIVO);
       setDocentes(docentesActivos);
     } catch (error) {
-      console.error('Error al cargar docentes:', error);
       toast.error('Error al cargar lista de docentes');
     } finally {
       setLoadingDocentes(false);
@@ -137,8 +136,8 @@ export default function CreateCursoDialog({
     const esBasica = isBasicaCurso(formData.nivel);
     
     return docentes.filter(docente => {
-      if (esBasica && docente.nivelAsignado === 'BASICA') return true;
-      if (!esBasica && docente.nivelAsignado === 'BACHILLERATO') return true;
+      if (esBasica && docente.nivelAsignado === NivelAsignado.BASICA) return true;
+      if (!esBasica && docente.nivelAsignado === NivelAsignado.BACHILLERATO) return true;
       return false;
     });
   };
@@ -175,7 +174,6 @@ export default function CreateCursoDialog({
         periodo_lectivo_id: periodoActivo.id,
       };
 
-      // Solo agregar docente_id si tiene un valor válido (no 'none')
       if (formData.docente_id !== 'none') {
         cursoData.docente_id = formData.docente_id;
       }
@@ -198,7 +196,7 @@ export default function CreateCursoDialog({
       nivel: '' as NivelCurso,
       paralelo: 'A',
       especialidad: '' as EspecialidadCurso,
-      docente_id: 'none', // 🔥 CAMBIO
+      docente_id: 'none',
     });
   };
 
@@ -226,7 +224,6 @@ export default function CreateCursoDialog({
 
         <div className="space-y-4">
           
-          {/* Alerta de Período */}
           {loadingPeriodo ? (
             <Alert>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -258,7 +255,6 @@ export default function CreateCursoDialog({
 
           <div className="space-y-4">
             
-            {/* Nivel Educativo */}
             <div className="space-y-2">
               <Label>Nivel Educativo *</Label>
               <Select 
@@ -282,7 +278,6 @@ export default function CreateCursoDialog({
               </Select>
             </div>
 
-            {/* Especialidad */}
             <div className="space-y-2">
               <Label>Especialidad *</Label>
               <Select
@@ -301,7 +296,6 @@ export default function CreateCursoDialog({
               </Select>
             </div>
 
-            {/* Paralelo */}
             <div className="space-y-2">
               <Label htmlFor="paralelo">Paralelo *</Label>
               <Input
@@ -315,7 +309,6 @@ export default function CreateCursoDialog({
               />
             </div>
 
-            {/* TUTOR DEL CURSO */}
             <div className="space-y-2">
               <Label htmlFor="docente_id" className="flex items-center gap-2">
                 <UserCircle className="w-4 h-4 text-gray-500" />

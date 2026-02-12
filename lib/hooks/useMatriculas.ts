@@ -11,10 +11,6 @@ import type {
 export function useMatriculas() {
   const queryClient = useQueryClient();
 
-  // ===================================
-  // 📊 QUERIES
-  // ===================================
-
   const {
     data: matriculas,
     isLoading: loading,
@@ -26,11 +22,6 @@ export function useMatriculas() {
     staleTime: 2 * 60 * 1000, // 2 minutos
   });
 
-  // ===================================
-  // 🔧 MUTATIONS
-  // ===================================
-
-  // Crear matrícula
   const crearMutation = useMutation({
     mutationFn: (data: CreateMatriculaDto) => matriculasService.create(data),
     onSuccess: () => {
@@ -44,7 +35,6 @@ export function useMatriculas() {
     },
   });
 
-  // Actualizar matrícula
   const actualizarMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateMatriculaDto }) =>
       matriculasService.update(id, data),
@@ -59,7 +49,6 @@ export function useMatriculas() {
     },
   });
 
-  // Retirar estudiante (a través de matrícula)
   const retirarMutation = useMutation({
     mutationFn: ({ id, observaciones }: { id: string; observaciones?: string }) =>
       matriculasService.remove(id, observaciones),
@@ -74,7 +63,6 @@ export function useMatriculas() {
     },
   });
 
-  // Reactivar estudiante
   const reactivarMutation = useMutation({
     mutationFn: (id: string) => matriculasService.reactivar(id),
     onSuccess: () => {
@@ -88,7 +76,6 @@ export function useMatriculas() {
     },
   });
 
-  // Confirmar importación
   const confirmarImportacionMutation = useMutation({
     mutationFn: ({ previewId, periodoId }: { previewId: string; periodoId: string }) =>
       matriculasService.confirmarImportacion(previewId, periodoId),
@@ -103,19 +90,12 @@ export function useMatriculas() {
     },
   });
 
-  // ===================================
-  // 📤 RETURN (mantiene nombres compatibles)
-  // ===================================
   return {
-    // Data
     matriculas: matriculas || [],
     loading,
     error: error?.message || null,
 
-    // Query functions
     fetchMatriculas,
-
-    // Mutation functions (nombres mantenidos para compatibilidad)
     crearMatricula: crearMutation.mutateAsync,
     actualizarMatricula: (id: string, data: UpdateMatriculaDto) =>
       actualizarMutation.mutateAsync({ id, data }),
@@ -125,7 +105,6 @@ export function useMatriculas() {
     confirmarImportacion: (previewId: string, periodoId: string) =>
       confirmarImportacionMutation.mutateAsync({ previewId, periodoId }),
 
-    // Utility functions
     descargarPlantilla: async () => {
       try {
         const blob = await matriculasService.descargarPlantilla();

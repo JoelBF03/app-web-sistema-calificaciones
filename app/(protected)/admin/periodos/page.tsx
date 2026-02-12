@@ -63,7 +63,6 @@ export default function PeriodosPage() {
   return (
     <>
       <div className="space-y-6">
-        {/* Header */}
         <Card className="border-blue-200 shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -97,7 +96,6 @@ export default function PeriodosPage() {
           </CardHeader>
         </Card>
 
-        {/* Estadísticas */}
         {periodos.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50/50 hover:shadow-md transition-shadow">
@@ -144,7 +142,6 @@ export default function PeriodosPage() {
           </div>
         )}
 
-        {/* Lista de Períodos */}
         {sortedPeriodos.length > 0 ? (
           <div className="space-y-6">
             {sortedPeriodos.map((periodo) => (
@@ -187,7 +184,6 @@ export default function PeriodosPage() {
         )}
       </div>
 
-      {/* Wizard de creación */}
       <CreatePeriodoWizard
         isOpen={showCreateWizard}
         onClose={() => setShowCreateWizard(false)}

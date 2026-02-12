@@ -13,25 +13,21 @@ import {
 
 class MateriaCursoService {
 
-  // 👑 ADMIN: Crear asignación
   async create(data: CreateMateriaCursoDto): Promise<MateriaCurso> {
     const response = await api.post('/materia-curso', data);
     return response.data;
   }
 
-  // 👑 ADMIN: Listar todas
   async findAll(): Promise<MateriaCurso[]> {
     const response = await api.get('/materia-curso');
     return response.data;
   }
 
-  // 🔍 Ver detalles
   async findOne(id: string): Promise<MateriaCurso> {
     const response = await api.get(`/materia-curso/${id}`);
     return response.data;
   }
 
-  // 🔍 Materias de un curso
   async findByCurso(cursoId: string): Promise<MateriaCursoByCursoResponse> {
     const response = await api.get(
       `/materia-curso/curso/${cursoId}`
@@ -39,7 +35,6 @@ class MateriaCursoService {
     return response.data;
   }
 
-  // 🔍 Carga académica de un docente
   async findByDocente(docenteId: string): Promise<MateriaCursoByDocenteResponse> {
     const response = await api.get(
       `/materia-curso/docente/${docenteId}`
@@ -47,7 +42,6 @@ class MateriaCursoService {
     return response.data;
   }
 
-  // 🔍 Cursos que tienen una materia
   async findByMateria(materiaId: string): Promise<MateriaCursoByMateriaResponse> {
     const response = await api.get(
       `/materia-curso/materia/${materiaId}`
@@ -55,7 +49,6 @@ class MateriaCursoService {
     return response.data;
   }
 
-  // 🔍 Todas las del período
   async findByPeriodo(periodoId: string): Promise<MateriaCursoByPeriodoResponse> {
     const response = await api.get(
       `/materia-curso/periodo/${periodoId}`
@@ -63,19 +56,16 @@ class MateriaCursoService {
     return response.data;
   }
 
-  // 👑 ADMIN: Actualizar (asignar/remover docente, cambiar estado)
   async update(id: string, data: UpdateMateriaCursoDto): Promise<MateriaCurso> {
     const response = await api.put(`/materia-curso/${id}`, data);
     return response.data;
   }
 
-  // 👑 ADMIN: Eliminar
   async delete(id: string): Promise<{ message: string }> {
     const response = await api.delete(`/materia-curso/${id}`);
     return response.data;
   }
 
-  // 👨‍🏫 Métodos de conveniencia
   async asignarDocente(id: string, docenteId: string): Promise<MateriaCurso> {
     return this.update(id, { docente_id: docenteId });
   }

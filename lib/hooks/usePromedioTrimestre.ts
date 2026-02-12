@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/hooks/usePromedioTrimestre.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { promedioTrimestreService } from '../services/promedio-trimestre';
 import { toast } from 'sonner';
@@ -16,7 +15,7 @@ export function usePromedioTrimestre(materia_curso_id: string, trimestre_id: str
     mutationFn: promedioTrimestreService.generarPromediosMasivo,
     onSuccess: (resultado) => {
       queryClient.invalidateQueries({ queryKey: ['promedio-trimestre'] });
-      toast.success(`✅ Generados: ${resultado.total_generados} | ⚠️ Fallidos: ${resultado.total_fallidos}`);
+      toast.success(`Generados: ${resultado.total_generados} | Fallidos: ${resultado.total_fallidos}`);
       
       if (resultado.estudiantes_incompletos.length > 0) {
         console.warn('Estudiantes incompletos:', resultado.estudiantes_incompletos);

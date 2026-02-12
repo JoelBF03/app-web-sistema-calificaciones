@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/calificaciones/TablaExamen.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -84,7 +83,6 @@ export function TablaExamen({ materia_curso_id, trimestre_id, estudiantes, porce
       return;
     }
 
-    // Validar formato: solo números y punto decimal (máximo 2 decimales)
     if (!/^\d*\.?\d{0,2}$/.test(value)) {
       return;
     }
@@ -109,7 +107,6 @@ export function TablaExamen({ materia_curso_id, trimestre_id, estudiantes, porce
 
   return (
     <div className="space-y-4">
-      {/* Tabla principal */}
       <div className="overflow-x-auto rounded-lg border-2 border-gray-400 bg-card">
         <Table className="border-collapse">
           <TableHeader>
@@ -145,7 +142,6 @@ export function TablaExamen({ materia_curso_id, trimestre_id, estudiantes, porce
               const ponderadoTemp = esValida ? calcularPonderado(notaNum) : '';
               const ponderadoGuardado = notaGuardada ? calcularPonderado(Number(notaGuardada)) : '';
 
-              // Calcular cualitativo
               const cualitativoTemp = esValida ? calcularCualitativo(notaNum) : null;
               const cualitativoGuardado = notaGuardada ? calcularCualitativo(Number(notaGuardada)) : null;
 

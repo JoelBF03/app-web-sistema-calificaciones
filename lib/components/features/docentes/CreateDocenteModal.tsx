@@ -209,28 +209,7 @@ export default function CreateDocenteModal({ isOpen, onClose, onSuccess }: Creat
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Rol *
-              </label>
-              <select
-                value={formData.rol}
-                onChange={(e) => {
-                  const newRole = e.target.value as Role;
-                  setFormData({ 
-                    ...formData, 
-                    rol: newRole,
-                    nivel_asignado: newRole === Role.SECRETARIA ? NivelAsignado.GLOBAL : NivelAsignado.BASICA
-                  });
-                }}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              >
-                <option value={Role.DOCENTE}>Docente</option>
-                <option value={Role.SECRETARIA}>Secretaria</option>
-              </select>
-            </div>
-            
+          <div className="grid grid-cols-2 gap-4">           
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Nivel *
@@ -242,9 +221,6 @@ export default function CreateDocenteModal({ isOpen, onClose, onSuccess }: Creat
               >
                 <option value={NivelAsignado.BASICA}>Básica</option>
                 <option value={NivelAsignado.BACHILLERATO}>Bachillerato</option>
-                {formData.rol === Role.SECRETARIA && (
-                  <option value={NivelAsignado.GLOBAL}>Global</option>
-                )}
               </select>
             </div>
           </div>

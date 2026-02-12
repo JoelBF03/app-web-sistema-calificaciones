@@ -32,9 +32,8 @@ export default function TutoriaDashboard() {
   const [loading, setLoading] = useState(true);
   const [porcentajeProyecto, setPorcentajeProyecto] = useState(0);
 
-  // Hook para promedios (necesario para reportes)
   const { promedios, isLoading: loadingPromedios } = usePromedioTrimestre(
-    curso_id, // No aplica materia_curso_id en tutoría
+    curso_id,
     trimestreSeleccionado || ''
   );
 
@@ -64,14 +63,12 @@ export default function TutoriaDashboard() {
         const trimestreActivo = trimestresData.find((t: any) => t.estado === TrimestreEstado.ACTIVO);
         setTrimestreSeleccionado(trimestreActivo?.id || trimestresData[0]?.id || null);
 
-        // Obtener porcentaje de proyecto
         const tipos = await tiposEvaluacionService.getByPeriodo(cursoData.periodo_lectivo_id);
         const tipoProyecto = tipos.find(t => t.nombre === NombreTipoEvaluacion.PROYECTO);
         setPorcentajeProyecto(tipoProyecto?.porcentaje || 0);
 
       } catch (error: any) {
         toast.error(error.response?.data?.message || 'Error al cargar datos');
-        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -161,7 +158,6 @@ export default function TutoriaDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
       <header className="bg-gradient-to-r from-yellow-500 via-yellow-600 to-orange-500 shadow-lg">
         <div className="max-w-[98%] mx-auto px-6 py-6">
           <div className="flex items-center gap-4">
@@ -188,7 +184,6 @@ export default function TutoriaDashboard() {
 
       <main className="max-w-[98%] mx-auto px-6 py-8">
         <div className="space-y-6">
-          {/* Selector de Trimestre */}
           <div className="bg-white rounded-2xl shadow-md border-2 border-yellow-300 p-6">
             <TrimestreSelector
               trimestres={trimestres}
@@ -197,7 +192,6 @@ export default function TutoriaDashboard() {
             />
           </div>
 
-          {/* Tabs de Tutoría */}
           <div className="bg-white rounded-2xl shadow-md border-2 border-gray-300 overflow-hidden">
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-300 p-4">
               <TutoriaTabs
@@ -211,7 +205,6 @@ export default function TutoriaDashboard() {
             </div>
           </div>
 
-          {/* Footer info */}
           <div className="bg-white rounded-xl shadow-sm border-2 border-gray-300 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

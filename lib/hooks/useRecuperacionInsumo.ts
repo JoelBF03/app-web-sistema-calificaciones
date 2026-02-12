@@ -5,14 +5,12 @@ import { toast } from 'sonner';
 export function useRecuperacionInsumo(calificacion_insumo_id: string) {
   const queryClient = useQueryClient();
 
-  // Query para obtener historial de recuperaciones
   const { data: historial, isLoading, error, refetch } = useQuery({
     queryKey: ['recuperaciones', calificacion_insumo_id],
     queryFn: () => recuperacionInsumoService.getByCalificacion(calificacion_insumo_id),
     enabled: !!calificacion_insumo_id,
   });
 
-  // Mutation para crear recuperación
   const createMutation = useMutation({
     mutationFn: recuperacionInsumoService.create,
     onSuccess: () => {
@@ -25,7 +23,6 @@ export function useRecuperacionInsumo(calificacion_insumo_id: string) {
     },
   });
 
-  // Mutation para actualizar recuperación
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: { nota_recuperacion?: number; observaciones?: string } }) =>
       recuperacionInsumoService.update(id, data),
@@ -39,7 +36,6 @@ export function useRecuperacionInsumo(calificacion_insumo_id: string) {
     },
   });
 
-  // Mutation para eliminar recuperación
   const deleteMutation = useMutation({
     mutationFn: recuperacionInsumoService.delete,
     onSuccess: () => {

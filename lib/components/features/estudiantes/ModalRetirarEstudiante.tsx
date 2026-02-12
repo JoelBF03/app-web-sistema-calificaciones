@@ -1,5 +1,3 @@
-// nextjs-frontend/lib/components/features/estudiantes/ModalRetirarEstudiante.tsx
-
 import { useState } from 'react';
 import { Estudiante } from '@/lib/types/estudiante.types';
 import { X, UserX, AlertTriangle } from 'lucide-react';
@@ -7,6 +5,7 @@ import { Button } from '@/lib/components/ui/button';
 import { Card } from '@/lib/components/ui/card';
 import { Label } from '@/lib/components/ui/label';
 import { Textarea } from '@/lib/components/ui/textarea';
+import { toast } from 'sonner';
 
 interface ModalRetirarEstudianteProps {
   estudiante: Estudiante;
@@ -30,7 +29,7 @@ export function ModalRetirarEstudiante({
       await onConfirm(estudiante.id, motivo.trim() || undefined);
       onClose();
     } catch (error) {
-      console.error('Error al retirar:', error);
+      toast.error('Error al retirar el estudiante. Intente nuevamente.');
     } finally {
       setLoading(false);
     }
@@ -41,7 +40,6 @@ export function ModalRetirarEstudiante({
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
-        {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <UserX className="w-5 h-5" />
@@ -59,7 +57,6 @@ export function ModalRetirarEstudiante({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Advertencia */}
           <Card className="p-4 bg-red-50 border-red-300">
             <div className="flex gap-3">
               <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
@@ -76,7 +73,6 @@ export function ModalRetirarEstudiante({
             </div>
           </Card>
 
-          {/* Información del estudiante */}
           <Card className="p-4 bg-gray-50">
             <div className="space-y-2">
               <div>
@@ -94,7 +90,6 @@ export function ModalRetirarEstudiante({
             </div>
           </Card>
 
-          {/* Motivo del retiro */}
           <div className="space-y-2">
             <Label htmlFor="motivo">Motivo del retiro (opcional)</Label>
             <Textarea
@@ -110,7 +105,6 @@ export function ModalRetirarEstudiante({
             </p>
           </div>
 
-          {/* Botones */}
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
               type="button"

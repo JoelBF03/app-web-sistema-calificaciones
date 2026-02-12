@@ -1,5 +1,3 @@
-// nextjs-frontend/lib/components/features/docentes/DocenteCard.tsx
-
 'use client';
 
 import Image from 'next/image';
@@ -72,31 +70,26 @@ export default function DocenteCard({
         !isActive && 'opacity-75'
       }`}
     >
-      {/* Header */}
       <div className={`bg-gradient-to-r ${getNivelColor()} px-4 py-3 text-white relative`}>
-        {/* Badge de estado */}
         <div className="absolute top-2 right-2">
           <Badge
             variant="secondary"
             className="bg-white/20 text-white text-[10px] px-2 py-0.5"
           >
-            {isActive ? 'ACTIVO' : 'INACTIVO'}
+            {isActive ? Estado.ACTIVO : Estado.INACTIVO}
           </Badge>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Avatar */}
           <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden bg-white flex-shrink-0">
-            <Image
+            <img
               width={48}
               height={48}
-              src={docente.foto_perfil_url || "/vercel.svg"}
-              alt={`${docente.nombres} ${docente.apellidos}`}
+              src={docente.foto_perfil_url || "/iconUser.png"}
               className="w-full h-full object-cover"
             />
           </div>
 
-          {/* Nombre y nivel */}
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-base leading-tight truncate">
               {docente.nombres}
@@ -115,7 +108,6 @@ export default function DocenteCard({
         </div>
       </div>
 
-      {/* Content */}
       <CardContent className="p-4">
         <div className="space-y-2.5">
           <div className="flex items-start gap-2 text-[15px] text-gray-700">
@@ -140,7 +132,6 @@ export default function DocenteCard({
           )}
         </div>
 
-        {/* Alerta solo si perfil incompleto */}
         {!docente.perfil_completo && (
           <div className="bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5 flex items-center gap-2 mt-3">
             <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
@@ -150,7 +141,6 @@ export default function DocenteCard({
           </div>
         )}
 
-        {/* Acciones */}
         <div className="grid grid-cols-3 gap-2 mt-4">
           <Button
             onClick={() => onViewDetails(docente.id)}

@@ -9,9 +9,6 @@ import { Badge } from '@/lib/components/ui/badge';
 import { Curso, NIVEL_DISPLAY_MAP, EspecialidadCurso, EstadoCurso } from '@/lib/types/curso.types';
 import { EstadoPeriodo } from '@/lib/types/periodo.types';
 
-import DocenteDetailsModal from '../docentes/DocenteDetailsModal';
-import { useState } from 'react';
-
 interface CursoDetailsModalProps {
   curso: Curso | null;
   isOpen: boolean;
@@ -37,7 +34,7 @@ export default function CursoDetailsModal({
     switch (especialidad) {
       case EspecialidadCurso.BASICA:
         return {
-          color: 'from-purple-500 to-purple-600', // ahora básica = morado (según petición previa)
+          color: 'from-purple-500 to-purple-600',
           icon: <BookOpen className="w-6 h-6" />,
           bgLight: 'bg-purple-50',
           textColor: 'text-purple-700',
@@ -45,7 +42,7 @@ export default function CursoDetailsModal({
         };
       case EspecialidadCurso.TECNICO:
         return {
-          color: 'from-orange-500 to-orange-600', // técnico = naranja
+          color: 'from-orange-500 to-orange-600',
           icon: <Wrench className="w-6 h-6" />,
           bgLight: 'bg-orange-50',
           textColor: 'text-orange-700',
@@ -53,7 +50,7 @@ export default function CursoDetailsModal({
         };
       case EspecialidadCurso.CIENCIAS:
         return {
-          color: 'from-green-500 to-green-600', // ciencias = verde
+          color: 'from-green-500 to-green-600',
           icon: <Calculator className="w-6 h-6" />,
           bgLight: 'bg-green-50',
           textColor: 'text-green-700',
@@ -72,7 +69,6 @@ export default function CursoDetailsModal({
 
   const config = getEspecialidadConfig(curso.especialidad);
 
-  // Helper para mostrar nombre completo del tutor con fallback
   const tutorNombre = curso.docente ? `${curso.docente.nombres} ${curso.docente.apellidos}`.trim() : null;
 
   return (
@@ -81,16 +77,13 @@ export default function CursoDetailsModal({
       role="dialog"
       aria-modal="true"
     >
-      {/* overlay */}
       <div
         className="absolute inset-0 bg-black/40"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* panel */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        {/* HEADER */}
         <div className={`bg-gradient-to-r ${config.color} text-white p-5`}>
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-white/20">
@@ -123,10 +116,8 @@ export default function CursoDetailsModal({
           </div>
         </div>
 
-        {/* CONTENT */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* LEFT: summary card */}
             <Card className="md:col-span-1">
               <CardHeader>
                 <CardTitle className="text-sm">Resumen</CardTitle>
@@ -157,7 +148,6 @@ export default function CursoDetailsModal({
               </CardContent>
             </Card>
 
-            {/* RIGHT: details */}
             <div className="md:col-span-2 space-y-4">
               <Card>
                 <CardHeader>
@@ -221,7 +211,6 @@ export default function CursoDetailsModal({
                     </div>
                   )}
 
-                  {/* Espacio para acción: ver/ir al tutor (opcional) */}
                   {curso.docente && (
                     <div className="mt-4">
                       <Button
@@ -242,7 +231,6 @@ export default function CursoDetailsModal({
           </div>
         </div>
 
-        {/* FOOTER */}
         <div className="p-4 border-t border-gray-100 bg-white flex justify-end gap-3">
           <Button variant="outline" onClick={onClose} className="cursor-pointer"  >Cerrar</Button>
           {onViewMaterias && (

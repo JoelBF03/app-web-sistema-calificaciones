@@ -57,7 +57,6 @@ export function ModalDetallesEstudiante({
       await reportesService.descargarLibretaHistorica(matriculaId);
       toast.success(`Libreta de ${periodoNombre} descargada exitosamente`);
     } catch (error) {
-      console.error('Error al descargar libreta:', error);
       toast.error('Error al descargar la libreta. Intente nuevamente.');
     } finally {
       setDescargando(null);
@@ -69,7 +68,6 @@ export function ModalDetallesEstudiante({
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between flex-shrink-0">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <User className="w-5 h-5" />
@@ -85,7 +83,6 @@ export function ModalDetallesEstudiante({
           </Button>
         </div>
 
-        {/* Tabs */}
         <div className="flex-1 overflow-y-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="bg-gray-50 border-b px-6 sticky top-0 z-10">
@@ -110,7 +107,7 @@ export function ModalDetallesEstudiante({
             </div>
 
             <div className="p-6">
-              {/* TAB: Datos Personales */}
+              {/* Datos Personales */}
               <TabsContent value="datos-personales" className="mt-0 space-y-6">
                 <Card className="overflow-hidden">
                   <div className="bg-blue-50 px-4 py-3 border-b">
@@ -174,12 +171,12 @@ export function ModalDetallesEstudiante({
                 </div>
                 {estudiante.estado === EstadoEstudiante.INACTIVO_TEMPORAL && (
                   <p className="text-xs text-gray-500 mt-2">
-                    ℹ️ Este estudiante aparece en listas pero no puede ser calificado. Es excluido de validaciones de cierre de trimestre.
+                    Este estudiante aparece en listas pero no puede ser calificado. Es excluido de validaciones de cierre de trimestre.
                   </p>
                 )}
               </div>
 
-              {/* TAB: Padres */}
+              {/* Padres */}
               <TabsContent value="padres" className="mt-0 space-y-6">
                 {/* Padre */}
                 <Card className="overflow-hidden">
@@ -254,7 +251,7 @@ export function ModalDetallesEstudiante({
                 </Card>
               </TabsContent>
 
-              {/* TAB: Representante */}
+              {/* Representante */}
               <TabsContent value="representante" className="mt-0 space-y-6">
                 <Card className="overflow-hidden">
                   <div className="bg-purple-50 px-4 py-3 border-b">
@@ -300,7 +297,7 @@ export function ModalDetallesEstudiante({
                 </Card>
               </TabsContent>
 
-              {/* TAB: Historial */}
+              {/* Historial */}
               <TabsContent value="historial" className="mt-0 space-y-6">
                 {estudiante.matriculas && estudiante.matriculas.length > 0 ? (
                   <Card className="overflow-hidden">
@@ -342,7 +339,6 @@ export function ModalDetallesEstudiante({
                             >
                               {matricula.estado}
                             </span>
-                            {/* 🆕 Botón de descarga */}
                             <Button
                               size="sm"
                               variant="outline"

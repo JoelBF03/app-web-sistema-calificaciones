@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/calificaciones/TablaProyecto.tsx
 'use client';
 
 import { useState } from 'react';
@@ -127,7 +126,6 @@ export function TablaProyecto({ curso_id, trimestre_id, estudiantes, isTutor, po
     );
   }
 
-  // ✅ CASO 1: NO ES TUTOR - Solo puede ver
   if (!isTutor) {
     return (
       <div className="space-y-4">
@@ -240,12 +238,10 @@ export function TablaProyecto({ curso_id, trimestre_id, estudiantes, isTutor, po
     );
   }
 
-  // ✅ CASO 2: ES TUTOR - Mostrar mensaje para ir al módulo de tutoría
   const hayCalificaciones = calificaciones.length > 0;
 
   return (
     <div className="space-y-4">
-      {/* ✅ MENSAJE PARA TUTORES */}
       <Alert className="bg-blue-50 border-blue-200">
         <Info className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-800">
@@ -341,7 +337,6 @@ export function TablaProyecto({ curso_id, trimestre_id, estudiantes, isTutor, po
         </Table>
       </div>
 
-      {/* ✅ MODAL DE DETALLE - CON MENSAJE ESPECIAL PARA TUTORES */}
       {modalDetalle && (
         <ModalDetalleProyecto
           calificacion_id={modalDetalle.calificacion_id}
@@ -350,7 +345,6 @@ export function TablaProyecto({ curso_id, trimestre_id, estudiantes, isTutor, po
           open={modalDetalle.open}
           onClose={() => setModalDetalle(null)}
           onSuccess={() => {
-            // ✅ REFRESCAR DATOS DESPUÉS DE EDITAR/ELIMINAR
             refetch?.();
           }}
           trimestreEstado={modalDetalle.trimestreEstado}

@@ -1,5 +1,3 @@
-// nextjs-frontend/lib/components/features/docentes/DocenteDetailsModal.tsx
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -103,7 +101,6 @@ export default function DocenteDetailsModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
 
-        {/* Header accesible */}
         <DialogHeader className="sr-only">
           <DialogTitle>Detalles del Docente</DialogTitle>
           <DialogDescription>
@@ -111,7 +108,6 @@ export default function DocenteDetailsModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Loading */}
         {loading && (
           <div className="p-12 text-center">
             <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
@@ -119,7 +115,6 @@ export default function DocenteDetailsModal({
           </div>
         )}
 
-        {/* Error */}
         {error && !docente && (
           <div className="p-8 text-center">
             <XCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
@@ -131,10 +126,8 @@ export default function DocenteDetailsModal({
           </div>
         )}
 
-        {/* Content */}
         {docente && (
           <>
-            {/* Header visual */}
             <div className={`bg-gradient-to-r ${getNivelColor()} text-white p-6`}>
               <div className="flex gap-4">
                 <div className="w-20 h-20 rounded-full border-4 border-white overflow-hidden bg-white">
@@ -161,7 +154,6 @@ export default function DocenteDetailsModal({
               </div>
             </div>
 
-            {/* Body */}
             <div className="p-6 space-y-4">
 
               {/* Información Personal */}
@@ -217,7 +209,6 @@ export default function DocenteDetailsModal({
               )}
             </div>
 
-            {/* Footer */}
             <div className="p-4 border-t bg-gray-50 flex justify-end">
               <Button onClick={handleClose}>Cerrar</Button>
             </div>

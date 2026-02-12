@@ -18,6 +18,7 @@ import { calcularCualitativo, getColorCualitativo } from '@/lib/utils/calificaci
 import { EstadoEstudiante, Role, TrimestreEstado } from '@/lib/types';
 import { useReportes } from '@/lib/hooks/useReportes';
 import { useQueryClient } from '@tanstack/react-query';
+import { BotonReporte } from '@/lib/components/features/reportes/BotonReporte';
 
 interface TablaInsumosProps {
   materia_curso_id: string;
@@ -25,8 +26,8 @@ interface TablaInsumosProps {
   estudiantes: Array<{ id: string; nombres_completos: string, estado?: string }>;
   porcentaje: number;
   trimestreEstado?: TrimestreEstado;
-  materia_nombre?: string; // 🆕
-  trimestre_nombre?: string; // 🆕
+  materia_nombre?: string;
+  trimestre_nombre?: string;
 }
 
 export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porcentaje, trimestreEstado, materia_nombre = '', trimestre_nombre = '' }: TablaInsumosProps) {
@@ -51,7 +52,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
   const [insumoAEliminar, setInsumoAEliminar] = useState<any | null>(null);
   const [insumoAPublicar, setInsumoAPublicar] = useState<any | null>(null);
   const [inicializado, setInicializado] = useState(false);
-  const { descargarReporteInsumos, descargando: descargandoReporte } = useReportes();
+  const { descargarReporteInsumos } = useReportes();
   const [usuario, setUsuario] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const queryClient = useQueryClient();
@@ -95,7 +96,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
           const cals = await calificacionInsumoService.getByInsumo(insumo.id);
           setCalificacionesPorInsumo(prev => ({ ...prev, [insumo.id]: cals }));
         } catch (error) {
-          console.error(`Error cargando calificaciones del insumo ${insumo.id}:`, error);
+          toast.error(`Error cargando calificaciones del insumo ${insumo.id}`);
         }
       }
     };
@@ -118,9 +119,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
   const handleDescargarReporteInsumos = async () => {
     await descargarReporteInsumos(
       materia_curso_id,
-      materia_nombre,
       trimestre_id,
-      trimestre_nombre
     );
   };
 
@@ -251,14 +250,12 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
       return;
     }
 
-    // Validar formato: solo números y punto decimal
     if (!/^\d*\.?\d{0,2}$/.test(value)) {
-      return; // No permitir más de 2 decimales
+      return;
     }
 
     const numero = parseFloat(value);
 
-    // Si hay un número válido, validar rango
     if (!isNaN(numero)) {
       if (numero < 0 || numero > 10) return;
     }
@@ -318,7 +315,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
         const cals = await calificacionInsumoService.getByInsumo(insumo.id);
         setCalificacionesPorInsumo(prev => ({ ...prev, [insumo.id]: cals }));
       } catch (error) {
-        console.error(`Error recargando calificaciones del insumo ${insumo.id}:`, error);
+        toast.error(`Error recargando calificaciones del insumo ${insumo.id}`);
       }
     }
   };
@@ -348,35 +345,19 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
               </p>
             </div>
           </div>
-          {isAdmin && (
-            <Alert className="mb-4 bg-yellow-50 border-yellow-300">
-              <ShieldCheck className="h-4 w-4 text-yellow-600" />
-              <AlertDescription className="text-yellow-800">
-                <strong>Modo Vista Admin:</strong> Puedes ver las calificaciones pero no modificarlas ni generar reportes.
-              </AlertDescription>
-            </Alert>
-          )}
 
           <div className="flex items-center gap-3">
-            {/* 🆕 Botón de Reporte - Solo visible cuando trimestre FINALIZADO */}
             {trimestreEstado === TrimestreEstado.FINALIZADO && (
-              <Button
-                onClick={handleDescargarReporteInsumos}
-                disabled={descargandoReporte || isAdmin}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer"
-              >
-                {descargandoReporte ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generando...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="w-4 h-4 mr-2" />
-                    Descargar Reporte
-                  </>
-                )}
-              </Button>
+              <BotonReporte
+                label="Descargar Reporte"
+                tooltip="Obtener PDF de aportes del trimestre"
+                icon={FileText}
+                variant="outline"
+                className="bg-white border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold shadow-sm"
+                onClick={() => descargarReporteInsumos(materia_curso_id, trimestre_id)}
+                loading={false}
+                disabled={isAdmin}
+              />
             )}
 
             <Button
@@ -398,20 +379,27 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
             </Button>
           </div>
         </div>
+        {isAdmin && (
+          <Alert className="mt-4 bg-yellow-50 border-yellow-300 py-2">
+            <ShieldCheck className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800 text-xs">
+              <strong>Modo Vista Admin:</strong> Visualización de solo lectura.
+            </AlertDescription>
+          </Alert>
+        )}
       </CardHeader>
 
       <CardContent className="p-0">
-        {/* Tabla principal con scroll */}
         <div className="overflow-x-auto w-full border-b border-gray-300">
           <Table className="border-collapse border-y-0 border-x-0 w-max min-w-full table-fixed">
             <TableHeader>
               <TableRow className="bg-gray-100 border-b-2 border-gray-400">
-                {/* Columna # - sticky con borde permanente */}
+                {/* Columna # */}
                 <TableHead className="sticky left-0 z-30 bg-gray-100 text-center w-[60px] min-w-[60px] font-semibold text-gray-900 px-3 border-r-2 border-gray-400">
                   #
                 </TableHead>
 
-                {/* Columna Estudiante - sticky con más ancho y borde permanente */}
+                {/* Columna Estudiante */}
                 <TableHead className="sticky left-[60px] z-30 bg-gray-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.15)] w-[380px] min-w-[380px] max-w-[380px] font-semibold text-gray-900 px-4 border-r-2 border-gray-400">
                   Estudiante
                 </TableHead>
@@ -540,7 +528,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                   <div className="text-xs text-blue-600 font-normal">Insumos</div>
                 </TableHead>
 
-                {/* Columna Ponderado - Mismo ancho */}
+                {/* Columna Ponderado */}
                 <TableHead className="bg-blue-100 text-center w-[150px] min-w-[150px] border-l-2 border-gray-400 text-blue-900 font-bold">
                   <div>Ponderado</div>
                   <div className="text-xs text-blue-600 font-normal">({porcentaje}%)</div>
@@ -557,12 +545,12 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
 
                 return (
                   <TableRow key={estudiante.id} className={`hover:bg-cyan-50 transition-colors border-b border-gray-300 ${esInactivo ? 'bg-gray-100 opacity-60' : ''}`}>
-                    {/* Columna # - sticky con borde permanente */}
+                    {/* Columna # */}
                     <TableCell className="sticky left-0 z-10 bg-white hover:bg-cyan-50 transition-colors text-center text-gray-500 font-medium px-3 border-r-2 border-gray-400">
                       {index + 1}
                     </TableCell>
 
-                    {/* Columna Estudiante - sticky con borde permanente */}
+                    {/* Columna Estudiante */}
                     <TableCell className="sticky left-[60px] z-10 bg-white hover:bg-cyan-50 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.15)] font-medium px-4 border-r-2 border-gray-400">
                       <span className="text-sm">{estudiante.nombres_completos}</span>
                     </TableCell>
@@ -643,7 +631,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                       }
                     })}
 
-                    {/* Columna Promedio CON cualitativo */}
+                    {/* Columna Promedio */}
                     <TableCell className="bg-blue-50/40 text-center border-l-4 border-gray-400 font-medium w-[150px]">
                       <div className="flex flex-col items-center gap-1">
                         <span className="text-sm font-bold text-blue-700">
@@ -669,7 +657,6 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
         </div>
       </CardContent>
 
-      {/* Modal Confirmar Publicación */}
       <Dialog open={!!insumoAPublicar} onOpenChange={() => setInsumoAPublicar(null)}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
@@ -699,7 +686,6 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
         </DialogContent>
       </Dialog>
 
-      {/* Modal Eliminar Insumo */}
       <Dialog open={!!insumoAEliminar} onOpenChange={() => setInsumoAEliminar(null)}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>

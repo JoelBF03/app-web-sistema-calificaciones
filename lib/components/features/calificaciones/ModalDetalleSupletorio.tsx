@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { promediosPeriodoService } from '@/lib/services/promedio-periodo';
 import { EstadoSupletorio } from '@/lib/types/periodo.types';
 import { getColorCualitativo } from '@/lib/utils/calificaciones.utils';
+import { EstadoPromedioAnual } from '@/lib/types/calificaciones.types';
 
 interface ModalDetalleSupletorioProps {
   promedio_id: string;
@@ -76,7 +77,6 @@ export function ModalDetalleSupletorio({
     }
 
     const nota = parseFloat(nuevaNota);
-    // ✅ VALIDACIÓN: Máximo 7.00
     if (isNaN(nota) || nota < 0 || nota > 7.00) {
       toast.error('La nota debe estar entre 0 y 7.00');
       return;
@@ -202,7 +202,6 @@ export function ModalDetalleSupletorio({
                         const value = e.target.value;
                         if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
                           const num = parseFloat(value);
-                          // ✅ RESTRICCIÓN VISUAL: No permite escribir más de 7.00
                           if (value === '' || (!isNaN(num) && num >= 0 && num <= 7.00)) {
                             setNuevaNota(value);
                           }
@@ -214,8 +213,6 @@ export function ModalDetalleSupletorio({
                     />
                     <p className="text-xs text-orange-600 mt-1">* La nota máxima permitida es 7.00</p>
                   </div>
-
-                  {/* 🚫 SE ELIMINÓ EL BLOQUE DE "VISTA PREVIA DEL CÁLCULO" */}
 
                   <div className="flex gap-2">
                     <Button
@@ -266,11 +263,11 @@ export function ModalDetalleSupletorio({
                       <div className="bg-white p-3 rounded border border-gray-300 text-center">
                         <p className="text-sm text-gray-600 mb-2">Estado Final</p>
                         <Badge className={
-                          promedio.estado === 'APROBADO' 
+                          promedio.estado === EstadoPromedioAnual.APROBADO
                             ? 'bg-green-100 text-green-800 text-sm' 
                             : 'bg-red-100 text-red-800 text-sm'
                         }>
-                          {promedio.estado === 'APROBADO' ? '✅ APROBADO' : '❌ REPROBADO'}
+                          {promedio.estado === EstadoPromedioAnual.APROBADO ? EstadoPromedioAnual.APROBADO : EstadoPromedioAnual.REPROBADO}
                         </Badge>
                       </div>
 

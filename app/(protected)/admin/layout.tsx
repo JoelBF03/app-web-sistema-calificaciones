@@ -49,12 +49,10 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-[#F4F7FE]">
-      {/* HEADER CON COLOR INSTITUCIONAL */}
       <header className="bg-[#0F172A] text-white shadow-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             
-            {/* LADO IZQUIERDO: LOGO Y TÍTULO */}
             <div className="flex items-center gap-4">
               <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-900/20">
                 <GraduationCap className="w-6 h-6 text-white" />
@@ -69,9 +67,7 @@ export default function AdminLayout({
               </div>
             </div>
 
-            {/* LADO DERECHO: USUARIO Y SALIR */}
             <div className="flex items-center gap-3 sm:gap-6">
-              {/* Info Usuario */}
               <div className="hidden md:flex items-center gap-3 border-r border-slate-700 pr-6">
                 <div className="flex flex-col text-right">
                   <span className="text-xs font-bold text-white uppercase">Administrador</span>
@@ -82,7 +78,6 @@ export default function AdminLayout({
                 </div>
               </div>
 
-              {/* Botón Salir - Inspirado en tu botón rojo de cierre */}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 bg-[#E11D48] hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all font-bold text-sm shadow-lg shadow-red-900/20 cursor-pointer"
@@ -96,7 +91,6 @@ export default function AdminLayout({
         </div>
       </header>
 
-      {/* SUB-BARRA DE NAVEGACIÓN (Opcional, para dar más cuerpo) */}
       <div className="bg-white border-b border-slate-200 py-3 mb-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div className="flex items-center gap-2 text-slate-500 text-xs font-bold">
@@ -106,7 +100,6 @@ export default function AdminLayout({
         </div>
       </div>
 
-      {/* CONTENIDO PRINCIPAL */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="animate-in fade-in slide-in-from-top-4 duration-700">
           {children}

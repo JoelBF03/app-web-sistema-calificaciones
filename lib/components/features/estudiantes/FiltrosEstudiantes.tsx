@@ -13,6 +13,7 @@ import { EstadoEstudiante } from '@/lib/types/estudiante.types';
 import { useEffect, useState } from 'react';
 import { cursosService } from '@/lib/services/cursos';
 import { EstadoCurso } from '@/lib/types';
+import { toast } from 'sonner';
 
 interface FiltrosEstudiantesProps {
   filtros: {
@@ -28,14 +29,12 @@ export function FiltrosEstudiantes({ filtros, onFiltrosChange }: FiltrosEstudian
   const [nivelesCurso, setNivelesCurso] = useState<string[]>([]);
   const [loadingNiveles, setLoadingNiveles] = useState(false);
 
-  // Cargar niveles únicos de cursos activos
   useEffect(() => {
     const cargarNiveles = async () => {
       try {
         setLoadingNiveles(true);
         const cursosData = await cursosService.findAll();
 
-        // Extraer niveles únicos de cursos activos
         const nivelesUnicos = [...new Set(
           cursosData
             .filter(curso => curso.estado === EstadoCurso.ACTIVO)
@@ -44,7 +43,7 @@ export function FiltrosEstudiantes({ filtros, onFiltrosChange }: FiltrosEstudian
 
         setNivelesCurso(nivelesUnicos);
       } catch (error) {
-        console.error('Error al cargar niveles de curso:', error);
+        toast.error('Error al cargar niveles de curso');
       } finally {
         setLoadingNiveles(false);
       }
@@ -53,7 +52,6 @@ export function FiltrosEstudiantes({ filtros, onFiltrosChange }: FiltrosEstudian
     cargarNiveles();
   }, []);
 
-  // Helper para formatear nombre del nivel
   const formatearNivelCurso = (nivel: string): string => {
     return nivel
       .split('_')
@@ -64,7 +62,6 @@ export function FiltrosEstudiantes({ filtros, onFiltrosChange }: FiltrosEstudian
   return (
     <Card className="p-6">
       <div className="space-y-4">
-        {/* Fila 1: Búsqueda */}
         <div className="grid grid-cols-1 gap-4">
           <div>
             <Label className="flex items-center gap-2 mb-2">
@@ -80,9 +77,7 @@ export function FiltrosEstudiantes({ filtros, onFiltrosChange }: FiltrosEstudian
           </div>
         </div>
 
-        {/* Fila 2: Filtros principales */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Estado */}
           <div>
             <Label className="flex items-center gap-2 mb-2">
               <Filter className="w-4 h-4" />
@@ -106,7 +101,6 @@ export function FiltrosEstudiantes({ filtros, onFiltrosChange }: FiltrosEstudian
             </Select>
           </div>
 
-          {/* Datos completos */}
           <div>
             <Label className="flex items-center gap-2 mb-2">
               <ClipboardCheck className="w-4 h-4" />

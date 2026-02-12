@@ -6,7 +6,6 @@ import type { RegistrarSupletorioDto } from '../types/calificaciones.types';
 export function usePromediosPeriodo() {
   const queryClient = useQueryClient();
 
-  // Query: Obtener todos los promedios anuales
   const {
     data: promedios,
     isLoading: loading,
@@ -17,7 +16,6 @@ export function usePromediosPeriodo() {
     staleTime: 2 * 60 * 1000,
   });
 
-  // Mutation: Registrar nota de supletorio
   const registrarSupletorioMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: RegistrarSupletorioDto }) =>
       promediosPeriodoService.registrarSupletorio(id, data),
@@ -32,7 +30,6 @@ export function usePromediosPeriodo() {
     },
   });
 
-  // Mutation: Generar promedios anuales masivos
   const generarPromediosMasivoMutation = useMutation({
     mutationFn: (periodoLectivoId: string) =>
       promediosPeriodoService.generarPromediosMasivo(periodoLectivoId),
@@ -53,12 +50,10 @@ export function usePromediosPeriodo() {
   });
 
   return {
-    // Data
     promedios: promedios || [],
     loading,
     error: error?.message || null,
 
-    // Queries
     obtenerPromediosPorEstudiante: async (estudianteId: string) => {
       const data = await queryClient.fetchQuery({
         queryKey: ['promedios-estudiante', estudianteId],
@@ -74,17 +69,14 @@ export function usePromediosPeriodo() {
       return data;
     },
 
-    // Mutations
     registrarSupletorio: registrarSupletorioMutation.mutateAsync,
     generarPromediosMasivo: generarPromediosMasivoMutation.mutateAsync,
 
-    // Loading states
     isRegistering: registrarSupletorioMutation.isPending,
     isGenerating: generarPromediosMasivoMutation.isPending,
   };
 }
 
-// Hook específico para estudiantes en supletorio de una materia-curso
 export function useEstudiantesSupletorio(materiaCursoId: string, periodoLectivoId: string) {
   const queryClient = useQueryClient();
 
@@ -130,7 +122,6 @@ export function useEstudiantesSupletorio(materiaCursoId: string, periodoLectivoI
   };
 }
 
-// Hook para todos los estudiantes en supletorio de un período
 export function useTodosEstudiantesSupletorio(periodoLectivoId: string) {
   const {
     data: estudiantes,

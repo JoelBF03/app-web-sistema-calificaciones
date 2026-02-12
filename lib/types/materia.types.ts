@@ -1,4 +1,3 @@
-// lib/types/materia.types.ts
 export enum NivelEducativo {
   BASICA = 'BASICA',
   BACHILLERATO = 'BACHILLERATO',
@@ -51,7 +50,6 @@ export interface UpdateMateriaDto {
   descripcion?: string;
 }
 
-// Helpers
 export const isBasicaMateria = (materia: Materia): boolean =>
   materia.nivelEducativo === NivelEducativo.BASICA;
 
