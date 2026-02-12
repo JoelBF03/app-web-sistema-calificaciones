@@ -7,6 +7,11 @@ export const insumosService = {
     return data;
   },
 
+  async findOne(id: string): Promise<Insumo> {
+    const { data } = await api.get(`/insumos/${id}`);
+    return data;
+  },
+
   async create(createInsumoDto: { materia_curso_id: string; trimestre_id: string; nombre?: string }): Promise<Insumo> {
     const { data } = await api.post('/insumos', createInsumoDto);
     return data;

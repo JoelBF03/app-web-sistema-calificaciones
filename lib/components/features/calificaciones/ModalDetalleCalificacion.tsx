@@ -1,18 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/lib/components/ui/dialog';
+import { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/lib/components/ui/dialog';
 import { Button } from '@/lib/components/ui/button';
 import { Input } from '@/lib/components/ui/input';
 import { Textarea } from '@/lib/components/ui/textarea';
+import { Card, CardContent } from '@/lib/components/ui/card';
+import { Badge } from '@/lib/components/ui/badge';
 import { Alert, AlertDescription } from '@/lib/components/ui/alert';
-import { Loader2, Edit2, Trash2, Calendar, Info, RefreshCw, Save, X, Pencil } from 'lucide-react';
+import { Separator } from '@/lib/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/lib/components/ui/alert-dialog';
+import { Loader2, Edit, Save, X, Trash2, AlertTriangle, Info, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { calificacionInsumoService } from '@/lib/services/calificacion-insumo';
-import { recuperacionInsumoService } from '@/lib/services/recuperacion-insumo';
-import { EstadoInsumo } from '@/lib/types/calificaciones.types';
+import { useCalificacionInsumo } from '@/lib/hooks/useCalificacionInsumo';
+import { useRecuperacionInsumo } from '@/lib/hooks/useRecuperacionInsumo';
 import { ModalRecuperacion } from './ModalRecuperacion';
-import { Role } from '@/lib/types/usuario.types';
+import { EstadoInsumo } from '@/lib/types/calificaciones.types';
+import { Role } from '@/lib/types';
 
 interface ModalDetalleCalificacionProps {
   calificacion_id: string;
@@ -32,23 +45,39 @@ export function ModalDetalleCalificacion({
   onSuccess
 }: ModalDetalleCalificacionProps) {
   const [calificacion, setCalificacion] = useState<any>(null);
-  const [recuperaciones, setRecuperaciones] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [abrirRecuperacion, setAbrirRecuperacion] = useState(false);
   const [nuevaNota, setNuevaNota] = useState('');
   const [observaciones, setObservaciones] = useState('');
+  const [abrirRecuperacion, setAbrirRecuperacion] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Estados para confirmación de eliminación
+  const [confirmarEliminarCalificacion, setConfirmarEliminarCalificacion] = useState(false);
+  const [confirmarEliminarRecuperacion, setConfirmarEliminarRecuperacion] = useState<{ id: string; intento: number } | null>(null);
 
   // Estados para editar recuperaciones
   const [editandoRecuperacion, setEditandoRecuperacion] = useState<string | null>(null);
   const [notaRecuperacionEdit, setNotaRecuperacionEdit] = useState('');
   const [observacionesRecuperacionEdit, setObservacionesRecuperacionEdit] = useState('');
-  const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
-  const [isUpdatingRecuperacion, setIsUpdatingRecuperacion] = useState(false);
-  const [isDeletingRecuperacion, setIsDeletingRecuperacion] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+
+  const {
+    obtenerCalificacion,
+    actualizarCalificacion,
+    eliminarCalificacion,
+    isUpdating,
+    isDeleting,
+    isLoadingOne
+  } = useCalificacionInsumo();
+
+  const {
+    historial,
+    actualizarRecuperacion,
+    eliminarRecuperacion,
+    isUpdating: isUpdatingRecuperacion,
+    isDeleting: isDeletingRecuperacion,
+    refetch: refetchRecuperaciones
+  } = useRecuperacionInsumo(calificacion_id);
 
   useEffect(() => {
     const user = localStorage.getItem('usuario');
@@ -59,7 +88,7 @@ export function ModalDetalleCalificacion({
   }, []);
 
   useEffect(() => {
-    if (open) {
+    if (open && calificacion_id) {
       cargarCalificacion();
     }
   }, [open, calificacion_id]);
@@ -67,19 +96,11 @@ export function ModalDetalleCalificacion({
   const cargarCalificacion = async () => {
     try {
       setIsLoading(true);
-      const data = await calificacionInsumoService.findOne(calificacion_id);
+      const data = await obtenerCalificacion(calificacion_id);
       setCalificacion(data);
       setNuevaNota(data.nota_original.toString());
       setObservaciones(data.observaciones || '');
-
-      try {
-        const historial = await recuperacionInsumoService.getByCalificacion(calificacion_id);
-        setRecuperaciones(historial.recuperaciones || []);
-      } catch (error) {
-        setRecuperaciones([]);
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al cargar calificación');
+      await refetchRecuperaciones();
     } finally {
       setIsLoading(false);
     }
@@ -107,41 +128,26 @@ export function ModalDetalleCalificacion({
       return;
     }
 
-    try {
-      setIsSaving(true);
-      await calificacionInsumoService.update(calificacion_id, {
-        nota,
-        observaciones: observaciones.trim() || undefined
-      });
-
-      toast.success('Calificación actualizada');
-      setIsEditing(false);
-      await cargarCalificacion();
-      onSuccess();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al actualizar');
-    } finally {
-      setIsSaving(false);
-    }
+    actualizarCalificacion(
+      { id: calificacion_id, data: { nota, observaciones: observaciones.trim() || undefined } },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+          cargarCalificacion();
+          onSuccess();
+        }
+      }
+    );
   };
 
-  const abrirConfirmacion = () => {
-    setMostrarConfirmacionEliminar(true);
-  };
-
-  const handleEliminar = async () => {
-    try {
-      setIsDeleting(true);
-      setMostrarConfirmacionEliminar(false);
-      await calificacionInsumoService.remove(calificacion_id);
-      toast.success('Calificación eliminada');
-      onSuccess();
-      onClose();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al eliminar');
-    } finally {
-      setIsDeleting(false);
-    }
+  const handleEliminarCalificacion = () => {
+    eliminarCalificacion(calificacion_id, {
+      onSuccess: () => {
+        setConfirmarEliminarCalificacion(false);
+        onSuccess();
+        onClose();
+      }
+    });
   };
 
   const handleEditarRecuperacion = (rec: any) => {
@@ -156,44 +162,35 @@ export function ModalDetalleCalificacion({
     setObservacionesRecuperacionEdit('');
   };
 
-  const handleGuardarRecuperacion = async (id: string) => {
+  const handleGuardarRecuperacion = (id: string) => {
     const nota = parseFloat(notaRecuperacionEdit);
     if (isNaN(nota) || nota < 0 || nota > 10) {
       toast.error('La nota debe estar entre 0 y 10');
       return;
     }
 
-    try {
-      setIsUpdatingRecuperacion(true);
-      await recuperacionInsumoService.update(id, {
-        nota_recuperacion: nota,
-        observaciones: observacionesRecuperacionEdit.trim() || undefined
-      });
-
-      toast.success('Recuperación actualizada');
-      setEditandoRecuperacion(null);
-      await cargarCalificacion();
-      onSuccess();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al actualizar recuperación');
-    } finally {
-      setIsUpdatingRecuperacion(false);
-    }
+    actualizarRecuperacion(
+      { id, data: { nota_recuperacion: nota, observaciones: observacionesRecuperacionEdit.trim() || undefined } },
+      {
+        onSuccess: () => {
+          setEditandoRecuperacion(null);
+          cargarCalificacion();
+          onSuccess();
+        }
+      }
+    );
   };
 
-  const handleEliminarRecuperacion = async (id: string, intento: number) => {
-    if (!confirm(`¿Eliminar el intento ${intento} de recuperación? Esta acción recalculará la nota final.`)) return;
+  const handleEliminarRecuperacion = () => {
+    if (!confirmarEliminarRecuperacion) return;
 
-    try {
-      setIsDeletingRecuperacion(true);
-      await recuperacionInsumoService.delete(id);
-      await cargarCalificacion();
-      onSuccess();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al eliminar recuperación');
-    } finally {
-      setIsDeletingRecuperacion(false);
-    }
+    eliminarRecuperacion(confirmarEliminarRecuperacion.id, {
+      onSuccess: () => {
+        setConfirmarEliminarRecuperacion(null);
+        cargarCalificacion();
+        onSuccess();
+      }
+    });
   };
 
   const formatearFecha = (fecha: string) => {
@@ -213,271 +210,248 @@ export function ModalDetalleCalificacion({
     if (!calificacion) return false;
     if (insumo_estado !== EstadoInsumo.ACTIVO) return false;
     if (Number(calificacion.nota_original) >= 10) return false;
+    const recuperaciones = historial?.recuperaciones || [];
     return recuperaciones.length < 2;
   };
 
+  const recuperaciones = historial?.recuperaciones || [];
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Detalle de Calificación</DialogTitle>
-          <DialogDescription>
-            Estudiante: <strong>{estudiante_nombre}</strong>
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalle de Calificación</DialogTitle>
+            <DialogDescription>
+              Estudiante: <strong>{estudiante_nombre}</strong>
+            </DialogDescription>
+          </DialogHeader>
 
-        {isLoading ? (
-          <div className="flex justify-center p-8">
-            <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-          </div>
-        ) : calificacion ? (
-          <div className="space-y-6">
-            {!puedeEditar && (
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  {insumo_estado === EstadoInsumo.PUBLICADO
-                    ? 'El insumo está publicado. Solicita al administrador que lo reactive para editar.'
-                    : insumo_estado === EstadoInsumo.CERRADO
-                      ? 'El insumo está cerrado. No se pueden realizar cambios.'
-                      : 'El insumo está en borrador.'}
-                </AlertDescription>
-              </Alert>
-            )}
+          {isLoading || isLoadingOne ? (
+            <div className="flex justify-center p-8">
+              <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+            </div>
+          ) : calificacion ? (
+            <div className="space-y-6">
+              {!puedeEditar && (
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    {isAdmin
+                      ? 'Como administrador, solo puedes visualizar. No puedes editar calificaciones.'
+                      : 'Este insumo ya está publicado o cerrado. No se pueden realizar cambios.'}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            {!isEditing ? (
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-center pb-2 border-b">
-                    <div>
-                      <div className="text-sm text-gray-600">Nota Original:</div>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                        <Calendar className="w-3 h-3" />
-                        <span>Creada: {formatearFecha(calificacion.createdAt)}</span>
+              {!isEditing ? (
+                <div className="space-y-4">
+                  <Card>
+                    <CardContent className="pt-6 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Nota Original</p>
+                          <p className="text-2xl font-bold text-gray-900">{calificacion.nota_original}/10</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Nota Final</p>
+                          <p className="text-2xl font-bold text-red-600">{calificacion.nota_final}/10</p>
+                        </div>
                       </div>
-                    </div>
-                    <span className="font-bold text-xl">{Number(calificacion.nota_original).toFixed(2)}</span>
-                  </div>
+
+                      {calificacion.observaciones && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-500 mb-1">Observaciones</p>
+                          <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-md">
+                            {calificacion.observaciones}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="text-xs text-gray-500">
+                        Calificada el: {formatearFecha(calificacion.createdAt)}
+                      </div>
+                    </CardContent>
+                  </Card>
 
                   {recuperaciones.length > 0 && (
-                    <div className="space-y-2 pt-2">
-                      <div className="text-sm font-semibold text-gray-700">Intentos de Recuperación:</div>
-                      {recuperaciones.map((rec) => (
-                        <div key={rec.id} className="bg-white border rounded-lg p-3">
-                          {editandoRecuperacion === rec.id ? (
-                            <div className="space-y-3">
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm font-semibold text-gray-700">Editar Intento {rec.intento}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={handleCancelarEditRecuperacion}
-                                  disabled={isUpdatingRecuperacion}
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
-                              </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold">Historial de Recuperaciones</h3>
+                        <Badge variant="secondary">{recuperaciones.length}/2 intentos</Badge>
+                      </div>
 
-                              <div>
-                                <label className="text-xs font-medium text-gray-600">Nota (0-10)</label>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  max="10"
-                                  step="0.01"
-                                  value={notaRecuperacionEdit}
-                                  onChange={(e) => setNotaRecuperacionEdit(e.target.value)}
-                                  className="mt-1"
-                                  disabled={isUpdatingRecuperacion}
-                                />
-                              </div>
-
-                              <div>
-                                <label className="text-xs font-medium text-gray-600">Observaciones</label>
-                                <Textarea
-                                  value={observacionesRecuperacionEdit}
-                                  onChange={(e) => setObservacionesRecuperacionEdit(e.target.value)}
-                                  rows={2}
-                                  className="mt-1"
-                                  disabled={isUpdatingRecuperacion}
-                                />
-                              </div>
-
-                              <Button
-                                onClick={() => handleGuardarRecuperacion(rec.id)}
-                                size="sm"
-                                disabled={isUpdatingRecuperacion}
-                                className="w-full bg-green-600 hover:bg-green-700"
-                              >
-                                {isUpdatingRecuperacion ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Save className="w-3 h-3 mr-2" />}
-                                Guardar Cambios
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-semibold">Intento {rec.intento}:</span>
-                                  <span className={`font-bold text-lg ${Number(rec.nota_recuperacion) >= 7 ? 'text-green-600' :
-                                    Number(rec.nota_recuperacion) >= 4 ? 'text-yellow-600' : 'text-red-600'
-                                    }`}>
-                                    {Number(rec.nota_recuperacion).toFixed(2)}
-                                  </span>
+                      {recuperaciones.map((rec: any) => (
+                        <Card key={rec.id} className="border-l-4 border-l-amber-500">
+                          <CardContent className="pt-4">
+                            {editandoRecuperacion === rec.id ? (
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="text-sm font-medium">Nota de Recuperación</label>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="10"
+                                    value={notaRecuperacionEdit}
+                                    onChange={(e) => setNotaRecuperacionEdit(e.target.value)}
+                                    placeholder="Ej: 8.5"
+                                  />
                                 </div>
-                                <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                                  <Calendar className="w-3 h-3" />
-                                  {formatearFecha(rec.createdAt)}
+                                <div>
+                                  <label className="text-sm font-medium">Observaciones</label>
+                                  <Textarea
+                                    value={observacionesRecuperacionEdit}
+                                    onChange={(e) => setObservacionesRecuperacionEdit(e.target.value)}
+                                    placeholder="Observaciones opcionales"
+                                    rows={2}
+                                  />
                                 </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() => handleGuardarRecuperacion(rec.id)}
+                                    disabled={isUpdatingRecuperacion}
+                                    size="sm"
+                                  >
+                                    {isUpdatingRecuperacion ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                    Guardar
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    onClick={handleCancelarEditRecuperacion}
+                                    disabled={isUpdatingRecuperacion}
+                                    size="sm"
+                                  >
+                                    <X className="w-4 h-4" />
+                                    Cancelar
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <Badge>Intento {rec.intento}</Badge>
+                                    <span className="font-bold text-lg">{rec.nota_recuperacion}/10</span>
+                                  </div>
+                                  {puedeEditar && (
+                                    <div className="flex gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleEditarRecuperacion(rec)}
+                                      >
+                                        <Edit className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setConfirmarEliminarRecuperacion({ id: rec.id, intento: rec.intento })}
+                                      >
+                                        <Trash2 className="w-4 h-4 text-red-600" />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+
                                 {rec.observaciones && (
-                                  <p className="text-sm text-gray-600 mt-1">{rec.observaciones}</p>
+                                  <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                                    {rec.observaciones}
+                                  </p>
                                 )}
-                              </div>
 
-                              {puedeEditar && (
-                                <div className="flex gap-1 ml-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleEditarRecuperacion(rec)}
-                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                    title="Editar recuperación"
-                                    disabled={isDeletingRecuperacion}
-                                  >
-                                    <Pencil className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleEliminarRecuperacion(rec.id, rec.intento)}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                    title="Eliminar recuperación"
-                                    disabled={isDeletingRecuperacion}
-                                  >
-                                    {isDeletingRecuperacion ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                                <p className="text-xs text-gray-500">
+                                  Registrado el: {formatearFecha(rec.createdAt)}
+                                </p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
                       ))}
                     </div>
                   )}
 
-                  {Number(calificacion.nota_final) !== Number(calificacion.nota_original) && (
-                    <div className="flex justify-between items-center pt-2 border-t">
-                      <div>
-                        <div className="text-sm text-gray-600">Nota Final (con recuperación):</div>
-                        <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                          <Calendar className="w-3 h-3" />
-                          <span>Actualizada: {formatearFecha(calificacion.updatedAt)}</span>
-                        </div>
+                  {puedeEditar && (
+                    <div className="flex justify-between gap-2 pt-4 border-t">
+                      <div className="flex gap-2">
+                        {recuperaciones.length === 0 && (
+                          <Button onClick={handleEditar} variant="outline">
+                            <Edit className="w-4 h-4 mr-2" />
+                            Editar Nota
+                          </Button>
+                        )}
+
+                        {puedeRecuperar() && (
+                          <Button
+                            onClick={() => setAbrirRecuperacion(true)}
+                            variant="outline"
+                            className="border-amber-500 text-amber-600 hover:bg-amber-50"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Agregar Recuperación
+                          </Button>
+                        )}
                       </div>
-                      <span className={`font-bold text-xl ${Number(calificacion.nota_final) >= 7 ? 'text-green-600' :
-                        Number(calificacion.nota_final) >= 4 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
-                        {Number(calificacion.nota_final).toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-
-                  {calificacion.observaciones && (
-                    <div className="pt-2 border-t">
-                      <p className="text-sm text-gray-600">
-                        <strong>Observaciones:</strong> {calificacion.observaciones}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {puedeEditar && (
-                  <div className="space-y-2">
-                    {puedeRecuperar() && !isAdmin && (
-                      <Button
-                        onClick={() => setAbrirRecuperacion(true)}
-                        className="w-full bg-orange-600 hover:bg-orange-700 cursor-pointer"
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Registrar Recuperación ({2 - recuperaciones.length} intento{recuperaciones.length === 1 ? '' : 's'} restante{recuperaciones.length === 1 ? '' : 's'})
-                      </Button>
-                    )}
-
-                    <div className="flex gap-2">
-                      {recuperaciones.length === 0 && (
-
-                        <Button
-                          onClick={handleEditar}
-                          className="flex-1 bg-blue-600 hover:bg-blue-700 cursor-pointer"
-
-                        >
-                          <Edit2 className="w-4 h-4 mr-2" />
-                          Editar Nota Original
-                        </Button>
-
-                      )}
 
                       <Button
-                        onClick={abrirConfirmacion}
-                        disabled={isDeleting}
                         variant="destructive"
-                        className="flex-1 cursor-pointer"
+                        onClick={() => setConfirmarEliminarCalificacion(true)}
                       >
-                        {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
-                        Eliminar
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Eliminar Calificación
                       </Button>
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Nota Original (0-10)</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="0.01"
-                    value={nuevaNota}
-                    onChange={(e) => setNuevaNota(e.target.value)}
-                    className="max-w-xs"
-                  />
+                  )}
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  <Card>
+                    <CardContent className="pt-6 space-y-4">
+                      <div>
+                        <label className="text-sm font-medium">Nueva Nota</label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="10"
+                          value={nuevaNota}
+                          onChange={(e) => setNuevaNota(e.target.value)}
+                          placeholder="Ej: 9.5"
+                          autoFocus
+                        />
+                      </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Observaciones (opcional)</label>
-                  <Textarea
-                    value={observaciones}
-                    onChange={(e) => setObservaciones(e.target.value)}
-                    placeholder="Comentarios sobre la calificación..."
-                    rows={3}
-                  />
+                      <div>
+                        <label className="text-sm font-medium">Observaciones</label>
+                        <Textarea
+                          value={observaciones}
+                          onChange={(e) => setObservaciones(e.target.value)}
+                          placeholder="Observaciones opcionales"
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <Button onClick={handleGuardar} disabled={isUpdating}>
+                          {isUpdating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                          Guardar Cambios
+                        </Button>
+                        <Button variant="outline" onClick={handleCancelar} disabled={isUpdating}>
+                          <X className="w-4 h-4 mr-2" />
+                          Cancelar
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
+              )}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleGuardar}
-                    disabled={isSaving}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                  >
-                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                    Guardar Cambios
-                  </Button>
-                  <Button
-                    onClick={handleCancelar}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        ) : null}
-      </DialogContent>
-
-      {abrirRecuperacion && calificacion && (
+      {/* Modal Recuperación */}
+      {abrirRecuperacion && (
         <ModalRecuperacion
           calificacion_insumo_id={calificacion_id}
           estudiante_nombre={estudiante_nombre}
@@ -494,6 +468,63 @@ export function ModalDetalleCalificacion({
           }}
         />
       )}
-    </Dialog>
+
+      {/* Confirmación Eliminar Calificación */}
+      <AlertDialog open={confirmarEliminarCalificacion} onOpenChange={setConfirmarEliminarCalificacion}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              ¿Eliminar calificación?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminará la calificación de <strong>{estudiante_nombre}</strong> y todas sus recuperaciones asociadas.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEliminarCalificacion}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirmación Eliminar Recuperación */}
+      <AlertDialog
+        open={!!confirmarEliminarRecuperacion}
+        onOpenChange={() => setConfirmarEliminarRecuperacion(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+              ¿Eliminar intento de recuperación?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminará el <strong>intento {confirmarEliminarRecuperacion?.intento}</strong> de recuperación.
+              La nota final se recalculará automáticamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingRecuperacion}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEliminarRecuperacion}
+              disabled={isDeletingRecuperacion}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {isDeletingRecuperacion ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

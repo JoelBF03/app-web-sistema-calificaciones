@@ -19,6 +19,7 @@ import { EstadoEstudiante, Role, TrimestreEstado } from '@/lib/types';
 import { useReportes } from '@/lib/hooks/useReportes';
 import { useQueryClient } from '@tanstack/react-query';
 import { BotonReporte } from '@/lib/components/features/reportes/BotonReporte';
+import { useCalificacionesBatch } from '@/lib/hooks/useCalificacionInsumo';
 
 interface TablaInsumosProps {
   materia_curso_id: string;
@@ -44,10 +45,15 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
     reactivarInsumo
   } = useInsumos(materia_curso_id, trimestre_id);
 
+  const {
+    calificacionesPorInsumo,
+    isLoading: loadingCalificaciones,
+    refetch: refetchCalificaciones
+  } = useCalificacionesBatch(materia_curso_id, trimestre_id);
+
   const [notasTemp, setNotasTemp] = useState<Record<string, Record<string, string>>>({});
   const [editandoInsumo, setEditandoInsumo] = useState<string | null>(null);
   const [nuevoNombre, setNuevoNombre] = useState('');
-  const [calificacionesPorInsumo, setCalificacionesPorInsumo] = useState<Record<string, any[]>>({});
   const [guardandoInsumo, setGuardandoInsumo] = useState<string | null>(null);
   const [insumoAEliminar, setInsumoAEliminar] = useState<any | null>(null);
   const [insumoAPublicar, setInsumoAPublicar] = useState<any | null>(null);
@@ -88,23 +94,6 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
       setIsAdmin(parsedUser.rol === Role.ADMIN);
     }
   }, []);
-
-  useEffect(() => {
-    const cargarCalificaciones = async () => {
-      for (const insumo of insumos) {
-        try {
-          const cals = await calificacionInsumoService.getByInsumo(insumo.id);
-          setCalificacionesPorInsumo(prev => ({ ...prev, [insumo.id]: cals }));
-        } catch (error) {
-          toast.error(`Error cargando calificaciones del insumo ${insumo.id}`);
-        }
-      }
-    };
-
-    if (insumos.length > 0) {
-      cargarCalificaciones();
-    }
-  }, [insumos]);
 
   const handleCrearInsumo = () => {
     const nuevoNumero = insumos.length + 1;
@@ -195,8 +184,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
 
     try {
       await publicarInsumo(insumoAPublicar.id);
-      const cals = await calificacionInsumoService.getByInsumo(insumoAPublicar.id);
-      setCalificacionesPorInsumo(prev => ({ ...prev, [insumoAPublicar.id]: cals }));
+      await refetchCalificaciones();
       setInsumoAPublicar(null);
       toast.success('Insumo publicado y bloqueado correctamente');
     } catch (error: any) {
@@ -209,12 +197,6 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
 
     try {
       await deleteInsumo(insumoAEliminar.id);
-
-      setCalificacionesPorInsumo(prev => {
-        const newState = { ...prev };
-        delete newState[insumoAEliminar.id];
-        return newState;
-      });
 
       setNotasTemp(prev => {
         const newState = { ...prev };
@@ -310,14 +292,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
   };
 
   const recargarCalificaciones = async () => {
-    for (const insumo of insumos) {
-      try {
-        const cals = await calificacionInsumoService.getByInsumo(insumo.id);
-        setCalificacionesPorInsumo(prev => ({ ...prev, [insumo.id]: cals }));
-      } catch (error) {
-        toast.error(`Error recargando calificaciones del insumo ${insumo.id}`);
-      }
-    }
+    await refetchCalificaciones();
   };
 
   if (loadingInsumos) {
@@ -498,7 +473,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                           </Button>
                         </div>
                       )}
-                      {isAdmin && insumo.estado === EstadoInsumo.PUBLICADO && (
+                      {insumo.estado === EstadoInsumo.PUBLICADO && (
                         <Button
                           onClick={() => reactivarInsumo(insumo.id)}
                           disabled={isReactivando}

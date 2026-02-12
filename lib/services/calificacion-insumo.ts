@@ -7,6 +7,16 @@ export const calificacionInsumoService = {
     return data;
   },
 
+  async getByMateriaCursoYTrimestre(
+    materia_curso_id: string,
+    trimestre_id: string
+  ): Promise<Record<string, CalificacionInsumo[]>> {
+    const { data } = await api.get(
+      `/calificacion-insumo/batch/materia-curso/${materia_curso_id}/trimestre/${trimestre_id}`
+    );
+    return data;
+  },
+
   async findOne(id: string): Promise<CalificacionInsumo> {
     const { data } = await api.get(`/calificacion-insumo/${id}`);
     return data;
