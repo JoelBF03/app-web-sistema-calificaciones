@@ -179,7 +179,7 @@ export function TablaExamen({ materia_curso_id, trimestre_id, estudiantes, porce
                           className={`w-full text-center border-2 ${esValida
                             ? notaNum >= 7
                               ? 'border-green-600 bg-green-50 text-green-700 font-bold focus-visible:ring-green-500'
-                              : notaNum >= 4
+                              : notaNum > 4
                                 ? 'border-yellow-600 bg-yellow-50 text-yellow-700 font-bold focus-visible:ring-yellow-500'
                                 : 'border-red-600 bg-red-50 text-red-700 font-bold focus-visible:ring-red-500'
                             : 'border-gray-500'

@@ -31,6 +31,14 @@ export function useMateriasDocente() {
 
       const materiasResponse = await materiaCursoService.getByDocente(docenteId);
       
+      // ✅ Si periodo es null, significa que no hay período activo (no es un error)
+      if (materiasResponse.periodo === null) {
+        setMateriasAsignadas([]);
+        setCursoTutor(null);
+        setIsLoading(false);
+        return; // Salir sin mostrar error
+      }
+      
       const materiasCuantitativas = (materiasResponse.materias || []).filter(
         (mc) => mc.materia.tipoCalificacion !== TipoCalificacion.CUALITATIVA
       );
@@ -42,7 +50,6 @@ export function useMateriasDocente() {
       setCursoTutor(cursoComoTutor || null);
 
     } catch (err: any) {
-      
       let errorMsg = 'Error al cargar datos';
       
       if (err.response?.status === 404) {

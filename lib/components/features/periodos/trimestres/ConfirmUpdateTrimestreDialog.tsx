@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/periodos/trimestres/ConfirmUpdateTrimestreDialog.tsx
 'use client';
 
 import {
@@ -23,7 +22,8 @@ import {
   FileEdit,
   Lock,
   Trash2,
-  RotateCcw
+  RotateCcw,
+  Loader2
 } from 'lucide-react';
 import { Trimestre, TrimestreEstado } from '@/lib/types/periodo.types';
 
@@ -38,6 +38,7 @@ interface ConfirmUpdateTrimestreDialogProps {
     estado?: TrimestreEstado;
   };
   originalData: Trimestre;
+  isLoading?: boolean; // 🆕 NUEVO PROP
 }
 
 export default function ConfirmUpdateTrimestreDialog({
@@ -46,7 +47,8 @@ export default function ConfirmUpdateTrimestreDialog({
   onConfirm,
   trimestre,
   changes,
-  originalData
+  originalData,
+  isLoading = false // 🆕 VALOR DEFAULT
 }: ConfirmUpdateTrimestreDialogProps) {
   
   const formatDate = (dateString: string) => {
@@ -190,6 +192,29 @@ export default function ConfirmUpdateTrimestreDialog({
   const estadoCambio = changes.estado && changes.estado !== originalData.estado;
   const estadoInfo = estadoCambio ? getEstadoChangeMessage(originalData.estado, changes.estado!) : null;
 
+  // 🆕 Mensaje de carga personalizado según la acción
+  const getLoadingMessage = () => {
+    if (!estadoCambio) return 'Guardando cambios...';
+    
+    const from = originalData.estado;
+    const to = changes.estado!;
+
+    if (from === TrimestreEstado.PENDIENTE && to === TrimestreEstado.ACTIVO) {
+      return 'Activando trimestre...';
+    }
+    if (from === TrimestreEstado.ACTIVO && to === TrimestreEstado.FINALIZADO) {
+      return 'Finalizando trimestre y generando promedios...';
+    }
+    if (from === TrimestreEstado.FINALIZADO && to === TrimestreEstado.ACTIVO) {
+      return 'Reactivando trimestre y eliminando promedios...';
+    }
+    if (from === TrimestreEstado.ACTIVO && to === TrimestreEstado.PENDIENTE) {
+      return 'Pausando trimestre...';
+    }
+
+    return 'Procesando cambios...';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
@@ -301,22 +326,49 @@ export default function ConfirmUpdateTrimestreDialog({
               </Alert>
             </>
           )}
+
+          {/* 🆕 Mensaje de carga */}
+          {isLoading && (
+            <Alert className="border-2 border-blue-400 bg-blue-50 animate-pulse">
+              <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+              <AlertDescription>
+                <p className="font-semibold text-blue-900 mb-1">
+                  {getLoadingMessage()}
+                </p>
+                <p className="text-sm text-blue-700">
+                  Por favor espera, esto puede tomar unos momentos...
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         <div className="flex gap-3 pt-4">
-          <Button variant="outline" onClick={onClose} className="flex-1 border-2">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            className="flex-1 border-2"
+            disabled={isLoading} // 🆕 Deshabilitar mientras carga
+          >
             Cancelar
           </Button>
           <Button 
             onClick={onConfirm} 
-            disabled={!!(estadoInfo && !estadoInfo.allowed)}
+            disabled={!!(estadoInfo && !estadoInfo.allowed) || isLoading} // 🆕 Deshabilitar mientras carga
             className={`flex-1 shadow-md ${
               estadoInfo && !estadoInfo.allowed
                 ? 'bg-gray-400 cursor-not-allowed'
+                : isLoading
+                ? 'bg-blue-400 cursor-wait'
                 : 'bg-blue-600 hover:bg-blue-700'
             }`}
           >
-            {estadoInfo && !estadoInfo.allowed ? (
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Procesando...
+              </>
+            ) : estadoInfo && !estadoInfo.allowed ? (
               <>
                 <XCircle className="mr-2 h-4 w-4" />
                 No Permitido

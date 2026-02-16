@@ -1,4 +1,3 @@
-// nextjs-frontend/lib/components/features/periodos/trimestres/TrimestreCard.tsx
 'use client';
 
 import { useState } from 'react';
@@ -31,7 +30,7 @@ import { ModalErroresCierreTrimestre } from './ModalErroresCierreTrimestre';
 
 interface TrimestreCardProps {
   trimestre: Trimestre;
-  onUpdate: (trimestreId: string, data: any) => void;
+  onUpdate: (trimestreId: string, data: any) => Promise<void>; // 🆕 Cambiar a Promise
   onReload?: () => void;
   isPeriodoFinalizado?: boolean;
 }
@@ -39,6 +38,7 @@ interface TrimestreCardProps {
 export default function TrimestreCard({ trimestre, onUpdate, onReload, isPeriodoFinalizado = false }: TrimestreCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false); // 🆕 Estado de carga
   const [editData, setEditData] = useState({
     fechaInicio: trimestre.fechaInicio,
     fechaFin: trimestre.fechaFin,
@@ -157,6 +157,8 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload, isPeriodo
   };
 
   const handleConfirmUpdate = async () => {
+    setIsUpdating(true); // 🆕 Activar estado de carga
+
     try {
       const changes = getChanges();
       await onUpdate(trimestre.id, changes);
@@ -184,6 +186,8 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload, isPeriodo
       }
 
       setShowConfirmDialog(false);
+    } finally {
+      setIsUpdating(false); // 🆕 Desactivar estado de carga
     }
   };
 
@@ -218,7 +222,7 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload, isPeriodo
 
             <div className="flex items-center gap-2">
               {getEstadoBadge(isEditing ? editData.estado : trimestre.estado)}
-              {!isEditing && !isPeriodoFinalizado &&(
+              {!isEditing && !isPeriodoFinalizado && !isUpdating && ( // 🆕 Deshabilitar mientras actualiza
                 <Button
                   variant="ghost"
                   size="sm"
@@ -279,11 +283,11 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload, isPeriodo
             <div className="space-y-2">
               <Label className="text-xs flex items-center gap-1 text-gray-600 font-semibold">
                 <Activity className="h-3 w-3" />
-                Estado del Trimestre
+                Estado
               </Label>
               <Select
                 value={editData.estado}
-                onValueChange={(value) => setEditData({ ...editData, estado: value as TrimestreEstado })}
+                onValueChange={(value: TrimestreEstado) => setEditData({ ...editData, estado: value })}
               >
                 <SelectTrigger className="border-2">
                   <SelectValue />
@@ -315,11 +319,20 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload, isPeriodo
           {/* Botones */}
           {isEditing && (
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={handleCancel} className="flex-1 border-2 hover:bg-gray-50">
+              <Button 
+                variant="outline" 
+                onClick={handleCancel} 
+                className="flex-1 border-2 hover:bg-gray-50"
+                disabled={isUpdating} // 🆕 Deshabilitar mientras actualiza
+              >
                 <X className="mr-2 h-4 w-4" />
                 Cancelar
               </Button>
-              <Button onClick={handleSave} className="flex-1 bg-blue-600 hover:bg-blue-700 shadow-md">
+              <Button 
+                onClick={handleSave} 
+                className="flex-1 bg-blue-600 hover:bg-blue-700 shadow-md"
+                disabled={isUpdating} // 🆕 Deshabilitar mientras actualiza
+              >
                 <Save className="mr-2 h-4 w-4" />
                 Guardar
               </Button>
@@ -340,11 +353,12 @@ export default function TrimestreCard({ trimestre, onUpdate, onReload, isPeriodo
 
       <ConfirmUpdateTrimestreDialog
         isOpen={showConfirmDialog}
-        onClose={() => setShowConfirmDialog(false)}
+        onClose={() => !isUpdating && setShowConfirmDialog(false)} // 🆕 Solo permitir cerrar si no está cargando
         onConfirm={handleConfirmUpdate}
         trimestre={trimestre}
         changes={getChanges()}
         originalData={trimestre}
+        isLoading={isUpdating} // 🆕 Pasar estado de carga
       />
     </>
   );

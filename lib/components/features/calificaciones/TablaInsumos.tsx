@@ -57,7 +57,6 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
   const [guardandoInsumo, setGuardandoInsumo] = useState<string | null>(null);
   const [insumoAEliminar, setInsumoAEliminar] = useState<any | null>(null);
   const [insumoAPublicar, setInsumoAPublicar] = useState<any | null>(null);
-  const [inicializado, setInicializado] = useState(false);
   const { descargarReporteInsumos } = useReportes();
   const [usuario, setUsuario] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -76,15 +75,6 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
     estudiante_nombre: string;
     insumo_estado: string;
   } | null>(null);
-
-  useEffect(() => {
-    if (!loadingInsumos && insumos.length === 0 && !inicializado) {
-      for (let i = 1; i <= 3; i++) {
-        createInsumo({ materia_curso_id, trimestre_id, nombre: `Insumo ${i}` });
-      }
-      setInicializado(true);
-    }
-  }, [loadingInsumos, insumos.length, inicializado]);
 
   useEffect(() => {
     const user = localStorage.getItem('usuario');
@@ -588,7 +578,7 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
                                 className={`w-full text-center border-2 ${esValida
                                   ? notaNum >= 7
                                     ? 'border-green-600 bg-green-50 text-green-700 font-bold focus-visible:ring-green-500' :
-                                    notaNum >= 4
+                                    notaNum > 4
                                       ? 'border-yellow-600 bg-yellow-50 text-yellow-700 font-bold focus-visible:ring-yellow-500' :
                                       'border-red-600 bg-red-50 text-red-700 font-bold focus-visible:ring-red-500'
                                   : 'border-gray-500'

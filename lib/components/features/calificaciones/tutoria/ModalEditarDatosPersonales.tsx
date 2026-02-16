@@ -43,12 +43,137 @@ export function ModalEditarDatosPersonales({
     representante_parentesco: estudiante.representante_parentesco || '',
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // 🆕 Validación para nombres (solo letras, espacios, tildes, ñ)
+  const validarNombre = (value: string) => {
+    return /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(value);
+  };
+
+  // 🆕 Validación para cédula (solo números, 10 dígitos)
+  const validarCedula = (value: string) => {
+    return /^[A-Za-z0-9]{1,13}$/.test(value);
+  };
+
+  // 🆕 Validación para teléfono (solo números, 10 dígitos)
+  const validarTelefono = (value: string) => {
+    return /^\d{0,10}$/.test(value);
+  };
+
+  // 🆕 Validación para email
+  const validarEmail = (value: string) => {
+    if (!value) return true; // Opcional
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
+  };
+
+  // 🆕 Validación para fecha de nacimiento (no puede ser futura)
+  const validarFechaNacimiento = (value: string) => {
+    if (!value) return true; // Opcional
+    const fecha = new Date(value);
+    const hoy = new Date();
+    return fecha <= hoy;
+  };
+
   const handleChange = (field: string, value: any) => {
+    let newErrors = { ...errors };
+
+    // Validaciones específicas por campo
+    if (field === 'padre_nombre' || field === 'padre_apellido' || 
+        field === 'madre_nombre' || field === 'madre_apellido' || 
+        field === 'representante_nombre' || field === 'representante_apellido' ||
+        field === 'representante_parentesco') {
+      
+      if (!validarNombre(value)) {
+        newErrors[field] = 'Solo se permiten letras y espacios';
+        setErrors(newErrors);
+        return; // No actualizar el campo
+      } else {
+        delete newErrors[field];
+      }
+    }
+
+    if (field === 'padre_cedula' || field === 'madre_cedula') {
+      if (!validarCedula(value)) {
+        newErrors[field] = 'Solo se permiten números (máx. 10 dígitos)';
+        setErrors(newErrors);
+        return;
+      } else {
+        delete newErrors[field];
+      }
+    }
+
+    if (field === 'representante_telefono' || field === 'representante_telefono_auxiliar') {
+      if (!validarTelefono(value)) {
+        newErrors[field] = 'Solo se permiten números (máx. 10 dígitos)';
+        setErrors(newErrors);
+        return;
+      } else {
+        delete newErrors[field];
+      }
+    }
+
+    if (field === 'representante_correo') {
+      if (value && !validarEmail(value)) {
+        newErrors[field] = 'Email inválido';
+      } else {
+        delete newErrors[field];
+      }
+    }
+
+    if (field === 'fecha_de_nacimiento') {
+      if (value && !validarFechaNacimiento(value)) {
+        newErrors[field] = 'La fecha no puede ser futura';
+      } else {
+        delete newErrors[field];
+      }
+    }
+
+    setErrors(newErrors);
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const validarFormulario = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    // Validar email si está presente
+    if (formData.representante_correo && !validarEmail(formData.representante_correo)) {
+      newErrors.representante_correo = 'Email inválido';
+    }
+
+    // Validar fecha de nacimiento si está presente
+    if (formData.fecha_de_nacimiento && !validarFechaNacimiento(formData.fecha_de_nacimiento)) {
+      newErrors.fecha_de_nacimiento = 'La fecha no puede ser futura';
+    }
+
+    // Validar longitud de cédulas
+    if (formData.padre_cedula && formData.padre_cedula.length !== 13) {
+      newErrors.padre_cedula = 'La cédula debe tener 13 dígitos';
+    }
+    if (formData.madre_cedula && formData.madre_cedula.length !== 13) {
+      newErrors.madre_cedula = 'La cédula debe tener 13 dígitos';
+    }
+
+    // Validar longitud de teléfonos
+    if (formData.representante_telefono && formData.representante_telefono.length !== 10) {
+      newErrors.representante_telefono = 'El teléfono debe tener 10 dígitos';
+    }
+    if (formData.representante_telefono_auxiliar && formData.representante_telefono_auxiliar.length !== 10) {
+      newErrors.representante_telefono_auxiliar = 'El teléfono debe tener 10 dígitos';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validarFormulario()) {
+      toast.error('Por favor corrige los errores en el formulario');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -130,7 +255,11 @@ export function ModalEditarDatosPersonales({
                     type="date"
                     value={formData.fecha_de_nacimiento}
                     onChange={(e) => handleChange('fecha_de_nacimiento', e.target.value)}
+                    className={errors.fecha_de_nacimiento ? 'border-red-500' : ''}
                   />
+                  {errors.fecha_de_nacimiento && (
+                    <p className="text-xs text-red-600">{errors.fecha_de_nacimiento}</p>
+                  )}
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>Dirección</Label>
@@ -168,24 +297,37 @@ export function ModalEditarDatosPersonales({
                     <Input
                       value={formData.padre_nombre}
                       onChange={(e) => handleChange('padre_nombre', e.target.value)}
-                      placeholder="Nombre del padre"
+                      placeholder="Juan Carlos"
+                      className={errors.padre_nombre ? 'border-red-500' : ''}
                     />
+                    {errors.padre_nombre && (
+                      <p className="text-xs text-red-600">{errors.padre_nombre}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Apellido</Label>
                     <Input
                       value={formData.padre_apellido}
                       onChange={(e) => handleChange('padre_apellido', e.target.value)}
-                      placeholder="Apellido del padre"
+                      placeholder="García Pérez"
+                      className={errors.padre_apellido ? 'border-red-500' : ''}
                     />
+                    {errors.padre_apellido && (
+                      <p className="text-xs text-red-600">{errors.padre_apellido}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label>Cédula</Label>
+                    <Label>Cédula/Pasaporte </Label>
                     <Input
                       value={formData.padre_cedula}
                       onChange={(e) => handleChange('padre_cedula', e.target.value)}
-                      placeholder="Cédula del padre"
+                      placeholder="1234567890"
+                      maxLength={13}
+                      className={errors.padre_cedula ? 'border-red-500' : ''}
                     />
+                    {errors.padre_cedula && (
+                      <p className="text-xs text-red-600">{errors.padre_cedula}</p>
+                    )}
                   </div>
                 </div>
 
@@ -197,24 +339,37 @@ export function ModalEditarDatosPersonales({
                     <Input
                       value={formData.madre_nombre}
                       onChange={(e) => handleChange('madre_nombre', e.target.value)}
-                      placeholder="Nombre de la madre"
+                      placeholder="María José"
+                      className={errors.madre_nombre ? 'border-red-500' : ''}
                     />
+                    {errors.madre_nombre && (
+                      <p className="text-xs text-red-600">{errors.madre_nombre}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Apellido</Label>
                     <Input
                       value={formData.madre_apellido}
                       onChange={(e) => handleChange('madre_apellido', e.target.value)}
-                      placeholder="Apellido de la madre"
+                      placeholder="Macías López"
+                      className={errors.madre_apellido ? 'border-red-500' : ''}
                     />
+                    {errors.madre_apellido && (
+                      <p className="text-xs text-red-600">{errors.madre_apellido}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label>Cédula</Label>
+                    <Label>Cédula/Pasaporte </Label>
                     <Input
                       value={formData.madre_cedula}
                       onChange={(e) => handleChange('madre_cedula', e.target.value)}
-                      placeholder="Cédula de la madre"
+                      placeholder="1234567890"
+                      maxLength={13}
+                      className={errors.madre_cedula ? 'border-red-500' : ''}
                     />
+                    {errors.madre_cedula && (
+                      <p className="text-xs text-red-600">{errors.madre_cedula}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -236,32 +391,50 @@ export function ModalEditarDatosPersonales({
                   <Input
                     value={formData.representante_nombre}
                     onChange={(e) => handleChange('representante_nombre', e.target.value)}
-                    placeholder="Nombre del representante"
+                    placeholder="María José"
+                    className={errors.representante_nombre ? 'border-red-500' : ''}
                   />
+                  {errors.representante_nombre && (
+                    <p className="text-xs text-red-600">{errors.representante_nombre}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Apellido</Label>
                   <Input
                     value={formData.representante_apellido}
                     onChange={(e) => handleChange('representante_apellido', e.target.value)}
-                    placeholder="Apellido del representante"
+                    placeholder="Macías López"
+                    className={errors.representante_apellido ? 'border-red-500' : ''}
                   />
+                  {errors.representante_apellido && (
+                    <p className="text-xs text-red-600">{errors.representante_apellido}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Teléfono Principal</Label>
+                  <Label>Teléfono Principal (10 dígitos)</Label>
                   <Input
                     value={formData.representante_telefono}
                     onChange={(e) => handleChange('representante_telefono', e.target.value)}
-                    placeholder="09XXXXXXXX"
+                    placeholder="0987654321"
+                    maxLength={10}
+                    className={errors.representante_telefono ? 'border-red-500' : ''}
                   />
+                  {errors.representante_telefono && (
+                    <p className="text-xs text-red-600">{errors.representante_telefono}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Teléfono Auxiliar</Label>
+                  <Label>Teléfono Auxiliar (10 dígitos)</Label>
                   <Input
                     value={formData.representante_telefono_auxiliar}
                     onChange={(e) => handleChange('representante_telefono_auxiliar', e.target.value)}
-                    placeholder="09XXXXXXXX"
+                    placeholder="0987654321"
+                    maxLength={10}
+                    className={errors.representante_telefono_auxiliar ? 'border-red-500' : ''}
                   />
+                  {errors.representante_telefono_auxiliar && (
+                    <p className="text-xs text-red-600">{errors.representante_telefono_auxiliar}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Correo</Label>
@@ -270,7 +443,11 @@ export function ModalEditarDatosPersonales({
                     value={formData.representante_correo}
                     onChange={(e) => handleChange('representante_correo', e.target.value)}
                     placeholder="representante@gmail.com"
+                    className={errors.representante_correo ? 'border-red-500' : ''}
                   />
+                  {errors.representante_correo && (
+                    <p className="text-xs text-red-600">{errors.representante_correo}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Parentesco</Label>
@@ -278,7 +455,11 @@ export function ModalEditarDatosPersonales({
                     value={formData.representante_parentesco}
                     onChange={(e) => handleChange('representante_parentesco', e.target.value)}
                     placeholder="Ej: Padre, Madre, Tío, Abuelo"
+                    className={errors.representante_parentesco ? 'border-red-500' : ''}
                   />
+                  {errors.representante_parentesco && (
+                    <p className="text-xs text-red-600">{errors.representante_parentesco}</p>
+                  )}
                 </div>
               </div>
             </TabsContent>
@@ -290,8 +471,8 @@ export function ModalEditarDatosPersonales({
             </Button>
             <Button
               type="submit"
-              disabled={loading}
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white cursor-pointer"
+              disabled={loading || Object.keys(errors).length > 0}
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

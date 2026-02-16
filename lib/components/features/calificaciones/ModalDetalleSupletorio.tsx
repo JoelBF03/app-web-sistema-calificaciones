@@ -39,12 +39,16 @@ export function ModalDetalleSupletorio({
   const [nuevaNota, setNuevaNota] = useState('');
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   
+  // 🔥 CONTROL: Solo permitir edición cuando esté ACTIVADO
   const puedeEditar = estadoSupletorio === EstadoSupletorio.ACTIVADO;
   const supletoriosCerrados = estadoSupletorio === EstadoSupletorio.CERRADO;
+  const supletoriosPendientes = estadoSupletorio === EstadoSupletorio.PENDIENTE;
 
   useEffect(() => {
     if (open) {
       cargarPromedio();
+      // Resetear modo edición al abrir
+      setIsEditing(false);
     }
   }, [open, promedio_id]);
 
@@ -62,6 +66,11 @@ export function ModalDetalleSupletorio({
   };
 
   const handleEditar = () => {
+    // 🔥 Doble validación antes de permitir edición
+    if (!puedeEditar) {
+      toast.error('No puedes editar. Los supletorios deben estar ACTIVADOS.');
+      return;
+    }
     setIsEditing(true);
   };
 
@@ -86,6 +95,13 @@ export function ModalDetalleSupletorio({
   };
 
   const handleGuardar = async () => {
+    // 🔥 Validación extra antes de enviar al backend
+    if (!puedeEditar) {
+      toast.error('No puedes guardar. Los supletorios deben estar ACTIVADOS.');
+      setMostrarConfirmacion(false);
+      return;
+    }
+
     try {
       setIsSaving(true);
       setMostrarConfirmacion(false);
@@ -136,20 +152,16 @@ export function ModalDetalleSupletorio({
           </div>
         ) : (
           <div className="space-y-6">
-            {supletoriosCerrados && (
-              <Alert className="bg-yellow-50 border-yellow-200">
-                <Lock className="h-4 w-4 text-yellow-600" />
-                <AlertDescription className="text-yellow-800">
-                  <strong>Período de supletorios cerrado.</strong> Solo puedes editar mediante este modal de detalle.
-                </AlertDescription>
-              </Alert>
-            )}
 
-            {!puedeEditar && !supletoriosCerrados && (
-              <Alert className="bg-gray-50 border-gray-200">
-                <Info className="h-4 w-4 text-gray-600" />
+            {/* 🔥 ALERTA: Estado PENDIENTE - No disponible */}
+            {supletoriosPendientes && (
+              <Alert className="bg-gray-50 border-2 border-gray-300">
+                <Info className="h-5 w-5 text-gray-600" />
                 <AlertDescription className="text-gray-800">
-                  Los supletorios no están activos. No se pueden realizar cambios.
+                  <p className="font-semibold">Supletorios PENDIENTES</p>
+                  <p className="text-sm mt-1">
+                    El administrador debe activar la fase de supletorios primero.
+                  </p>
                 </AlertDescription>
               </Alert>
             )}
@@ -271,24 +283,42 @@ export function ModalDetalleSupletorio({
                         </Badge>
                       </div>
 
-                      {(puedeEditar || supletoriosCerrados) && (
+                      {/* 🔥 SOLO MOSTRAR BOTÓN DE EDITAR SI EL ESTADO ES ACTIVADO */}
+                      {puedeEditar && (
                         <Button
                           onClick={handleEditar}
                           variant="outline"
                           className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
                         >
                           <Edit className="h-4 w-4 mr-2" />
-                          {supletoriosCerrados ? 'Corregir Nota (Modo Detalle)' : 'Editar Nota'}
+                          Editar Nota
                         </Button>
                       )}
                     </>
                   ) : (
-                    <Alert className="bg-gray-50 border-gray-200">
-                      <Info className="h-4 w-4 text-gray-600" />
-                      <AlertDescription className="text-gray-700">
-                        No se ha registrado nota de supletorio aún.
-                      </AlertDescription>
-                    </Alert>
+                    <>
+                      <Alert className="bg-gray-50 border-gray-200">
+                        <Info className="h-4 w-4 text-gray-600" />
+                        <AlertDescription className="text-gray-700">
+                          No se ha registrado nota de supletorio aún.
+                        </AlertDescription>
+                      </Alert>
+
+                      {/* 🔥 Si está PENDIENTE o CERRADO, explicar por qué no hay botón */}
+                      {!puedeEditar && (
+                        <Alert className="bg-red-50 border-red-200">
+                          <Lock className="h-4 w-4 text-red-600" />
+                          <AlertDescription className="text-red-800">
+                            {supletoriosCerrados && (
+                              <p>El período de supletorios está <strong>CERRADO</strong>. No se puede registrar la nota.</p>
+                            )}
+                            {supletoriosPendientes && (
+                              <p>Los supletorios están <strong>PENDIENTES</strong> de activación.</p>
+                            )}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </>
                   )}
                 </div>
               )}

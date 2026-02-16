@@ -268,8 +268,15 @@ export function ModalDetalleCalificacion({
                         </div>
                       )}
 
-                      <div className="text-xs text-gray-500">
-                        Calificada el: {formatearFecha(calificacion.createdAt)}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Calificado el:</p>
+                          <p className="text-sm font-medium text-gray-500 mb-1">{formatearFecha(calificacion.createdAt)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Editado el:</p>
+                          <p className="text-sm font-medium text-gray-500 mb-1">{formatearFecha(calificacion.updatedAt)}</p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

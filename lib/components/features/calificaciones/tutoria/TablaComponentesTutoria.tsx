@@ -1,17 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { BookOpen, Loader2, Save } from 'lucide-react';
-import { ModalEditarDatosPersonales } from './ModalEditarDatosPersonales';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Loader2, Save, BookOpen, User, Zap } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/lib/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/lib/components/ui/table';
+import { Alert, AlertDescription } from '@/lib/components/ui/alert';
+import { Badge } from '@/lib/components/ui/badge';
 import { toast } from 'sonner';
-import { Role, TrimestreEstado } from '@/lib/types';
-import { useComponentesCualitativos, useCalificacionCualitativa } from '@/lib/hooks/useCalificacionCualitativa';
+import { useCalificacionCualitativa, useComponentesCualitativos } from '@/lib/hooks/useCalificacionCualitativa';
+import { useCalificacionRapida } from '@/lib/hooks/useCalificacionRapida';
 import { CalificacionComponente, CalificarMasivoDto } from '@/lib/types/calificaciones.types';
-import { NivelCurso } from '@/lib/types/curso.types';
+import { NivelCurso, TrimestreEstado } from '@/lib/types';
 import { NivelEducativo } from '@/lib/types/materia.types';
+import { Role } from '@/lib/types/usuario.types';
+import { ModalEditarDatosPersonales } from '../tutoria/ModalEditarDatosPersonales';
+import { PanelCalificacionRapida } from './PanelCalificacionRapida';
+import { TablaCalificacionManual } from './TablaCalificacionManual';
 
 interface TablaComponentesTutoriaProps {
   curso_id: string;
@@ -32,6 +35,8 @@ const getNivelEducativo = (nivel: NivelCurso): NivelEducativo => {
 
 const SIN_CALIFICAR = '__SIN_CALIFICAR__';
 
+type ModoCalificacion = 'manual' | 'rapido';
+
 export function TablaComponentesTutoria({
   curso_id,
   trimestre_id,
@@ -50,14 +55,35 @@ export function TablaComponentesTutoria({
     isSaving
   } = useCalificacionCualitativa(curso_id, trimestre_id);
 
+  // Estados compartidos
   const [notasOriginales, setNotasOriginales] = useState<Record<string, Record<string, CalificacionComponente | null>>>({});
   const [notasTemp, setNotasTemp] = useState<Record<string, Record<string, CalificacionComponente | null>>>({});
   const [cambiosPendientes, setCambiosPendientes] = useState<Set<string>>(new Set());
+  const [isAdmin, setIsAdmin] = useState(false);
   const [modalEdicion, setModalEdicion] = useState<{
     open: boolean;
     estudiante: any;
   } | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Estado para modo de calificación
+  const [modoCalificacion, setModoCalificacion] = useState<ModoCalificacion>('manual');
+
+  // Hook personalizado para modo rápido
+  const {
+    componenteSeleccionado,
+    calificacionSeleccionada,
+    estudiantesSeleccionados,
+    setComponenteSeleccionado,
+    setCalificacionSeleccionada,
+    toggleEstudiante,
+    toggleTodos,
+    aplicarCalificacion,
+    resetSelecciones,
+  } = useCalificacionRapida({
+    notasOriginales,
+    setNotasTemp,
+    setCambiosPendientes,
+  });
 
   useEffect(() => {
     const user = localStorage.getItem('usuario');
@@ -67,22 +93,37 @@ export function TablaComponentesTutoria({
     }
   }, []);
 
-  useEffect(() => {
-    if (calificaciones.length > 0) {
-      const notasIniciales: Record<string, Record<string, CalificacionComponente | null>> = {};
-
-      calificaciones.forEach((cal) => {
-        if (!notasIniciales[cal.estudiante_id]) {
-          notasIniciales[cal.estudiante_id] = {};
-        }
-        notasIniciales[cal.estudiante_id][cal.materia_id] = cal.calificacion;
-      });
-
-      setNotasOriginales(notasIniciales);
-      setNotasTemp(notasIniciales);
-      setCambiosPendientes(new Set());
+  // Optimización: Memoizar el procesamiento de calificaciones iniciales
+  const notasInicialesCalculadas = useMemo(() => {
+    if (calificaciones.length === 0) {
+      return {};
     }
+
+    const notasIniciales: Record<string, Record<string, CalificacionComponente | null>> = {};
+
+    calificaciones.forEach((cal) => {
+      if (!notasIniciales[cal.estudiante_id]) {
+        notasIniciales[cal.estudiante_id] = {};
+      }
+      notasIniciales[cal.estudiante_id][cal.materia_id] = cal.calificacion;
+    });
+
+    return notasIniciales;
   }, [calificaciones]);
+
+  // Simplificado: useEffect solo actualiza estado
+  useEffect(() => {
+    setNotasOriginales(notasInicialesCalculadas);
+    setNotasTemp(notasInicialesCalculadas);
+    setCambiosPendientes(new Set());
+  }, [notasInicialesCalculadas]);
+
+  // Resetear selecciones al cambiar modo
+  useEffect(() => {
+    if (modoCalificacion === 'rapido') {
+      resetSelecciones();
+    }
+  }, [modoCalificacion, resetSelecciones]);
 
   const handleNotaChange = (estudianteId: string, materiaId: string, value: string) => {
     const nuevaCalificacion = value === SIN_CALIFICAR ? null : (value as CalificacionComponente);
@@ -161,6 +202,7 @@ export function TablaComponentesTutoria({
 
   return (
     <div className="space-y-4">
+      {/* Header con toggle de modo */}
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border-2 border-purple-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -170,132 +212,116 @@ export function TablaComponentesTutoria({
             <div>
               <h3 className="text-lg font-bold text-gray-900">Componentes Cualitativos</h3>
               <p className="text-sm text-gray-600">
-                {componentes.length} componente(s) para {nivelEducativo}
                 {cambiosPendientes.size > 0 && (
-                  <span className="ml-2 text-orange-600 font-semibold">
-                    • {cambiosPendientes.size} cambio(s) pendiente(s)
-                  </span>
+                  <>
+                    <Badge variant="destructive" className="ml-2">{cambiosPendientes.size} cambio(s) pendiente(s)</Badge>
+                    <span className="text-xs text-orange-600 ml-2">
+                      → Presiona "Guardar" para aplicar cambios
+                    </span>
+                  </>
                 )}
               </p>
             </div>
           </div>
-          {!estadoFinalizado && (
-            <Button
-              onClick={handleGuardar}
-              disabled={isSaving || cambiosPendientes.size === 0 || isAdmin}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Guardando...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Guardar {cambiosPendientes.size > 0 ? `(${cambiosPendientes.size})` : 'Cambios'}
-                </>
-              )}
-            </Button>
-          )}
+
+          <div className="flex items-center gap-3">
+            {/* Toggle Modo de Calificación */}
+            <div className="flex items-center gap-2 bg-white rounded-lg p-2 border-2 border-purple-300">
+              <Button
+                variant={modoCalificacion === 'manual' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setModoCalificacion('manual')}
+                className={modoCalificacion === 'manual' 
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                  : 'hover:bg-purple-50'}
+              >
+                <User className="w-4 h-4 mr-2" />
+                Manual
+              </Button>
+              <Button
+                variant={modoCalificacion === 'rapido' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setModoCalificacion('rapido')}
+                className={modoCalificacion === 'rapido' 
+                  ? 'bg-pink-600 hover:bg-pink-700 text-white' 
+                  : 'hover:bg-pink-50'}
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Rápido
+              </Button>
+            </div>
+
+            {!estadoFinalizado && (
+              <Button
+                onClick={handleGuardar}
+                disabled={isSaving || cambiosPendientes.size === 0 || isAdmin}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Guardando ({cambiosPendientes.size})
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Guardar ({cambiosPendientes.size})
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border-2 border-gray-400 bg-card">
-        <Table className="border-collapse">
-          <TableHeader>
-            <TableRow className="bg-gray-100 border-b-2 border-gray-400">
-              <TableHead className="text-center w-[60px] min-w-[60px] font-semibold text-gray-900 px-3 border-r-2 border-gray-400">
-                #
-              </TableHead>
-              <TableHead className="w-[300px] min-w-[300px] max-w-[300px] font-semibold text-gray-900 px-4 border-r-2 border-gray-400">
-                Estudiante
-              </TableHead>
-              {componentes.map((componente) => (
-                <TableHead
-                  key={componente.id}
-                  className="border-x border-gray-300 text-center w-[180px] min-w-[180px] font-semibold text-gray-900"
-                >
-                  <div className="font-bold text-purple-700">{componente.nombre}</div>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
+      {/* Mensaje de carga */}
+      {isSaving && (
+        <Alert className="border-2 border-purple-400 bg-purple-50 animate-pulse">
+          <Loader2 className="h-5 w-5 text-purple-600 animate-spin" />
+          <AlertDescription>
+            <p className="font-semibold text-purple-900 mb-1">
+              Guardando calificaciones cualitativas...
+            </p>
+            <p className="text-sm text-purple-700">
+              Actualizando {cambiosPendientes.size} calificación(es). Por favor espera...
+            </p>
+          </AlertDescription>
+        </Alert>
+      )}
 
-          <TableBody>
-            {estudiantes.map((estudiante, index) => (
-              <TableRow key={estudiante.id} className="border-b border-gray-300 hover:bg-purple-50">
-                <TableCell className="text-center text-gray-500 font-medium px-3 border-r-2 border-gray-400">
-                  {index + 1}
-                </TableCell>
+      {/* Renderizado condicional de modos */}
+      {modoCalificacion === 'rapido' && (
+        <PanelCalificacionRapida
+          componentes={componentes}
+          estudiantes={estudiantes}
+          componenteSeleccionado={componenteSeleccionado}
+          calificacionSeleccionada={calificacionSeleccionada}
+          estudiantesSeleccionados={estudiantesSeleccionados}
+          notasTemp={notasTemp}
+          estadoFinalizado={estadoFinalizado}
+          isAdmin={isAdmin}
+          onComponenteChange={setComponenteSeleccionado}
+          onCalificacionChange={setCalificacionSeleccionada}
+          onEstudianteToggle={toggleEstudiante}
+          onToggleTodos={() => toggleTodos(estudiantes)}
+          onAplicarCalificacion={aplicarCalificacion}
+        />
+      )}
 
-                <TableCell className="font-medium px-4 border-r-2 border-gray-400">
-                  <div
-                    className="flex items-center gap-3 cursor-pointer hover:text-purple-600 transition-colors group"
-                    onClick={() =>
-                      setModalEdicion({ open: true, estudiante: estudiante.estudiante })
-                    }
-                    title="Click para editar datos personales"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center font-bold text-white text-sm group-hover:scale-110 transition-transform">
-                      {estudiante.nombres_completos.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="text-sm group-hover:underline">
-                      {estudiante.nombres_completos}
-                    </span>
-                  </div>
-                </TableCell>
+      {modoCalificacion === 'manual' && (
+        <TablaCalificacionManual
+          componentes={componentes}
+          estudiantes={estudiantes}
+          notasTemp={notasTemp}
+          estadoFinalizado={estadoFinalizado}
+          isAdmin={isAdmin}
+          isSaving={isSaving}
+          onNotaChange={handleNotaChange}
+          onEstudianteClick={(estudiante) => setModalEdicion({ open: true, estudiante })}
+        />
+      )}
 
-                {componentes.map((componente) => {
-                  const key = `${estudiante.id}:${componente.id}`;
-                  const tieneCambio = cambiosPendientes.has(key);
-
-                  return (
-                    <TableCell
-                      key={componente.id}
-                      className={`border-x border-gray-300 text-center px-2 py-2 transition-colors ${tieneCambio ? 'bg-yellow-50' : ''
-                        }`}
-                    >
-                      {estadoFinalizado ? (
-                        <span className="font-bold text-gray-900">
-                          {notasTemp[estudiante.id]?.[componente.id] || '-'}
-                        </span>
-                      ) : (
-                        <Select
-                          disabled={isAdmin}
-                          value={(notasTemp[estudiante.id]?.[componente.id] as string) || SIN_CALIFICAR}
-                          onValueChange={(value) =>
-                            handleNotaChange(estudiante.id, componente.id, value)
-                          }
-                        >
-                          <SelectTrigger className={`w-full max-w-[140px] mx-auto border-2 focus:border-purple-500 ${tieneCambio ? 'border-orange-400 bg-orange-50' : 'border-gray-300'
-                            }`}>
-                            <SelectValue placeholder="Sin calificar" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value={SIN_CALIFICAR}>Sin calificar</SelectItem>
-                            <SelectItem value={CalificacionComponente.MAS_A}>+A</SelectItem>
-                            <SelectItem value={CalificacionComponente.A}>A</SelectItem>
-                            <SelectItem value={CalificacionComponente.A_MENOS}>A-</SelectItem>
-                            <SelectItem value={CalificacionComponente.B_MAS}>B+</SelectItem>
-                            <SelectItem value={CalificacionComponente.B}>B</SelectItem>
-                            <SelectItem value={CalificacionComponente.B_MENOS}>B-</SelectItem>
-                            <SelectItem value={CalificacionComponente.C_MAS}>C+</SelectItem>
-                            <SelectItem value={CalificacionComponente.C}>C</SelectItem>
-                            <SelectItem value={CalificacionComponente.C_MENOS}>C-</SelectItem>
-                            <SelectItem value={CalificacionComponente.D}>D</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
+      {/* Modal de edición de datos personales */}
       {modalEdicion && (
         <ModalEditarDatosPersonales
           estudiante={modalEdicion.estudiante}

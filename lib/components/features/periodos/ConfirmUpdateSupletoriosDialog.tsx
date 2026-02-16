@@ -105,10 +105,9 @@ export default function ConfirmUpdateSupletoriosDialog({
         title: 'Activar Período de Supletorios',
         messages: [
           'Se analizarán todos los promedios anuales del período',
-          'Los estudiantes con promedio entre 5.00 y 6.99 quedarán habilitados',
-          'Los docentes podrán ingresar calificaciones de supletorios',
-          'Regla: Promedio Final = (Promedio Anual + Nota Supletorio) / 2',
-          'Si el resultado es ≥ 7.00, se registrará como 7.00 (tope máximo)',
+          'Los estudiantes con promedio entre 4.00 y 6.99 quedarán habilitados al supletorio',
+          'Los docentes podrán ingresar calificaciones de supletorios',,
+          'La calificación para aprobar será de 7.00',
         ]
       };
     }
@@ -120,10 +119,7 @@ export default function ConfirmUpdateSupletoriosDialog({
         color: 'amber',
         title: 'Cerrar Período de Supletorios',
         messages: [
-          'Las calificaciones de supletorio quedarán bloqueadas para edición directa',
-          'Los docentes NO podrán ingresar ni modificar calificaciones desde la tabla',
-          'Se podrán corregir notas mediante el modal de detalle (como en proyectos)',
-          'Los estudiantes que no rindieron supletorio quedarán con estado REPROBADO',
+          'Los docentes NO podrán ingresar ni modificar calificaciones de supletorios',
           'Después de cerrar, podrás FINALIZAR el período lectivo',
         ]
       };
@@ -155,7 +151,6 @@ export default function ConfirmUpdateSupletoriosDialog({
           'Los docentes podrán ingresar y modificar calificaciones nuevamente',
           'Las calificaciones ya registradas se mantendrán',
           'Útil para corregir errores o agregar notas faltantes',
-          'Podrás volver a cerrarlos cuando termines',
         ]
       };
     }
@@ -243,30 +238,6 @@ export default function ConfirmUpdateSupletoriosDialog({
               </ul>
             </AlertDescription>
           </Alert>
-
-          {nuevoEstado === EstadoSupletorio.ACTIVADO && estadoActual === EstadoSupletorio.PENDIENTE && (
-            <Alert className="border-2 border-green-200 bg-green-50">
-              <Users className="h-4 w-4 text-green-600" />
-              <AlertDescription>
-                <p className="text-sm text-green-700">
-                  💡 <strong>Tip:</strong> Después de activar, podrás ver estadísticas detalladas de cuántos estudiantes
-                  necesitan rendir supletorio por materia y curso.
-                </p>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {nuevoEstado === EstadoSupletorio.CERRADO && (
-            <Alert className="border-2 border-yellow-200 bg-yellow-50">
-              <AlertTriangle className="h-4 w-4 text-yellow-600" />
-              <AlertDescription>
-                <p className="text-sm text-yellow-800">
-                  ⚠️ <strong>Importante:</strong> Una vez cerrados, solo podrás editar calificaciones mediante
-                  el modal de detalle. Puedes reabrir si necesitas hacer cambios masivos.
-                </p>
-              </AlertDescription>
-            </Alert>
-          )}
         </div>
 
         <div className="flex gap-3 pt-4">

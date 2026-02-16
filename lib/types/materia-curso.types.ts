@@ -54,6 +54,10 @@ export interface MateriaCursoByDocenteResponse {
     nombres: string;
     apellidos: string;
   };
+  periodo: {
+    id: string;
+    nombre: string;
+  } | null;
   totalMaterias: number;
   materiasActivas: number;
   materias: MateriaCurso[];

@@ -14,6 +14,8 @@ export function useCalificacionCualitativa(curso_id?: string, trimestre_id?: str
     queryKey: ['calificaciones-cualitativas', curso_id, trimestre_id],
     queryFn: () => calificacionCualitativaService.getByCursoYTrimestre(curso_id!, trimestre_id!),
     enabled: !!curso_id && !!trimestre_id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const calificarMasivoMutation = useMutation({
@@ -65,6 +67,8 @@ export function useComponentesCualitativos(nivel?: string) {
     queryKey: ['componentes-cualitativos', nivel],
     queryFn: () => calificacionCualitativaService.getComponentesPorNivel(nivel!),
     enabled: !!nivel,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 
   return {

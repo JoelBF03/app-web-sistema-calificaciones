@@ -7,8 +7,8 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Scholar System',
-  description: 'Sistema de Gestión Educativa',
+  title: 'Sistema Academico Institucional - U.E. 5 de Junio',
+  description: 'Sistema de Gestión Educativa - Unidad Educativa 5 de Junio',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
