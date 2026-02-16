@@ -149,7 +149,7 @@ export default function PeriodosPage() {
                 key={periodo.id}
                 periodo={periodo}
                 onUpdate={actualizarPeriodo}
-                onUpdateTrimestre={actualizarTrimestre}
+                onUpdateTrimestre={async (trimestreId, data) => { await actualizarTrimestre(trimestreId, data); }}
                 onCambiarEstado={cambiarEstadoPeriodo}
                 onActivarSupletorios={activarSupletorios}
                 onCerrarSupletorios={cerrarSupletorios}
