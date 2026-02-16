@@ -76,7 +76,7 @@ export function ModalEditarDatosPersonales({
   };
 
   const handleChange = (field: string, value: any) => {
-    let newErrors = { ...errors };
+    const newErrors = { ...errors };
 
     // Validaciones específicas por campo
     if (field === 'padre_nombre' || field === 'padre_apellido' || 
