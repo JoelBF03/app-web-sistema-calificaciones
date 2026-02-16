@@ -44,7 +44,7 @@ import ConfirmUpdateSupletoriosDialog from './ConfirmUpdateSupletoriosDialog';
 interface PeriodoCardProps {
     periodo: PeriodoLectivo;
     onUpdate: (id: string, data: any) => void;
-    onUpdateTrimestre: (trimestreId: string, data: any) => void;
+    onUpdateTrimestre: (trimestreId: string, data: any) => Promise<void>;
     onCambiarEstado: (id: string) => void;
     onActivarSupletorios?: (id: string) => void;
     onCerrarSupletorios?: (id: string) => void;
