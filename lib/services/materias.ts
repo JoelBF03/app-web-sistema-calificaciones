@@ -1,6 +1,17 @@
 import { api } from './api';
 import { Materia, CreateMateriaDto, UpdateMateriaDto } from '../types/materia.types';
 
+export interface VerificacionAsignaciones {
+  tieneAsignaciones: boolean;
+  totalAsignaciones: number;
+  asignacionesConDocente: number;
+}
+
+export interface VerificacionEdicion {
+  advertencias: string[];
+  bloqueos: string[];
+}
+
 class MateriaService {
   private readonly BASE_PATH = '/materias';
 
@@ -30,6 +41,23 @@ class MateriaService {
   async cambiarEstado(id: string): Promise<{ message: string }> {
     const response = await api.patch<{ message: string }>(
       `${this.BASE_PATH}/${id}/cambiar-estado`
+    );
+    return response.data;
+  }
+
+  // 🆕 Verificar asignaciones activas
+  async verificarAsignaciones(id: string): Promise<VerificacionAsignaciones> {
+    const response = await api.get<VerificacionAsignaciones>(
+      `${this.BASE_PATH}/${id}/verificar-asignaciones`
+    );
+    return response.data;
+  }
+
+  // 🆕 Verificar implicaciones de edición
+  async verificarEdicion(id: string, data: UpdateMateriaDto): Promise<VerificacionEdicion> {
+    const response = await api.post<VerificacionEdicion>(
+      `${this.BASE_PATH}/${id}/verificar-edicion`,
+      data
     );
     return response.data;
   }

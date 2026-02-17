@@ -61,6 +61,7 @@ export interface MateriaCursoByDocenteResponse {
   totalMaterias: number;
   materiasActivas: number;
   materias: MateriaCurso[];
+  cursoTutor: Curso | null; // 🆕 Curso donde el docente es tutor (optimizado)
 }
 
 export interface MateriaCursoByMateriaResponse {

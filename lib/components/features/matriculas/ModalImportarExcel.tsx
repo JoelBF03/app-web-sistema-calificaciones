@@ -109,11 +109,6 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
       setResultado(resultadoData);
       setPaso('resultado');
 
-      if (resultadoData.exitosas > 0) {
-        setTimeout(() => {
-          onSuccess();
-        }, 2000);
-      }
     } catch (err: any) {
       setError(err.message || 'Error al confirmar la importación');
       setPaso('vista-previa');
@@ -163,8 +158,8 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
             <div className="flex items-center gap-2">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${paso === 'seleccionar'
-                    ? 'bg-white text-purple-600'
-                    : 'bg-purple-400 text-white'
+                  ? 'bg-white text-purple-600'
+                  : 'bg-purple-400 text-white'
                   }`}
               >
                 1
@@ -177,10 +172,10 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
             <div className="flex items-center gap-2">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${paso === 'vista-previa' || paso === 'procesando' || paso === 'resultado'
-                    ? paso === 'vista-previa'
-                      ? 'bg-white text-purple-600'
-                      : 'bg-purple-400 text-white'
-                    : 'bg-purple-700 text-purple-300'
+                  ? paso === 'vista-previa'
+                    ? 'bg-white text-purple-600'
+                    : 'bg-purple-400 text-white'
+                  : 'bg-purple-700 text-purple-300'
                   }`}
               >
                 2
@@ -193,10 +188,10 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
             <div className="flex items-center gap-2">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${paso === 'resultado'
-                    ? 'bg-white text-purple-600'
-                    : paso === 'procesando'
-                      ? 'bg-yellow-400 text-yellow-900'
-                      : 'bg-purple-700 text-purple-300'
+                  ? 'bg-white text-purple-600'
+                  : paso === 'procesando'
+                    ? 'bg-yellow-400 text-yellow-900'
+                    : 'bg-purple-700 text-purple-300'
                   }`}
               >
                 {paso === 'procesando' ? <i className="fas fa-spinner fa-spin"></i> : '3'}
@@ -425,7 +420,10 @@ export function ModalImportarExcel({ onClose, onSuccess }: ModalImportarExcelPro
                 Nueva Importación
               </button>
               <button
-                onClick={onClose}
+                onClick={() => {
+                  onSuccess();
+                  onClose();
+                }}
                 className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
                 Cerrar
@@ -490,41 +488,37 @@ function VistaPrevia({ resumen }: { resumen: ResumenImportacionDto }) {
       <div className="flex gap-2">
         <button
           onClick={() => setFiltro('todos')}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            filtro === 'todos'
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${filtro === 'todos'
               ? 'bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+            }`}
         >
           Todos ({resumen.total_registros})
         </button>
         <button
           onClick={() => setFiltro('validos')}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            filtro === 'validos'
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${filtro === 'validos'
               ? 'bg-green-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+            }`}
         >
           Válidos ({resumen.validos})
         </button>
         <button
           onClick={() => setFiltro('invalidos')}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            filtro === 'invalidos'
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${filtro === 'invalidos'
               ? 'bg-red-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+            }`}
         >
           Inválidos ({resumen.invalidos})
         </button>
         <button
           onClick={() => setFiltro('existentes')}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            filtro === 'existentes'
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${filtro === 'existentes'
               ? 'bg-yellow-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+            }`}
         >
           Ya Matriculados ({resumen.existentes})
         </button>

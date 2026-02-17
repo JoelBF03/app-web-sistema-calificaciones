@@ -292,6 +292,29 @@ export function TablaInsumos({ materia_curso_id, trimestre_id, estudiantes, porc
       </div>
     );
   }
+  
+  if (trimestreEstado === TrimestreEstado.PENDIENTE) {
+    return (
+      <Card className="border-2 border-dashed border-gray-300">
+        <CardContent className="p-12 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="p-4 bg-gray-100 rounded-full">
+              <Lock className="w-8 h-8 text-gray-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Trimestre pendiente
+              </h3>
+              <p className="text-gray-500 max-w-md">
+                Este trimestre aún no ha sido activado por el administrador.
+                Los insumos y calificaciones estarán disponibles una vez que se active.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">

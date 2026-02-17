@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/lib
 import { Plus, Search, BookOpen, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { materiaService } from '@/lib/services/materias';
 
 export default function MateriasPage() {
     const { fetchMaterias, cambiarEstadoMateria, loading } = useMaterias();
@@ -51,17 +52,33 @@ export default function MateriasPage() {
         setDialogOpen(true);
     };
 
-    const handleToggleEstado = async (materia: Materia) => {
+const handleToggleEstado = async (materia: Materia) => {
+    // Si va a desactivar, verificar primero
+    if (materia.estado === EstadoMateria.ACTIVO) {
         try {
-            await cambiarEstadoMateria(materia.id);
-            toast.success(
-                `Materia ${materia.estado === EstadoMateria.ACTIVO ? 'desactivada' : 'activada'} exitosamente`
-            );
-            cargarMaterias();
-        } catch (error) {
-            toast.error('Error al cambiar estado');
+            const verificacion = await materiaService.verificarAsignaciones(materia.id);
+            if (verificacion.asignacionesConDocente > 0) {
+                toast.error(
+                    `No se puede desactivar: tiene ${verificacion.asignacionesConDocente} asignación(es) con docente(s). ` +
+                    `Primero desasigne a los docentes desde Asignaciones.`
+                );
+                return;
+            }
+        } catch {
+            // Si falla la verificación, intentar igual (el backend validará)
         }
-    };
+    }
+
+    try {
+        await cambiarEstadoMateria(materia.id);
+        toast.success(
+            `Materia ${materia.estado === EstadoMateria.ACTIVO ? 'desactivada' : 'activada'} exitosamente`
+        );
+        cargarMaterias();
+    } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Error al cambiar estado');
+    }
+};
 
     if (loading && materias.length === 0) {
         return (

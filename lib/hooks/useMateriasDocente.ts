@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import { materiaCursoService } from '../services/materia-curso';
-import { cursosService } from '../services/cursos';
 import { docentesService } from '../services/docentes';
 import type { MateriaCurso } from '../types/materia-curso.types';
 import type { Curso } from '../types/curso.types';
@@ -45,9 +44,8 @@ export function useMateriasDocente() {
       
       setMateriasAsignadas(materiasCuantitativas);
 
-      const cursosData = await cursosService.findAll();
-      const cursoComoTutor = cursosData.find(curso => curso.docente_id === docenteId);
-      setCursoTutor(cursoComoTutor || null);
+      // 🚀 OPTIMIZACIÓN: Usar curso tutor que viene del backend (elimina llamada a findAll)
+      setCursoTutor(materiasResponse.cursoTutor || null);
 
     } catch (err: any) {
       let errorMsg = 'Error al cargar datos';

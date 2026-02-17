@@ -20,7 +20,8 @@ import { AsignarDocenteModal } from '@/lib/components/features/asignaciones/Asig
 import { Card, CardContent } from '@/lib/components/ui/card';
 import { Badge } from '@/lib/components/ui/badge';
 import { Button } from '@/lib/components/ui/button';
-import { Link2, Info, Plus, ArrowLeft } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/lib/components/ui/dialog';
+import { Link2, Info, Plus, ArrowLeft, Loader2, AlertTriangle} from 'lucide-react';
 import Link from 'next/link';
 
 type NivelSeleccionado = {
@@ -32,7 +33,9 @@ export default function AsignacionesPage() {
   const { cursos, isLoading: loadingCursos } = useCursos();
   const { materias, isLoading: loadingMaterias } = useMaterias();
   const { docentes, isLoading: loadingDocentes } = useDocentes();
-  const { obtenerTodasMateriaCurso } = useMateriaCurso();
+  const { obtenerTodasMateriaCurso, eliminarMateriaCurso } = useMateriaCurso();
+  const [materiaAEliminar, setMateriaAEliminar] = useState<Materia | null>(null);
+  const [eliminando, setEliminando] = useState(false);
 
   const [nivelSeleccionado, setNivelSeleccionado] = useState<NivelSeleccionado>({
     nivel: NivelCurso.OCTAVO,
@@ -184,14 +187,17 @@ export default function AsignacionesPage() {
     setModalAgregarMateria(true);
   };
 
-  const handleEliminarMateria = async (materia: Materia) => {
-    if (!confirm(`¿Eliminar "${materia.nombre}" de todos los paralelos de ${getNivelLabel()}?`)) {
-      return;
-    }
+  const handleEliminarMateria = (materia: Materia) => {
+    setMateriaAEliminar(materia);
+  };
 
+  const confirmarEliminarMateria = async () => {
+    if (!materiaAEliminar) return;
+
+    setEliminando(true);
     try {
       const idsParaEliminar = materiasCursoFiltradas
-        .filter(mc => mc.materia_id === materia.id)
+        .filter(mc => mc.materia_id === materiaAEliminar.id)
         .map(mc => mc.id);
 
       if (idsParaEliminar.length === 0) {
@@ -199,15 +205,17 @@ export default function AsignacionesPage() {
         return;
       }
 
-      const { eliminarMateriaCurso } = useMateriaCurso();
       await Promise.all(
         idsParaEliminar.map(id => eliminarMateriaCurso(id))
       );
 
-      toast.success(`Materia "${materia.nombre}" eliminada de ${idsParaEliminar.length} paralelo(s)`);
+      toast.success(`Materia "${materiaAEliminar.nombre}" eliminada de ${idsParaEliminar.length} paralelo(s)`);
       await cargarMateriaCurso();
     } catch (error: any) {
       toast.error(error.message || 'Error al eliminar materia');
+    } finally {
+      setEliminando(false);
+      setMateriaAEliminar(null);
     }
   };
 
@@ -345,6 +353,59 @@ export default function AsignacionesPage() {
           </div>
         )}
       </div>
+
+            {/* Modal de confirmación para eliminar materia */}
+      <Dialog open={!!materiaAEliminar} onOpenChange={(open) => !open && setMateriaAEliminar(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-100 rounded-full">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <DialogTitle>Eliminar materia del nivel</DialogTitle>
+                <DialogDescription className="mt-1">
+                  Esta acción no se puede deshacer
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="py-4">
+            <p className="text-sm text-gray-700">
+              ¿Estás seguro de eliminar <strong>&quot;{materiaAEliminar?.nombre}&quot;</strong> de
+              todos los paralelos de <strong>{getNivelLabel()}</strong>?
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Se eliminarán las asignaciones de docentes asociadas a esta materia en este nivel.
+            </p>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setMateriaAEliminar(null)}
+              disabled={eliminando}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmarEliminarMateria}
+              disabled={eliminando}
+            >
+              {eliminando ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                'Eliminar materia'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {!esBasica && (
         <AsignarMateriaModal

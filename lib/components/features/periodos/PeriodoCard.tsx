@@ -699,7 +699,10 @@ export default function PeriodoCard({
             <ConfirmCambiarEstadoDialog
                 isOpen={showCambiarEstadoDialog}
                 onClose={() => setShowCambiarEstadoDialog(false)}
-                onConfirm={() => onCambiarEstado(periodo.id)}
+                onConfirm={async () => {
+                    await onCambiarEstado(periodo.id);
+                    setShowCambiarEstadoDialog(false);
+                }}
                 periodo={periodo}
                 trimestres={trimestres}
             />

@@ -28,8 +28,9 @@ import {
   NivelEducativoLabels,
   TipoCalificacionLabels,
 } from '@/lib/types/materia.types';
+import { materiaService, VerificacionEdicion } from '@/lib/services/materias';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 interface CrearEditarMateriaDialogProps {
   open: boolean;
@@ -50,6 +51,8 @@ export default function CrearEditarMateriaDialog({
     nivelEducativo: NivelEducativo.BASICA,
     tipoCalificacion: TipoCalificacion.CUANTITATIVA,
   });
+  const [verificacion, setVerificacion] = useState<VerificacionEdicion | null>(null);
+  const [verificando, setVerificando] = useState(false);
 
   const esEdicion = !!materia;
 
@@ -67,10 +70,47 @@ export default function CrearEditarMateriaDialog({
         tipoCalificacion: TipoCalificacion.CUANTITATIVA,
       });
     }
+    setVerificacion(null);
   }, [materia, open]);
+
+  // 🆕 Verificar implicaciones cuando cambia un campo importante en edición
+  useEffect(() => {
+    if (!esEdicion || !materia) return;
+
+    const hayCambioImportante =
+      formData.tipoCalificacion !== materia.tipoCalificacion ||
+      formData.nivelEducativo !== materia.nivelEducativo ||
+      (formData.nombre && formData.nombre !== materia.nombre);
+
+    if (!hayCambioImportante) {
+      setVerificacion(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setVerificando(true);
+      try {
+        const result = await materiaService.verificarEdicion(materia.id, formData);
+        setVerificacion(result);
+      } catch {
+        // Silenciar errores de verificación
+      } finally {
+        setVerificando(false);
+      }
+    }, 500); // debounce
+
+    return () => clearTimeout(timer);
+  }, [formData, materia, esEdicion]);
+
+  const tieneBloqueos = verificacion && verificacion.bloqueos.length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (tieneBloqueos) {
+      toast.error('Hay bloqueos que impiden guardar los cambios');
+      return;
+    }
 
     try {
       if (esEdicion && materia) {
@@ -179,6 +219,38 @@ export default function CrearEditarMateriaDialog({
                 </Select>
               </div>
             </div>
+
+            {/* 🆕 Advertencias y bloqueos */}
+            {verificando && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Verificando implicaciones...
+              </div>
+            )}
+
+            {verificacion && verificacion.bloqueos.length > 0 && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-4 space-y-2">
+                <div className="flex items-center gap-2 text-red-700 font-medium">
+                  <ShieldAlert className="w-5 h-5" />
+                  Cambio no permitido
+                </div>
+                {verificacion.bloqueos.map((bloqueo, i) => (
+                  <p key={i} className="text-sm text-red-600">{bloqueo}</p>
+                ))}
+              </div>
+            )}
+
+            {verificacion && verificacion.advertencias.length > 0 && verificacion.bloqueos.length === 0 && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-2">
+                <div className="flex items-center gap-2 text-amber-700 font-medium">
+                  <AlertTriangle className="w-5 h-5" />
+                  Advertencia
+                </div>
+                {verificacion.advertencias.map((adv, i) => (
+                  <p key={i} className="text-sm text-amber-600">{adv}</p>
+                ))}
+              </div>
+            )}
           </div>
 
           <DialogFooter className="flex justify-end gap-2">
@@ -190,7 +262,7 @@ export default function CrearEditarMateriaDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !!tieneBloqueos}>
               {loading && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
