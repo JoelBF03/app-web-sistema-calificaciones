@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, Save, Eye, Target } from 'lucide-react';
+import { Loader2, Save, Eye, Target, Lock } from 'lucide-react';
 import { useCalificacionProyecto } from '@/lib/hooks/useCalificacionProyecto';
 import { ModalDetalleProyecto } from '@/lib/components/features/calificaciones/ModalDetalleProyecto';
 import { ModalEditarDatosPersonales } from './ModalEditarDatosPersonales';
@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { calcularCualitativo, getColorCualitativo } from '@/lib/utils/calificaciones.utils';
 import { Role, TrimestreEstado } from '@/lib/types';
+import { Card, CardContent } from '@/lib/components/ui/card';
 
 interface TablaProyectoTutoriaProps {
     curso_id: string;
@@ -42,6 +43,7 @@ export function TablaProyectoTutoria({
     } = useCalificacionProyecto(curso_id, trimestre_id, true);
 
     const estadoFinalizado = trimestreEstado === TrimestreEstado.FINALIZADO;
+    const estadoPendiente = trimestreEstado === TrimestreEstado.PENDIENTE;
     const [notasTemp, setNotasTemp] = useState<Record<string, string>>({});
     const [modalDetalle, setModalDetalle] = useState<{
         open: boolean;
@@ -146,6 +148,29 @@ export function TablaProyectoTutoria({
     const hayDatos = estudiantes.some(est =>
         notasTemp[est.id] || calificaciones.find((c: any) => c.estudiante_id === est.id)
     );
+
+        if (estadoPendiente) {
+        return (
+            <Card className="border-2 border-dashed border-gray-300">
+                <CardContent className="p-12 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="p-4 bg-gray-100 rounded-full">
+                            <Lock className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                Trimestre pendiente
+                            </h3>
+                            <p className="text-gray-500 max-w-md">
+                                Este trimestre aún no ha sido activado por el administrador.
+                                El proyecto integrador estará disponible una vez que se active.
+                            </p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <div className="space-y-4">

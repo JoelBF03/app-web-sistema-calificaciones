@@ -41,8 +41,8 @@ export function ModalCrearManual({ onClose, onSave }: ModalCrearManualProps) {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.estudiante_cedula || formData.estudiante_cedula.length > 13 || formData.estudiante_cedula.length < 10) {
-      newErrors.estudiante_cedula = 'La cédula debe tener mínimo 10 y máximo 13 dígitos';
+    if (!formData.estudiante_cedula || formData.estudiante_cedula.length > 13 || formData.estudiante_cedula.length < 6) {
+      newErrors.estudiante_cedula = 'La cédula debe tener mínimo 6 y máximo 13 dígitos';
     }
 
     if (!formData.nombres_completos || formData.nombres_completos.length < 3) {

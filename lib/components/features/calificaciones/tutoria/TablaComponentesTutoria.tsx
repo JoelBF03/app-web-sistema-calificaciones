@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Loader2, Save, BookOpen, User, Zap } from 'lucide-react';
+import { Loader2, Save, BookOpen, User, Zap, Lock } from 'lucide-react';
 import { Button } from '@/lib/components/ui/button';
 import { Alert, AlertDescription } from '@/lib/components/ui/alert';
 import { Badge } from '@/lib/components/ui/badge';
@@ -15,6 +15,7 @@ import { Role } from '@/lib/types/usuario.types';
 import { ModalEditarDatosPersonales } from '../tutoria/ModalEditarDatosPersonales';
 import { PanelCalificacionRapida } from './PanelCalificacionRapida';
 import { TablaCalificacionManual } from './TablaCalificacionManual';
+import { Card, CardContent } from '@/lib/components/ui/card';
 
 interface TablaComponentesTutoriaProps {
   curso_id: string;
@@ -45,6 +46,7 @@ export function TablaComponentesTutoria({
   trimestreEstado
 }: TablaComponentesTutoriaProps) {
   const estadoFinalizado = trimestreEstado === TrimestreEstado.FINALIZADO;
+  const estadoPendiente = trimestreEstado === TrimestreEstado.PENDIENTE;
   const nivelEducativo = getNivelEducativo(nivel);
 
   const { componentes, isLoading: loadingComponentes } = useComponentesCualitativos(nivelEducativo);
@@ -197,6 +199,29 @@ export function TablaComponentesTutoria({
         <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
         <p>No hay componentes cualitativos configurados para este nivel</p>
       </div>
+    );
+  }
+
+    if (estadoPendiente) {
+    return (
+      <Card className="border-2 border-dashed border-gray-300">
+        <CardContent className="p-12 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="p-4 bg-gray-100 rounded-full">
+              <Lock className="w-8 h-8 text-gray-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Trimestre pendiente
+              </h3>
+              <p className="text-gray-500 max-w-md">
+                Este trimestre aún no ha sido activado por el administrador.
+                Los componentes cualitativos estarán disponibles una vez que se active.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
